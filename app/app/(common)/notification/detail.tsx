@@ -184,28 +184,7 @@ export default function NotificationDetailsScreen() {
       ]}
     >
       <ScrollView style={detailsStyles.scrollView}>
-        <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
-        <TouchableOpacity onPress={() => router.back()} style={{ padding: 16 }}>
-          <TextDefault style={{ color: currentColors.textSecondary }}>
-            Back
-          </TextDefault>
-        </TouchableOpacity>
-        <View style={detailsStyles.header}>
-          <TextDefault
-            style={[detailsStyles.headerTitle, { color: currentColors.text }]}
-          >
-            Chi tiết thông báo
-          </TextDefault>
-          <TextDefault
-            style={[
-              detailsStyles.headerSubtitle,
-              { color: currentColors.textSecondary },
-            ]}
-          >
-            {notification.title}
-          </TextDefault>
-        </View>
-
+        <Separator height={scale(10)} />
         <View style={detailsStyles.content}>
           <View
             style={[

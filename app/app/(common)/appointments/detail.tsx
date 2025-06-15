@@ -1,5 +1,4 @@
 import Loading from "@/components/@core/loading"; // Import Loading component
-import Row from "@/components/@core/row";
 import Separator from "@/components/@core/separator";
 import TextDefault from "@/components/@core/text-default"; // Sử dụng TextDefault
 import { Colors } from "@/constants/Colors"; // Import Colors
@@ -78,57 +77,6 @@ const getShadowStyle = (currentColors: any) =>
       elevation: 2,
     },
   });
-
-// -----------------------------------------------------
-// Component con: AppointmentDetailHeader
-// -----------------------------------------------------
-interface AppointmentDetailHeaderProps {
-  activityTitle: string;
-  currentColors: any;
-  onBackPress: () => void;
-}
-
-function AppointmentDetailHeader({
-  activityTitle,
-  currentColors,
-  onBackPress,
-}: AppointmentDetailHeaderProps) {
-  return (
-    <>
-      <Row
-        between
-        full
-        style={{ alignItems: "center", paddingHorizontal: scale(16) }}
-      >
-        <TouchableOpacity
-          style={{ paddingVertical: scale(8) }}
-          onPress={onBackPress}
-        >
-          <TextDefault
-            style={{ fontSize: scale(16), color: currentColors.textSecondary }}
-          >
-            Quay lại
-          </TextDefault>
-        </TouchableOpacity>
-        <View style={detailsStyles.header}>
-          <TextDefault
-            style={[detailsStyles.headerTitle, { color: currentColors.text }]}
-          >
-            Chi tiết cuộc hẹn
-          </TextDefault>
-          <TextDefault
-            style={[
-              detailsStyles.headerSubtitle,
-              { color: currentColors.textSecondary },
-            ]}
-          >
-            {activityTitle}
-          </TextDefault>
-        </View>
-      </Row>
-    </>
-  );
-}
 
 // -----------------------------------------------------
 // Component con: AppointmentInfoCard
@@ -580,12 +528,7 @@ export default function currentAppointmentDetailsScreen() {
         { backgroundColor: currentColors.background },
       ]}
     >
-      <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
-      <AppointmentDetailHeader
-        activityTitle={currentAppointment.activity}
-        onBackPress={() => router.back()}
-        currentColors={currentColors}
-      />
+      <Separator height={scale(10)} />
       <ScrollView style={detailsStyles.scrollView}>
         <View style={detailsStyles.content}>
           <AppointmentInfoCard
@@ -620,19 +563,6 @@ const detailsStyles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-  },
-  header: {
-    paddingHorizontal: scale(16),
-    paddingTop: scale(16),
-    paddingBottom: scale(16),
-  },
-  headerTitle: {
-    fontSize: scale(20),
-    fontWeight: "bold",
-  },
-  headerSubtitle: {
-    fontSize: scale(16),
-    marginTop: scale(4),
   },
   content: {
     paddingHorizontal: scale(16),

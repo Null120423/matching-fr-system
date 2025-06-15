@@ -49,33 +49,6 @@ const getShadowStyle = (currentColors: any) =>
   });
 
 // -----------------------------------------------------
-// Component con: EditProfileHeader
-// -----------------------------------------------------
-interface EditProfileHeaderProps {
-  currentColors: any;
-}
-
-function EditProfileHeader({ currentColors }: EditProfileHeaderProps) {
-  return (
-    <View style={editProfileStyles.header}>
-      <TextDefault
-        style={[editProfileStyles.headerTitle, { color: currentColors.text }]}
-      >
-        Chỉnh sửa hồ sơ
-      </TextDefault>
-      <TextDefault
-        style={[
-          editProfileStyles.headerSubtitle,
-          { color: currentColors.textSecondary },
-        ]}
-      >
-        Cập nhật thông tin cá nhân của bạn
-      </TextDefault>
-    </View>
-  );
-}
-
-// -----------------------------------------------------
 // Component con: AvatarEditSection
 // -----------------------------------------------------
 interface AvatarEditSectionProps {
@@ -625,8 +598,7 @@ export default function EditProfileView() {
         { backgroundColor: currentColors.background },
       ]}
     >
-      <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
-      <EditProfileHeader currentColors={currentColors} />
+      <Separator height={scale(10)} />
       <ScrollView style={editProfileStyles.scrollView}>
         <View style={editProfileStyles.content}>
           <AvatarEditSection
@@ -674,19 +646,6 @@ const editProfileStyles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-  },
-  header: {
-    paddingHorizontal: scale(16),
-    paddingTop: scale(16),
-    paddingBottom: scale(16),
-  },
-  headerTitle: {
-    fontSize: scale(20),
-    fontWeight: "bold",
-  },
-  headerSubtitle: {
-    fontSize: scale(14),
-    marginTop: scale(4),
   },
   content: {
     paddingHorizontal: scale(16),

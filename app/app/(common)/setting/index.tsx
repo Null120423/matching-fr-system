@@ -1,11 +1,9 @@
-import Row from "@/components/@core/row";
 import Separator from "@/components/@core/separator";
 import TextDefault from "@/components/@core/text-default"; // Sử dụng TextDefault
 import { Colors } from "@/constants/Colors"; // Import Colors
 import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
 import { scale } from "@/helper/helpers";
 import { Picker } from "@react-native-picker/picker";
-import { router } from "expo-router";
 import {
   Bell,
   ChevronRight,
@@ -39,43 +37,6 @@ const getShadowStyle = (currentColors: any) =>
       elevation: 2,
     },
   });
-
-// -----------------------------------------------------
-// Component con: SettingsHeader
-// -----------------------------------------------------
-interface SettingsHeaderProps {
-  currentColors: any;
-  onBackPress: () => void;
-}
-
-function SettingsHeader({ currentColors, onBackPress }: SettingsHeaderProps) {
-  return (
-    <>
-      <Row between full style={{ paddingHorizontal: scale(16) }}>
-        <TouchableOpacity onPress={onBackPress}>
-          <TextDefault style={{ color: currentColors.text }}>
-            Quay lại
-          </TextDefault>
-        </TouchableOpacity>
-      </Row>
-      <View style={settingStyles.header}>
-        <TextDefault
-          style={[settingStyles.headerTitle, { color: currentColors.text }]}
-        >
-          Cài đặt ứng dụng
-        </TextDefault>
-        <TextDefault
-          style={[
-            settingStyles.headerSubtitle,
-            { color: currentColors.textSecondary },
-          ]}
-        >
-          Quản lý các tùy chọn và quyền riêng tư của bạn
-        </TextDefault>
-      </View>
-    </>
-  );
-}
 
 // -----------------------------------------------------
 // Component con: SettingSectionCard (Reusable)
@@ -299,12 +260,7 @@ export default function SettingScreen() {
         { backgroundColor: currentColors.background },
       ]}
     >
-      <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
-      <SettingsHeader
-        onBackPress={() => router.back()}
-        currentColors={currentColors}
-      />
-
+      <Separator height={scale(10)} />
       <ScrollView style={settingStyles.scrollView}>
         <View style={settingStyles.content}>
           {/* Notification Settings */}
@@ -417,19 +373,6 @@ const settingStyles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-  },
-  header: {
-    paddingHorizontal: scale(16),
-    paddingTop: scale(16),
-    paddingBottom: scale(16),
-  },
-  headerTitle: {
-    fontSize: scale(20),
-    fontWeight: "bold",
-  },
-  headerSubtitle: {
-    fontSize: scale(14),
-    marginTop: scale(4),
   },
   content: {
     paddingHorizontal: scale(16),

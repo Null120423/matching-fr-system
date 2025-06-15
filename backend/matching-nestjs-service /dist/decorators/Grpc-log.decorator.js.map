@@ -1,1 +1,0 @@
-{"version":3,"file":"Grpc-log.decorator.js","sourceRoot":"","sources":["../../src/decorators/Grpc-log.decorator.ts"],"names":[],"mappings":";;AAEA,gCAGC;AALD,yDAAqE;AAErE,SAAgB,UAAU,CAAC,OAAe,EAAE,MAAc;IACxD,OAAO,CAAC,GAAG,CAAC,iBAAiB,OAAO,IAAI,MAAM,EAAE,CAAC,CAAC;IAClD,OAAO,IAAA,0BAAc,EAAC,OAAO,EAAE,MAAM,CAAC,CAAC;AACzC,CAAC"}

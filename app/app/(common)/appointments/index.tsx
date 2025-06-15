@@ -58,55 +58,6 @@ interface Appointment {
 type AppointmentType = "received" | "sent" | "upcoming" | "history";
 
 // -----------------------------------------------------
-// Component con: AppointmentsHeader
-// -----------------------------------------------------
-interface AppointmentsHeaderProps {
-  currentColors: any;
-  onBackPress: () => void;
-}
-
-function AppointmentsHeader({
-  currentColors,
-  onBackPress,
-}: AppointmentsHeaderProps) {
-  return (
-    <>
-      <TouchableOpacity
-        style={[
-          appointmentsStyles.backButton,
-          { paddingHorizontal: scale(16), paddingVertical: scale(8) },
-        ]}
-        onPress={onBackPress}
-      >
-        <TextDefault
-          style={{ color: currentColors.textSecondary, fontSize: scale(16) }}
-        >
-          Quay lại
-        </TextDefault>
-      </TouchableOpacity>
-      <View style={appointmentsStyles.header}>
-        <TextDefault
-          style={[
-            appointmentsStyles.headerTitle,
-            { color: currentColors.text },
-          ]}
-        >
-          Cuộc hẹn của tôi
-        </TextDefault>
-        <TextDefault
-          style={[
-            appointmentsStyles.headerSubtitle,
-            { color: currentColors.textSecondary },
-          ]}
-        >
-          Quản lý tất cả lời mời và lịch hẹn của bạn
-        </TextDefault>
-      </View>
-    </>
-  );
-}
-
-// -----------------------------------------------------
 // Component con: AppointmentTabs
 // -----------------------------------------------------
 interface AppointmentTabsProps {
@@ -554,11 +505,6 @@ export default function Appointments() {
       ]}
     >
       <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
-      <AppointmentsHeader
-        onBackPress={() => router.back()}
-        currentColors={currentColors}
-      />
-
       <AppointmentTabs
         activeTab={activeTab}
         setActiveTab={setActiveTab}
