@@ -1,6 +1,6 @@
-package com.example.order_service.service;
-import hello.HelloRequest;
+package com.example.notification_service.service;
 import hello.HelloReply;
+import hello.HelloRequest;
 import hello.HelloServiceGrpc;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;

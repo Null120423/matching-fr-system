@@ -6,5 +6,5 @@ api-gateway/dist
 api-gateway/node_modules
 demo/dist
 demo/node_modules
-order-spring-boot-service/target
-order-spring-boot-service/.mvn
+notification-spring-boot-service/target
+notification-spring-boot-service/.mvn

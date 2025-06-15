@@ -1,1 +1,9 @@
 /.DS_Store
+app/node_modules
+backend/api-gateway/node_modules
+backend/api-gateway/dist
+backend/auth-nestjs-service/dist
+backend/auth-nestjs-service/node_modules
+backend/matching-nestjs-service /dist
+backend/matching-nestjs-service /node_modules
+backend/notification-spring-boot-service/target

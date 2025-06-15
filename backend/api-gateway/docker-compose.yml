@@ -5,7 +5,7 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - order-service
+      - notification-service
       - user-service
     volumes:
       - ./proto:/app/proto
@@ -15,7 +15,7 @@ services:
     ports:
       - "50052:50052"
 
-  order-service:
-    build: ./order-springboot-service
+  notification-service:
+    build: ./notification-springboot-service
     ports:
       - "50051:50051"

@@ -1,10 +1,18 @@
-package com.example.order_service.service;
-
-import payment.*;
-import io.grpc.stub.StreamObserver;
-import net.devh.boot.grpc.server.service.GrpcService;
+package com.example.notification_service.service;
 
 import java.time.Instant;
+
+import io.grpc.stub.StreamObserver;
+import net.devh.boot.grpc.server.service.GrpcService;
+import payment.CheckTransactionRequest;
+import payment.CheckTransactionResponse;
+import payment.CreateTransactionRequest;
+import payment.CreateTransactionResponse;
+import payment.GenerateQRRequest;
+import payment.GenerateQRResponse;
+import payment.PaymentCallbackRequest;
+import payment.PaymentCallbackResponse;
+import payment.PaymentServiceGrpc;
 
 @GrpcService
 public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBase {
