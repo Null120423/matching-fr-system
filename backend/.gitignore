@@ -1,0 +1,10 @@
+auth-nestjs-service/dist
+auth-nestjs-service/node_modules
+matching-nestjs-service/dist
+matching-nestjs-service/node_modules
+api-gateway/dist
+api-gateway/node_modules
+demo/dist
+demo/node_modules
+order-spring-boot-service/target
+order-spring-boot-service/.mvn

@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "payment";
+option java_outer_classname = "PaymentProto";
+package payment;
+
+// === PaymentService chính ===
+service PaymentService {
+  // Tạo giao dịch mới (transaction)
+  rpc CreateTransaction (CreateTransactionRequest) returns (CreateTransactionResponse);
+
+  // Sinh mã QR thanh toán
+  rpc GenerateQR (GenerateQRRequest) returns (GenerateQRResponse);
+
+  // Hook lắng nghe callback từ ví/SEPay
+  rpc HandlePaymentCallback (PaymentCallbackRequest) returns (PaymentCallbackResponse);
+
+  // Kiểm tra trạng thái giao dịch
+  rpc CheckTransactionStatus (CheckTransactionRequest) returns (CheckTransactionResponse);
+}
+
+// ==== MESSAGES ====
+
+// Giao dịch thanh toán
+message CreateTransactionRequest {
+  string user_id = 1;
+  double amount = 2;
+  string currency = 3; // e.g., "VND"
+  string description = 4;
+}
+message CreateTransactionResponse {
+  string transaction_id = 1;
+  string status = 2; // e.g., "PENDING"
+  string created_at = 3;
+}
+
+// Sinh QR Code để thanh toán
+message GenerateQRRequest {
+  string transaction_id = 1;
+}
+message GenerateQRResponse {
+  string qr_url = 1;       // URL để hiển thị QR
+}
+
+// Callback từ SEPay (Webhook)
+message PaymentCallbackRequest {
+  string transaction_id = 1;
+  string status = 2; // e.g., "SUCCESS", "FAILED"
+  string paid_at = 3;
+  string external_ref = 4; // mã từ SEPay
+}
+message PaymentCallbackResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Kiểm tra trạng thái giao dịch
+message CheckTransactionRequest {
+  string transaction_id = 1;
+}
+message CheckTransactionResponse {
+  string transaction_id = 1;
+  string status = 2;       // "PENDING", "SUCCESS", "FAILED"
+  string updated_at = 3;
+}
