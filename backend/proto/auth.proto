@@ -1,57 +1,153 @@
+// backend/auth-nestjs-service/src/proto/auth.proto
 syntax = "proto3";
 
 package auth;
 
-// AuthService provides authentication-related operations
 service AuthService {
-  rpc SignIn (LoginRequest) returns (LoginReply);
-  rpc SignUp (SignUpRequest) returns (SignUpReply);
-  rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenReply);
+  rpc SignIn (SignInRequest) returns (SignInResponse);
+  rpc SignUp (SignUpRequest) returns (SignUpResponse);
+  rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse);
+  rpc ResetPasswordRequest (ResetPasswordRequestRequest) returns (ResetPasswordRequestResponse);
+  rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse);
+  rpc OAuthGoogle (Empty) returns (SessionResponse); // Thêm input/output phù hợp nếu cần
+  rpc OAuthDiscord (Empty) returns (SessionResponse);
+  rpc OAuthGithub (Empty) returns (SessionResponse);
+  rpc SignOut (SignOutRequest) returns (SignOutResponse);
 }
 
-// Request for refreshing the token
-message RefreshTokenRequest {
-  string refreshToken = 1;
+// New service for User Profile
+service UserProfileService {
+  rpc GetMyProfile (GetMyProfileRequest) returns (User);
+  rpc UpdateUserProfile (UpdateUserProfileRequest) returns (User);
+  rpc GetUserById (GetUserByIdRequest) returns (User);
+  rpc DiscoverUsers (DiscoverUsersRequest) returns (DiscoverUsersResponse);
 }
 
-// Reply for refreshing the token
-message RefreshTokenReply {
-  string refreshToken = 1;
-  string accessToken = 2;
-}
+message Empty {}
 
-// Request for user login
-message LoginRequest {
+// Authentication messages
+message SignInRequest {
   string username = 1;
   string password = 2;
 }
 
-// Reply for user login
-message LoginReply {
-  string accessToken = 1; // JWT or session token
-  string refreshToken = 2; // Corrected: should be 2 instead of 1 for uniqueness
-  string message = 3;
-  User user = 4;
+message SignInResponse {
+  string accessToken =1;
+  string refreshToken = 2;
+  User user = 3;
 }
 
-// Request for user signup
 message SignUpRequest {
   string username = 1;
   string password = 2;
-  string confirmPassword = 3;  // Fixed colon to equal sign
+  string confirmPassword = 3;
   string email = 4;
 }
 
-// Reply for user signup
-message SignUpReply {
-  string message = 1;
+message SignUpResponse {
+  bool success = 1;
+  string message = 2;
+  string createdSessionId = 3;
 }
 
-// User information message
+message VerifyEmailRequest {
+  string code = 1;
+  string emailAddress = 2;
+}
+
+message VerifyEmailResponse {
+  string createdSessionId = 1;
+}
+
+message ResetPasswordRequestRequest {
+  string emailAddress = 1;
+}
+
+message ResetPasswordRequestResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ResetPasswordRequest {
+  string code = 1;
+  string password = 2;
+}
+
+message ResetPasswordResponse {
+  bool success = 1;
+  string message = 2;
+  string newSessionId = 3;
+}
+
+message SignOutRequest {
+  string accessToken = 1; // Hoặc một cách nào đó để xác định phiên
+}
+
+message SignOutResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message SessionResponse {
+  string sessionId = 1;
+}
+
+// User Profile messages
 message User {
   string id = 1;
-  string username = 2;
-  repeated string favoriteActivities = 3;
-  repeated string availableTimeSlots = 4;
-  string location = 5;
+  string emailAddress = 2;
+  string firstName = 3;
+  string lastName = 4;
+  string dateOfBirth = 5; // Hoặc google.protobuf.Timestamp
+  string gender = 6;
+  string location = 7;
+  string bio = 8;
+  string avatarUrl = 9;
+  repeated string interests = 10;
+  int32 minAgePreference = 11;
+  int32 maxAgePreference = 12;
+  string preferredGender = 13;
+  repeated string activities = 14;
+  string createdAt = 15;
+  string updatedAt = 16;
+}
+
+message GetMyProfileRequest {
+  string userId = 1;
+}
+
+message UpdateUserProfileRequest {
+  string userId = 1;
+  // Define partial user fields here for update
+  // Hoặc định nghĩa một message riêng cho updateData
+  optional string firstName = 2;
+  optional string lastName = 3;
+  optional string dateOfBirth = 4;
+  optional string gender = 5;
+  optional string location = 6;
+  optional string bio = 7;
+  optional string avatarUrl = 8;
+  repeated string interests = 9;
+  optional int32 minAgePreference = 10;
+  optional int32 maxAgePreference = 11;
+  optional string preferredGender = 12;
+  repeated string activities = 13;
+}
+
+message GetUserByIdRequest {
+  string userId = 1;
+}
+
+message DiscoverUsersRequest {
+  string currentUserId = 1;
+  optional string query = 2;
+  optional string activity = 3;
+  optional string location = 4;
+  optional int32 minAge = 5;
+  optional int32 maxAge = 6;
+  optional string gender = 7;
+}
+
+message DiscoverUsersResponse {
+  repeated User users = 1;
 }

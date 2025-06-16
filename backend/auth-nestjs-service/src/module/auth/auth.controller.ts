@@ -1,13 +1,13 @@
 /* eslint-disable no-useless-catch */
 import { Controller } from '@nestjs/common';
-import { GrpcMethod } from 'src/decorators';
+import { GrpcLog, GrpcMethod } from 'src/decorators';
 import { AuthService } from './auth.service';
 import {
   LoginRequestDTO,
   RefreshTokenRequestDTO,
   SignUpRequestDTO,
 } from './dto';
-
+GrpcLog();
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

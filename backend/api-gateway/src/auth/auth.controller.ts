@@ -15,7 +15,7 @@ import {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('login')
+  @Post('sign-in')
   @ApiOperation({ summary: 'Login user and generate tokens' })
   @ApiBody({ type: LoginRequestDTO })
   @ApiResponse({
@@ -36,7 +36,8 @@ export class AuthController {
       },
     },
   })
-  async login(@Body() loginDto: LoginRequestDTO): Promise<LoginReplyDTO> {
+  async signIn(@Body() loginDto: LoginRequestDTO): Promise<LoginReplyDTO> {
+    console.log('Received login request:', loginDto);
     return await this.authService.signIn(loginDto);
   }
 

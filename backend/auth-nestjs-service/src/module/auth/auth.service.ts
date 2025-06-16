@@ -58,6 +58,7 @@ export class AuthService {
     const newUser = new UserEntity();
     newUser.username = signUpDTO.username;
     newUser.password = signUpDTO.password;
+    newUser.email = signUpDTO.email;
 
     await this.repo.insert(newUser);
 

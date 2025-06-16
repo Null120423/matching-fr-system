@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   CanActivate,
   ExecutionContext,
@@ -8,8 +5,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
+
 import { CONSTANTS } from 'src/contanst';
+import { RequestWithUser } from 'src/dto/request.dto';
 import { PUBLIC_ROUTES } from 'src/public.routes';
 
 @Injectable()
@@ -17,7 +15,7 @@ export class JwtAuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
   JWT_SECRET = CONSTANTS.JWT_SECRET;
   canActivate(context: ExecutionContext): boolean {
-    const request: any = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<RequestWithUser>();
     const authHeader = request.headers['authorization'];
     const { url, method } = request;
 
