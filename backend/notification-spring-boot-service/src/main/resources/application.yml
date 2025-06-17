@@ -1,20 +1,21 @@
 grpc:
   client:
     local-grpc-server:
-      address: static://localhost:50051
+      address: static://localhost:50051 # Cấu hình phía client, có thể không liên quan nếu dịch vụ thông báo chỉ là máy chủ.
       negotiationType: plaintext
 
   server:
-    port: 50051
+    port: 50051 # Đây là cổng gRPC server, được API Gateway sử dụng.
     address: 0.0.0.0
 
 server:
-  port: 30001
+  port: 30001 # Đây là cổng HTTP server của Spring Boot. Nếu không cần thiết cho truy cập trực tiếp/kiểm tra sức khỏe, có thể xóa hoặc đặt thành 0.
 
-spring.datasource.url=jdbc:postgresql://103.75.184.206:3307/micro_matching
+# Sử dụng tên dịch vụ Docker 'postgresql' thay vì IP cố định
+spring.datasource.url=jdbc:postgresql://postgresql:5432/micro_matching
 spring.datasource.username=root
 spring.datasource.password=gennydev@123
-spring.jpa.hibernate.ddl-auto=update # hoặc none và dùng Flyway/Liquibase
+spring.jpa.hibernate.ddl-auto=update # Hoặc none, tùy thuộc vào chiến lược di chuyển của bạn
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.show-sql=true
 
