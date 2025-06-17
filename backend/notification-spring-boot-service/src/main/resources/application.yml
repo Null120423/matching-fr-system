@@ -13,7 +13,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://postgresql:3307/micro_matching
+    url: jdbc:postgresql://103.75.184.206:3307/micro_matching
     username: root
     password: gennydev@123
     driver-class-name: org.postgresql.Driver
