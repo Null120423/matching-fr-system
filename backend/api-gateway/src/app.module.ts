@@ -3,7 +3,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { CONSTANTS } from './contanst';
-import { UserController } from './user/user.controller';
+import { AppointmentController } from './modules/appointment/appointment.controller';
+import { UserController } from './modules/user/user.controller';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { UserController } from './user/user.controller';
     }),
     AuthModule,
   ],
-  controllers: [AppController, UserController],
+  controllers: [AppController, UserController, AppointmentController],
   providers: [],
 })
 export class AppModule {}

@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/require-await */
-import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
-import { CurrentUser, GrpcLog, GrpcMethod } from 'src/decorators';
+import { Controller } from '@nestjs/common';
+import { GrpcLog, GrpcMethod } from 'src/decorators';
 import { UserEntity } from 'src/entities';
 import { GetUsersDiscoverDto, UpdateUserProfileDto } from './dto';
 import { UserProfileService } from './user-profile.service';
@@ -10,35 +9,29 @@ GrpcLog();
 export class UserProfileController {
   constructor(private readonly userProfileService: UserProfileService) {}
 
-  @Get('me')
-  async getMyProfile(@CurrentUser() user: UserEntity): Promise<UserEntity> {
-    return user; // Đối tượng User đã được đính kèm vào request bởi JwtStrategy
+  @GrpcMethod('UserProfileService', 'GetMyProfile')
+  async getMyProfile(payload: { currentUserId: string }): Promise<UserEntity> {
+    return await this.userProfileService.getUserById(payload.currentUserId);
   }
 
-  @Put(':userId')
+  @GrpcMethod('UserProfileService', 'UpdateUserProfile')
   async updateProfile(
-    @Param('userId') userId: string,
-    @Body() updateUserProfileDto: UpdateUserProfileDto,
-    @CurrentUser() currentUser: UserEntity,
+    payload: UpdateUserProfileDto & {
+      userId: string;
+    },
   ): Promise<UserEntity> {
-    // Đảm bảo chỉ người dùng đang đăng nhập mới có thể cập nhật hồ sơ của họ
-    if (userId !== currentUser.id) {
-      // Xử lý lỗi Unauthorized hoặc Forbidden
-      throw new Error('Unauthorized to update this profile.');
-    }
-    return this.userProfileService.updateUserProfile(
-      userId,
-      updateUserProfileDto,
-    );
+    const { userId } = payload;
+    return this.userProfileService.updateUserProfile(userId, payload);
   }
 
-  @Get('discover')
+  @GrpcMethod('UserProfileService', 'DiscoverUsers')
   async discoverUsers(
-    @Query() filters: GetUsersDiscoverDto,
-    @CurrentUser() currentUser: UserEntity,
-  ): Promise<UserEntity[]> {
-    // Bạn có thể truyền ID người dùng hiện tại để loại trừ họ khỏi danh sách hoặc tùy chỉnh logic discover
-    return this.userProfileService.discoverUsers(filters, currentUser.id);
+    payload: GetUsersDiscoverDto & { currentUserId: string },
+  ): Promise<{
+    users: UserEntity[];
+  }> {
+    const res = await this.userProfileService.discoverUsers(payload);
+    return res;
   }
 
   @GrpcMethod('UserProfileService', 'GetUserById')

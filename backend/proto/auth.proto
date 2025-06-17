@@ -1,6 +1,6 @@
 // backend/auth-nestjs-service/src/proto/auth.proto
 syntax = "proto3";
-
+import "google/protobuf/timestamp.proto";
 package auth;
 
 service AuthService {
@@ -92,24 +92,27 @@ message SessionResponse {
   string sessionId = 1;
 }
 
-// User Profile messages
 message User {
   string id = 1;
-  string emailAddress = 2;
-  string firstName = 3;
-  string lastName = 4;
-  string dateOfBirth = 5; // Hoặc google.protobuf.Timestamp
-  string gender = 6;
-  string location = 7;
-  string bio = 8;
-  string avatarUrl = 9;
-  repeated string interests = 10;
-  int32 minAgePreference = 11;
-  int32 maxAgePreference = 12;
-  string preferredGender = 13;
-  repeated string activities = 14;
-  string createdAt = 15;
-  string updatedAt = 16;
+  string email = 2;
+  string emailVerificationCode = 3;
+  bool isEmailVerified = 4;
+  string resetPasswordCode = 5; 
+  string firstName = 6;
+  string lastName = 7;
+  google.protobuf.Timestamp dateOfBirth = 8;
+  string gender = 9;
+  string location = 10;
+  string bio = 11;
+  string avatarUrl = 12;
+  repeated string interests = 13;
+  int32 minAgePreference = 14;
+  int32 maxAgePreference = 15;
+  string preferredGender = 16;
+  repeated string activities = 17;
+  google.protobuf.Timestamp createdAt = 18;
+  google.protobuf.Timestamp updatedAt = 19;
+  string username = 20;
 }
 
 message GetMyProfileRequest {
@@ -118,8 +121,6 @@ message GetMyProfileRequest {
 
 message UpdateUserProfileRequest {
   string userId = 1;
-  // Define partial user fields here for update
-  // Hoặc định nghĩa một message riêng cho updateData
   optional string firstName = 2;
   optional string lastName = 3;
   optional string dateOfBirth = 4;

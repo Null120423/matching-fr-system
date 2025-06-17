@@ -1,0 +1,60 @@
+// backend/appointment-nestjs-service/src/proto/appointment.proto
+syntax = "proto3";
+
+package appointment;
+
+// Define enum in proto
+enum AppointmentStatus {
+  PENDING = 0;
+  ACCEPTED = 1;
+  DECLINED = 2;
+  CANCELLED = 3;
+  COMPLETED = 4;
+}
+
+service AppointmentService {
+  rpc CreateAppointment (CreateAppointmentRequest) returns (Appointment);
+  rpc GetAppointments (GetAppointmentsRequest) returns (GetAppointmentsResponse);
+  rpc GetAppointmentById (GetAppointmentByIdRequest) returns (Appointment);
+  rpc UpdateAppointmentStatus (UpdateAppointmentStatusRequest) returns (Appointment);
+}
+
+message Appointment {
+  string id = 1;
+  string activity = 2;
+  string time = 3; // ISO 8601 string
+  string location = 4;
+  string fromUserId = 5;
+  string toUserId = 6;
+  AppointmentStatus status = 7;
+  string createdAt = 8;
+  string updatedAt = 9;
+}
+
+message CreateAppointmentRequest {
+  string activity = 1;
+  string time = 2;
+  string location = 3;
+  string toUserId = 4;
+  string fromUserId = 5; // Sẽ được điền từ JWT trong service
+}
+
+message GetAppointmentsRequest {
+  string userId = 1;
+  string filterType = 2; // received, sent, upcoming, history, all
+}
+
+message GetAppointmentsResponse {
+  repeated Appointment appointments = 1;
+}
+
+message GetAppointmentByIdRequest {
+  string id = 1;
+  string userId = 2; // Người dùng yêu cầu
+}
+
+message UpdateAppointmentStatusRequest {
+  string id = 1;
+  string userId = 2; // Người dùng thực hiện cập nhật
+  AppointmentStatus newStatus = 3;
+}

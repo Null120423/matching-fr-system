@@ -37,7 +37,6 @@ export class AuthController {
     },
   })
   async signIn(@Body() loginDto: LoginRequestDTO): Promise<LoginReplyDTO> {
-    console.log('Received login request:', loginDto);
     return await this.authService.signIn(loginDto);
   }
 

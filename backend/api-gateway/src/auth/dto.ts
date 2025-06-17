@@ -15,37 +15,96 @@ export class LoginRequestDTO {
 }
 
 export class UserDTO {
-  @ApiProperty({
-    description: 'The ID of the user.',
-    example: '1',
-  })
+  @ApiProperty({ description: 'ID của người dùng', example: '1' })
   id: string;
 
-  @ApiProperty({
-    description: 'The username of the user.',
-    example: 'user123',
-  })
+  @ApiProperty({ description: 'Tên đăng nhập', example: 'user123' })
   username: string;
 
   @ApiProperty({
-    description: 'The list of the user’s favorite activities.',
-    example: ['Reading', 'Traveling'],
-    type: [String],
+    description: 'Email của người dùng',
+    example: 'user@example.com',
   })
-  favoriteActivities: string[];
+  email: string;
+
+  @ApiProperty({ description: 'Họ', example: 'Nguyen', required: false })
+  firstName?: string;
+
+  @ApiProperty({ description: 'Tên', example: 'An', required: false })
+  lastName?: string;
 
   @ApiProperty({
-    description: 'The list of available time slots for the user.',
-    example: ['9:00 AM - 12:00 PM', '2:00 PM - 5:00 PM'],
-    type: [String],
+    description: 'Ngày sinh',
+    example: '1990-01-01',
+    required: false,
   })
-  availableTimeSlots: string[];
+  dateOfBirth?: Date;
+
+  @ApiProperty({ description: 'Giới tính', example: 'male', required: false })
+  gender?: string;
 
   @ApiProperty({
-    description: 'The location of the user.',
-    example: 'New York, USA',
+    description: 'Vị trí địa lý của người dùng',
+    example: 'Hà Nội, Việt Nam',
+    required: false,
   })
-  location: string;
+  location?: string;
+
+  @ApiProperty({
+    description: 'Tiểu sử người dùng',
+    example: 'Tôi thích du lịch và đọc sách.',
+    required: false,
+  })
+  bio?: string;
+
+  @ApiProperty({
+    description: 'URL ảnh đại diện',
+    example: 'https://example.com/avatar.jpg',
+    required: false,
+  })
+  avatarUrl?: string;
+
+  @ApiProperty({
+    description: 'Danh sách sở thích (interests)',
+    example: ['du lịch', 'âm nhạc'],
+    required: false,
+    type: [String],
+  })
+  interests?: string[];
+
+  @ApiProperty({
+    description: 'Danh sách hoạt động yêu thích (activities)',
+    example: ['bơi', 'chạy bộ'],
+    required: false,
+    type: [String],
+  })
+  activities?: string[];
+
+  @ApiProperty({
+    description: 'Giới tính mong muốn của đối tượng tương tác',
+    example: 'female',
+    required: false,
+  })
+  preferredGender?: string;
+
+  @ApiProperty({
+    description: 'Độ tuổi tối thiểu của người muốn kết nối',
+    example: 18,
+    required: false,
+  })
+  minAgePreference?: number;
+
+  @ApiProperty({
+    description: 'Độ tuổi tối đa của người muốn kết nối',
+    example: 30,
+    required: false,
+  })
+  maxAgePreference?: number;
+
+  // Nếu muốn mapping luôn thành tên đầy đủ
+  get fullName(): string {
+    return `${this.firstName ?? ''} ${this.lastName ?? ''}`.trim();
+  }
 }
 
 export class LoginReplyDTO {

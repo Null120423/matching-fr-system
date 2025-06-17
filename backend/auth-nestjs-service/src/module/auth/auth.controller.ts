@@ -12,7 +12,6 @@ GrpcLog();
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // gRPC method for signing in
   @GrpcMethod('AuthService', 'SignIn')
   async signIn(data: LoginRequestDTO) {
     const result = await this.authService.signIn(data);

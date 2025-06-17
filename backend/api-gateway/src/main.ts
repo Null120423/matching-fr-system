@@ -22,7 +22,7 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('docs', app, document);
   const server = await app.listen(3000);
   server.setTimeout(10 * 60 * 1000);
 
