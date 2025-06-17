@@ -2,20 +2,20 @@ package com.example.notification_service.grpc;
 
 import com.example.notification_service.exception.NotificationNotFoundException;
 import com.example.notification_service.exception.UnauthorizedNotificationAccessException;
-import com.example.notification_service.model.NotificationEntity;
+import com.example.notification_service.model.NotificationModel;
 import com.example.notification_service.service.NotificationService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 
 // gRPC generated
-import com.example.notification_service.grpc.proto.NotificationServiceGrpc;
-import com.example.notification_service.grpc.proto.Notification;
-import com.example.notification_service.grpc.proto.NotificationIdRequest;
-import com.example.notification_service.grpc.proto.UserRequest;
-import com.example.notification_service.grpc.proto.UnreadCountResponse;
-import com.example.notification_service.grpc.proto.NotificationListResponse;
-
+import notification.NotificationServiceGrpc;
+import notification.Notification;
+import notification.NotificationIdRequest;
+import notification.UserRequest;
+import notification.UnreadCountResponse;
+import notification.NotificationListResponse;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 @GrpcService
@@ -32,7 +32,7 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
         try {
             var notifications = notificationService.getNotificationsByUserId(request.getUserId());
             var listBuilder = NotificationListResponse.newBuilder();
-            for (NotificationEntity n : notifications) {
+            for (NotificationModel n : notifications) {
                 listBuilder.addNotifications(toProto(n));
             }
             responseObserver.onNext(listBuilder.build());
@@ -45,7 +45,7 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
     @Override
     public void getNotificationById(NotificationIdRequest request, StreamObserver<Notification> responseObserver) {
         try {
-            NotificationEntity n = notificationService.getNotificationById(request.getNotificationId(), request.getUserId());
+            NotificationModel n = notificationService.getNotificationById(request.getNotificationId(), request.getUserId());
             responseObserver.onNext(toProto(n));
             responseObserver.onCompleted();
         } catch (NotificationNotFoundException e) {
@@ -60,7 +60,7 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
     @Override
     public void markAsRead(NotificationIdRequest request, StreamObserver<Notification> responseObserver) {
         try {
-            NotificationEntity updated = notificationService.markNotificationAsRead(request.getNotificationId(), request.getUserId());
+            NotificationModel updated = notificationService.markNotificationAsRead(request.getNotificationId(), request.getUserId());
             responseObserver.onNext(toProto(updated));
             responseObserver.onCompleted();
         } catch (NotificationNotFoundException e) {
@@ -83,15 +83,15 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
         }
     }
 
-    private Notification toProto(NotificationEntity n) {
+    private Notification toProto(NotificationModel n) {
         return Notification.newBuilder()
                 .setId(n.getId())
                 .setUserId(n.getUserId())
                 .setType(n.getType())
                 .setContent(n.getContent())
                 .setIsRead(n.isRead())
-                .setCreatedAt(n.getCreatedAt().toInstant(ZoneOffset.UTC).toString())
-                .setUpdatedAt(n.getUpdatedAt().toInstant(ZoneOffset.UTC).toString())
+                .setCreatedAt(n.getCreatedAt().toString())
+                .setUpdatedAt( n.getUpdatedAt().toString())
                 .build();
     }
 }

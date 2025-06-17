@@ -2,7 +2,7 @@ package com.example.notification_service.service.impl;
 
 import com.example.notification_service.exception.NotificationNotFoundException;
 import com.example.notification_service.exception.UnauthorizedNotificationAccessException;
-import com.example.notification_service.model.Notification;
+import com.example.notification_service.model.NotificationModel;
 import com.example.notification_service.repository.NotificationRepository;
 import com.example.notification_service.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +25,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public Notification createNotification(String userId, String type, String content) {
-        Notification notification = new Notification();
+    public NotificationModel createNotification(String userId, String type, String content) {
+        NotificationModel notification = new NotificationModel();
         notification.setUserId(userId);
         notification.setType(type);
         notification.setContent(content);
@@ -35,13 +35,13 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<Notification> getNotificationsByUserId(String userId) {
+    public List<NotificationModel> getNotificationsByUserId(String userId) {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
     @Override
-    public Notification getNotificationById(String id, String userId) {
-        Notification notification = notificationRepository.findById(id)
+    public NotificationModel getNotificationById(String id, String userId) {
+        NotificationModel notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new NotificationNotFoundException("Notification not found with id: " + id));
         if (!notification.getUserId().equals(userId)) {
             throw new UnauthorizedNotificationAccessException("Unauthorized to access this notification.");
@@ -51,8 +51,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public Notification markNotificationAsRead(String id, String userId) {
-        Notification notification = getNotificationById(id, userId);
+    public NotificationModel markNotificationAsRead(String id, String userId) {
+        NotificationModel notification = getNotificationById(id, userId);
         notification.setRead(true);
         return notificationRepository.save(notification);
     }

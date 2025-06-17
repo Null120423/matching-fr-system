@@ -3,6 +3,7 @@ package com.example.notification_service.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.*;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
@@ -14,7 +15,9 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Notification {
+@Getter()
+@Setter()
+public class NotificationModel {
 
     @Id
     @GeneratedValue(generator = "uuid2")
@@ -50,4 +53,51 @@ public class Notification {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    public String getId() {
+        return id;
+    }
+    public String getUserId() {
+        return userId;
+    }
+    public String getType() {
+        return type;    
+    }
+    public String getContent() {
+        return content;
+    }
+    public boolean isRead() {
+        return isRead;
+    }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public boolean getIsRead() {
+        return isRead;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setIsRead(boolean isRead) {
+        this.isRead = isRead;
+    }
+
+    public void setRead(boolean read) {
+        this.isRead = read;
+    }
+
 }
