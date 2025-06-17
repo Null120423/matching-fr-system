@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package NotificationProto.Notification;
+
+service NotificationService {
+  rpc GetNotifications(UserRequest) returns (NotificationListResponse);
+  rpc GetNotificationById(NotificationIdRequest) returns (Notification);
+  rpc MarkAsRead(NotificationIdRequest) returns (Notification);
+  rpc GetUnreadCount(UserRequest) returns (UnreadCountResponse);
+}
+
+message UserRequest {
+  string userId = 1;
+}
+
+message NotificationIdRequest {
+  string userId = 1;
+  string notificationId = 2;
+}
+
+message Notification {
+  string id = 1;
+  string userId = 2;
+  string type = 3;
+  string content = 4;
+  bool isRead = 5;
+  string createdAt = 6;
+  string updatedAt = 7;
+}
+
+message NotificationListResponse {
+  repeated Notification notifications = 1;
+}
+
+message UnreadCountResponse {
+  int32 count = 1;
+}

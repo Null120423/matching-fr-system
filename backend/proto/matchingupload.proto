@@ -1,0 +1,67 @@
+// backend/matching-upload-nestjs-service/src/proto/matching_upload.proto
+syntax = "proto3";
+
+package matchingupload;
+
+enum SwipeAction {
+  LIKE = 0;
+  PASS = 1;
+}
+
+enum FriendRequestStatus {
+  PENDING = 0;
+  ACCEPTED = 1;
+  REJECTED = 2;
+}
+
+service UploadService {
+  rpc UploadAvatar (UploadAvatarRequest) returns (UploadAvatarResponse);
+}
+
+service MatchingService {
+  rpc RecordSwipe (RecordSwipeRequest) returns (RecordSwipeResponse);
+  rpc SendFriendRequest (SendFriendRequestRequest) returns (SendFriendRequestResponse);
+  // rpc AcceptFriendRequest (AcceptFriendRequestRequest) returns (FriendRequest);
+}
+
+message UploadAvatarRequest {
+  string userId = 1;
+  bytes fileData = 2; // Dữ liệu của file
+  string contentType = 3; // Ví dụ: "image/jpeg"
+  string originalFileName = 4;
+}
+
+message UploadAvatarResponse {
+  string url = 1;
+}
+
+message RecordSwipeRequest {
+  string swiperId = 1;
+  string swipedId = 2;
+  SwipeAction action = 3;
+}
+
+message RecordSwipeResponse {
+  bool success = 1;
+  bool match = 2;
+}
+
+message SendFriendRequestRequest {
+  string senderId = 1;
+  string receiverId = 2;
+}
+
+message SendFriendRequestResponse {
+  bool success = 1;
+  string message = 2;
+  // optional FriendRequest friendRequest = 3;
+}
+
+message FriendRequest {
+  string id = 1;
+  string senderId = 2;
+  string receiverId = 3;
+  FriendRequestStatus status = 4;
+  string createdAt = 5;
+  string updatedAt = 6;
+}

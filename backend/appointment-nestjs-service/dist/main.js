@@ -18,7 +18,7 @@ async function bootstrap() {
     app.useGlobalPipes(new common_1.ValidationPipe({ transform: true }));
     app.useGlobalFilters(new filters_1.AllExceptionsFilter());
     await app.listen();
-    console.log('✅ gRPC Microservice is running on port 50052');
+    console.log('✅ gRPC Microservice is running on port 50053');
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

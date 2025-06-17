@@ -1,2 +1,3 @@
-export * from './appointment.entity';
 export * from './base.entity';
+export * from './friend-request.entity';
+export * from './swipe.entity';

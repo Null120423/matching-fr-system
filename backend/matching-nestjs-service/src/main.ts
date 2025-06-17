@@ -11,9 +11,9 @@ async function bootstrap() {
     {
       transport: Transport.GRPC,
       options: {
-        package: 'appointment',
-        protoPath: join(__dirname, '../../proto/appointment.proto'),
-        url: '0.0.0.0:50053',
+        package: 'matchingupload',
+        protoPath: join(__dirname, '../../proto/matchingupload.proto'),
+        url: '0.0.0.0:50054',
       },
     },
   );
@@ -21,6 +21,6 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
 
   await app.listen();
-  console.log('✅ gRPC Microservice is running on port 50052');
+  console.log('✅ gRPC Microservice is running on port 50053');
 }
 bootstrap();

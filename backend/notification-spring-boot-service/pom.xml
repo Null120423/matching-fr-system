@@ -1,72 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.18</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
-
+        <version>3.2.6</version> <relativePath/> </parent>
     <groupId>com.example</groupId>
-    <artifactId>notification-service</artifactId>
+    <artifactId>notification_service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>notification-service</name>
-    <description>notification service project using Spring Boot and gRPC</description>
-
+    <name>notification_service</name>
+    <description>notification service</description>
     <properties>
         <java.version>17</java.version>
-        <grpc.version>1.57.2</grpc.version>
-        <protobuf.version>3.21.12</protobuf.version>
-        <grpc-spring-boot-starter.version>2.15.0.RELEASE</grpc-spring-boot-starter.version>
     </properties>
-
     <dependencies>
-        <!-- Spring Boot Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
-        <!-- Spring Boot Test -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- gRPC Spring Boot -->
         <dependency>
             <groupId>net.devh</groupId>
             <artifactId>grpc-spring-boot-starter</artifactId>
-            <version>${grpc-spring-boot-starter.version}</version>
-        </dependency>
-
-        <!-- gRPC & Protobuf runtime -->
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-netty-shaded</artifactId>
-            <version>${grpc.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-protobuf</artifactId>
-            <version>${grpc.version}</version>
+            <version>2.15.0.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
-            <version>${grpc.version}</version>
+            <version>1.60.0</version>
         </dependency>
-
-        <!-- Javax Annotation (for gRPC) -->
         <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>1.3.2</version>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>1.60.0</version>
         </dependency>
     </dependencies>
 
@@ -75,27 +61,33 @@
             <extension>
                 <groupId>kr.motd.maven</groupId>
                 <artifactId>os-maven-plugin</artifactId>
-                <version>1.6.2</version>
+                <version>1.7.1</version>
             </extension>
         </extensions>
-
         <plugins>
-            <!-- Spring Boot Maven plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
             </plugin>
-
-            <!-- Protobuf plugin to generate Java code from .proto -->
             <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.6.1</version>
                 <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
+                    <protocArtifact>com.google.protobuf:protoc:3.25.1:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
-                </configuration>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.60.0:exe:${os.detected.classifier}</pluginArtifact>
+                    <outputDirectory>${project.build.directory}/generated-sources/protobuf/grpc-java</outputDirectory>
+                    <clearOutputDirectory>false</clearOutputDirectory>
+                    <protoSourceRoot>${project.basedir}/src/main/resources/proto</protoSourceRoot> </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -107,4 +99,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>
