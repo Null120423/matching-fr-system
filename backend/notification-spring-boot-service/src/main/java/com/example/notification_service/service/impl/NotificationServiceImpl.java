@@ -1,7 +1,7 @@
 package com.example.notification_service.service.impl;
 
 import java.util.List;
-// import java.util.UUID; // Không còn cần thiết nếu JPA xử lý việc tạo UUID
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,6 @@ import com.example.notification_service.exception.UnauthorizedNotificationAccess
 import com.example.notification_service.model.NotificationModel;
 import com.example.notification_service.repository.NotificationRepository;
 import com.example.notification_service.service.NotificationService;
-
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
@@ -25,11 +24,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public NotificationModel createNotification(String userId, String type, String content) {
+    public NotificationModel createNotification(String userId, String type, String content, String title) {
         NotificationModel notification = new NotificationModel();
         notification.setUserId(userId);
         notification.setType(type);
         notification.setContent(content);
+        notification.setTitle(title);
         notification.setRead(false);
         return notificationRepository.save(notification);
     }
@@ -40,7 +40,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public NotificationModel getNotificationById(String id, String userId) {
+    public NotificationModel getNotificationById(UUID id, String userId) {
         NotificationModel notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new NotificationNotFoundException("Notification not found with id: " + id));
         if (!notification.getUserId().equals(userId)) {
@@ -51,7 +51,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public NotificationModel markNotificationAsRead(String id, String userId) {
+    public NotificationModel markNotificationAsRead(UUID id, String userId) {
         NotificationModel notification = getNotificationById(id, userId);
         notification.setRead(true);
         return notificationRepository.save(notification);

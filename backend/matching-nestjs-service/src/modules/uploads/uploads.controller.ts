@@ -29,7 +29,6 @@ export class UploadsController {
     data: UploadAvatarRequest,
     // Không có tham số nào khác như @UploadedFile, @Req cho gRPC
   ): Promise<UploadAvatarResponse> {
-    const userId = data.userId;
     const fileBuffer = data.fileData; // Dữ liệu file là Buffer
     const contentType = data.contentType;
     const originalFileName = data.originalFileName;
@@ -70,10 +69,7 @@ export class UploadsController {
     };
 
     try {
-      const url = await this.uploadsService.uploadFile(
-        fileLikeObject,
-        `avatars/${userId}/`,
-      );
+      const url = await this.uploadsService.uploadFile(fileLikeObject);
       // Trả về đối tượng phản hồi gRPC
       return { url: url };
     } catch (error) {

@@ -1,21 +1,58 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-
+import { initializeApp } from 'firebase/app';
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from 'firebase/storage';
+const firebaseConfig = {
+  apiKey: 'AIzaSyC4AF0EvsvapWk6Y09ZyC3Sm3ZsqzqpOHA',
+  authDomain: 'hodos-f29d9.firebaseapp.com',
+  projectId: 'hodos-f29d9',
+  storageBucket: 'hodos-f29d9.appspot.com',
+  messagingSenderId: '646639558632',
+  appId: '1:646639558632:web:2e89d12a833252cb4c8e5d',
+  measurementId: 'G-W9YN4Y4290',
+};
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
 @Injectable()
 export class UploadsService {
   constructor(private configService: ConfigService) {}
+  async uploadFile(file: Express.Multer.File): Promise<string> {
+    console.log('Received file:', file);
+    return new Promise((resolve, reject) => {
+      if (!file) {
+        throw new BadRequestException('No file uploaded.');
+      }
+      const storageRef = ref(storage, `images/${file.originalname}`);
+      const uploadTask = uploadBytesResumable(storageRef, file.buffer);
 
-  async uploadFile(file: Express.Multer.File, folder: string): Promise<string> {
-    //todo
-    console.log('Uploading file:', file.originalname, 'to folder:', folder);
-    return new Promise((resolve) => {
-      // Giả sử bạn đang sử dụng một dịch vụ lưu trữ như AWS S3
-      const bucketName = this.configService.get<string>('AWS_S3_BUCKET_NAME');
-      const fileName = `${folder}${Date.now()}-${file.originalname}`;
-      // Ở đây bạn sẽ gọi API của dịch vụ lưu trữ để upload file
-      return resolve(`https://s3.amazonaws.com/${bucketName}/${fileName}`);
-      // Nếu có lỗi xảy ra, bạn sẽ gọi reject(error);
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(`Upload progress: ${progress}%`);
+        },
+        (error) => {
+          console.error('Error uploading image:', error.message);
+          reject(new Error('Promise rejected.'));
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref)
+            .then((downloadURL) => {
+              console.log('File available at', downloadURL);
+              resolve(downloadURL);
+            })
+            .catch((error) => {
+              console.error('Error getting download URL:', error.message);
+              reject(new Error('Promise rejected.'));
+            });
+        },
+      );
     });
   }
-  // Bạn có thể thêm các phương thức khác như deleteFile, getFileUrl, vv.
 }

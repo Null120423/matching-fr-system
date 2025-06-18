@@ -1,5 +1,7 @@
 package com.example.notification_service.grpc;
  
+import java.util.UUID;
+
 import com.example.notification_service.exception.NotificationNotFoundException;
 import com.example.notification_service.exception.UnauthorizedNotificationAccessException;
 import com.example.notification_service.model.NotificationModel;
@@ -8,6 +10,7 @@ import com.example.notification_service.service.NotificationService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
+import notification.*;
 import notification.NotificationIdRequest;
 import notification.NotificationListResponse;
 // gRPC generated
@@ -42,7 +45,8 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
     @Override
     public void getNotificationById(NotificationIdRequest request, StreamObserver<notification.Notification> responseObserver) {
         try {
-            NotificationModel n = notificationService.getNotificationById(request.getNotificationId(), request.getUserId());
+            UUID notificationUuid = UUID.fromString(request.getNotificationId());
+            NotificationModel n = notificationService.getNotificationById(notificationUuid, request.getUserId());
             responseObserver.onNext(toProto(n));
             responseObserver.onCompleted();
         } catch (NotificationNotFoundException e) {
@@ -57,7 +61,8 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
     @Override
     public void markAsRead(NotificationIdRequest request, StreamObserver<notification.Notification> responseObserver) {
         try {
-            NotificationModel updated = notificationService.markNotificationAsRead(request.getNotificationId(), request.getUserId());
+            UUID notificationUuid = UUID.fromString(request.getNotificationId());
+            NotificationModel updated = notificationService.markNotificationAsRead(notificationUuid, request.getUserId());
             responseObserver.onNext(toProto(updated));
             responseObserver.onCompleted();
         } catch (NotificationNotFoundException e) {
@@ -80,12 +85,38 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
         }
     }
 
+    @Override
+    public void createNotification(CreateNotificationRequest request, StreamObserver<notification.Notification> responseObserver) {
+        try {
+            NotificationModel newNotification = notificationService.createNotification(
+                    request.getUserId(),
+                    request.getType(),
+                    request.getContent(),
+                    request.getTitle()
+            );
+            responseObserver.onNext(toProto(newNotification));
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL.withDescription("Failed to create notification: " + e.getMessage()).asRuntimeException());
+        }
+    }
+    
     private notification.Notification toProto(NotificationModel n) {
+        // Khai báo một biến String để giữ ID trước khi gán cho builder
+        String protoNotificationId = "";
+        if (n.getId() != null) {
+            protoNotificationId = n.getId().toString(); // Chuyển UUID sang String
+        }
+
         return notification.Notification.newBuilder()
-                .setId(n.getId())
+                .setId(protoNotificationId) // Gán biến String
                 .setUserId(n.getUserId())
                 .setType(n.getType())
-                .setContent(n.getContent())
+                // .setContent(n.getContent()) // Content (từ proto) và Title (từ model)
+                // Nếu proto Notification có trường "title" riêng, hãy thêm vào đây:
+                // .setTitle(n.getTitle())
+                // Nếu proto Notification chỉ có trường "content" và bạn muốn gộp title vào content:
+                .setContent(n.getTitle() + ": " + n.getContent()) // Ví dụ gộp title và content
                 .setIsRead(n.isRead())
                 .setCreatedAt(n.getCreatedAt().toString())
                 .setUpdatedAt( n.getUpdatedAt().toString())

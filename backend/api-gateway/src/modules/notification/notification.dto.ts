@@ -11,6 +11,12 @@ export interface Notification {
   createdAt: string;
   updatedAt: string;
 }
+export interface NotificationCreate {
+  type: string;
+  content: string;
+  title: string;
+  userId?: string;
+}
 
 export interface NotificationServiceGrpc {
   getNotifications(data: {
@@ -25,4 +31,5 @@ export interface NotificationServiceGrpc {
     notificationId: string;
   }): Observable<Notification>;
   getUnreadCount(data: { userId: string }): Observable<{ count: number }>;
+  createNotification(data: NotificationCreate): Observable<Notification>;
 }

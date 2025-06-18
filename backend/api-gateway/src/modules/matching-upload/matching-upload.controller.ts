@@ -147,7 +147,10 @@ export class MatchingUploadController {
   @HttpCode(HttpStatus.OK)
   async updateFriendRequestStatus(
     @Param('id') requestId: string,
-    @Body('newStatus') newStatus: FriendRequestStatus, // Nhận trạng thái mới từ client
+    @Body()
+    body: {
+      newStatus: FriendRequestStatus;
+    },
     @Req() req: RequestWithUser,
   ): Promise<FriendRequest> {
     const userId = req.user.id; // Người dùng hiện tại
@@ -155,7 +158,7 @@ export class MatchingUploadController {
       this.matchingServiceGrpc.updateFriendRequestStatus({
         id: requestId,
         userId,
-        newStatus,
+        newStatus: body.newStatus,
       }),
     );
   }

@@ -1,8 +1,22 @@
-import { Controller, Get, OnModuleInit, Param, Put, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  OnModuleInit,
+  Param,
+  Post,
+  Put,
+  Req,
+} from '@nestjs/common';
 import { Client, ClientGrpc, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { firstValueFrom, lastValueFrom } from 'rxjs';
-import { Notification, NotificationServiceGrpc } from './notification.dto';
+import { RequestWithUser } from 'src/dto/request.dto';
+import {
+  Notification,
+  NotificationCreate,
+  NotificationServiceGrpc,
+} from './notification.dto';
 
 @Controller('notifications')
 export class NotificationController implements OnModuleInit {
@@ -35,13 +49,20 @@ export class NotificationController implements OnModuleInit {
     const { notifications } = await lastValueFrom(
       this.notificationService.getNotifications({ userId }),
     );
-    return notifications;
+    return notifications || [];
+  }
+  @Get('unread-count')
+  async getUnreadNotificationsCount(
+    @Req() req: RequestWithUser,
+  ): Promise<{ count: number }> {
+    const userId = req.user.id;
+    return firstValueFrom(this.notificationService.getUnreadCount({ userId }));
   }
 
   @Get(':id')
   async getNotificationById(
     @Param('id') id: string,
-    @Req() req: any,
+    @Req() req: RequestWithUser,
   ): Promise<Notification> {
     const userId = req.user.id;
     return firstValueFrom(
@@ -55,7 +76,7 @@ export class NotificationController implements OnModuleInit {
   @Put(':id/read')
   async markNotificationAsRead(
     @Param('id') id: string,
-    @Req() req: any,
+    @Req() req: RequestWithUser,
   ): Promise<Notification> {
     const userId = req.user.id;
     return firstValueFrom(
@@ -63,11 +84,15 @@ export class NotificationController implements OnModuleInit {
     );
   }
 
-  @Get('unread-count')
-  async getUnreadNotificationsCount(
-    @Req() req: any,
-  ): Promise<{ count: number }> {
-    const userId = req.user.id;
-    return firstValueFrom(this.notificationService.getUnreadCount({ userId }));
+  @Post()
+  async createNotification(
+    @Body()
+    notificationData: NotificationCreate,
+  ): Promise<Notification> {
+    return firstValueFrom(
+      this.notificationService.createNotification({
+        ...notificationData,
+      }),
+    );
   }
 }

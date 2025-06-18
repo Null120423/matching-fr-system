@@ -2,13 +2,14 @@
 package com.example.notification_service.service;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.example.notification_service.model.NotificationModel;
 
 public interface NotificationService {
-    NotificationModel createNotification(String userId, String type, String content);
+    NotificationModel createNotification(String userId, String type, String content, String title);
     List<NotificationModel> getNotificationsByUserId(String userId);
-    NotificationModel getNotificationById(String id, String userId);
-    NotificationModel markNotificationAsRead(String id, String userId);
+    NotificationModel getNotificationById(UUID id, String userId);
+    NotificationModel markNotificationAsRead(UUID id, String userId);
     long getUnreadNotificationsCount(String userId);
 }

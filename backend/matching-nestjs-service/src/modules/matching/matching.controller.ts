@@ -1,6 +1,6 @@
 import { BadRequestException, Controller } from '@nestjs/common';
 import { GrpcLog, GrpcMethod } from 'src/decorators';
-import { CreateSwipeDto } from './dto/create-swipe.dto';
+import { CreateSwipeDto, FriendRequest } from './dto/create-swipe.dto';
 import { MatchingService } from './matching.service';
 GrpcLog();
 @Controller('matching')
@@ -12,10 +12,14 @@ export class MatchingController {
   async recordSwipe(
     payload: CreateSwipeDto,
   ): Promise<{ success: boolean; match?: boolean }> {
+    const action = payload.action;
+    if (!action) {
+      throw new BadRequestException('Invalid swipe action.');
+    }
     const result = await this.matchingService.recordSwipe(
       payload.swiperId,
       payload.swipedId,
-      payload.action,
+      action,
     );
     return { success: true, match: result.match };
   }
@@ -29,28 +33,29 @@ export class MatchingController {
     await this.matchingService.sendFriendRequest(senderId, receiverId);
     return { success: true, message: 'Friend request sent successfully.' };
   }
-
+  @GrpcMethod('MatchingService', 'UpdateFriendRequestStatus')
   async updateFriendRequestStatus(payload: {
     id: string; // ID của yêu cầu kết bạn
-    newStatus: 'accepted' | 'rejected'; // Trạng thái mới
+    newStatus: any; // Trạng thái mới
     userId: string; // ID của người dùng hiện tại
-  }): Promise<{ success: boolean; message: string }> {
+  }): Promise<FriendRequest> {
     const { id: requestId, newStatus, userId } = payload;
+
     if (newStatus === 'accepted') {
-      await this.matchingService.acceptFriendRequest(requestId, userId);
+      const res = await this.matchingService.acceptFriendRequest(
+        requestId,
+        userId,
+      );
       // TODO: Gửi thông báo đến người gửi yêu cầu rằng lời mời đã được chấp nhận.
       // Gọi Notification Service qua gRPC hoặc HTTP (nội bộ).
-      return {
-        success: true,
-        message: 'Friend request accepted successfully.',
-      };
+      return res;
     } else if (newStatus === 'rejected') {
-      await this.matchingService.rejectFriendRequest(requestId, userId);
+      const res = await this.matchingService.rejectFriendRequest(
+        requestId,
+        userId,
+      );
       // TODO: Gửi thông báo đến người gửi yêu cầu rằng lời mời đã bị từ chối.
-      return {
-        success: true,
-        message: 'Friend request rejected successfully.',
-      };
+      return res;
     } else {
       throw new BadRequestException('Invalid status for friend request.');
     }

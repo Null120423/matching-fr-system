@@ -3,14 +3,14 @@ import { Observable } from 'rxjs';
 
 /** Enums */
 export enum SwipeAction {
-  LIKE = 0,
-  PASS = 1,
+  LIKE = 'LIKE',
+  PASS = 'PASS',
 }
 
 export enum FriendRequestStatus {
-  PENDING = 0,
-  ACCEPTED = 1,
-  REJECTED = 2,
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
 }
 
 /** DTOs */

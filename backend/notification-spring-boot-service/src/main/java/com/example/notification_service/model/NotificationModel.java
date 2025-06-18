@@ -2,12 +2,10 @@
 package com.example.notification_service.model;
 
 import java.time.LocalDateTime;
-
-import org.hibernate.annotations.GenericGenerator;
+import java.util.UUID; // Import java.util.UUID
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -23,22 +21,21 @@ import lombok.Setter;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter()
-@Setter()
+@Getter
+@Setter
 public class NotificationModel {
 
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Column(columnDefinition = "BINARY(16)")
-    private String id; // Sử dụng String để khớp với UUID từ NestJS
+    @Column(columnDefinition = "UUID") // Giữ nguyên columnDefinition này để khớp với DB
+    private UUID id; // THAY ĐỔI: Sử dụng kiểu java.util.UUID
 
     @Column(nullable = false)
-    private String userId; // Người nhận thông báo
+    private String userId; // Người nhận thông báo (vẫn là String)
 
     @Column(nullable = false)
     private String type; // Ví dụ: "appointment_request", "new_match", "friend_request"
-
+    @Column(nullable = false)
+    private String title;
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content; // Nội dung thông báo
 
@@ -51,54 +48,40 @@ public class NotificationModel {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public String getId() {
+    // Getters
+    public UUID getId() { // THAY ĐỔI: Kiểu trả về là UUID
         return id;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getUserId() { return userId; }
+    public String getType() { return type; }
+    public String getTitle() { return title; }
+    public String getContent() { return content; }
+    public boolean isRead() { return isRead; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public boolean getIsRead() { return isRead; } // Giữ lại nếu Lombok cần hoặc để tương thích
+
+    // Setters
+    public void setId(UUID id) { // THAY ĐỔI: Kiểu tham số là UUID
+        this.id = id;
     }
 
-    public String getType() {
-        return type;    
-    }
-    public String getContent() {
-        return content;
-    }
-    public boolean isRead() {
-        return isRead;
-    }
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    public boolean getIsRead() {
-        return isRead;
-    }
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+    public void setUserId(String userId) { this.userId = userId; }
+    public void setType(String type) { this.type = type; }
+    public void setTitle(String title) { this.title = title; }
+    public void setContent(String content) { this.content = content; }
+    public void setIsRead(boolean isRead) { this.isRead = isRead; }
+    public void setRead(boolean read) { this.isRead = read; } // Có thể trùng lặp với setIsRead, xem xét loại bỏ 1 cái
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public void setIsRead(boolean isRead) {
-        this.isRead = isRead;
-    }
-
-    public void setRead(boolean read) {
-        this.isRead = read;
-    }
 
     @PrePersist
     protected void onCreate() {
+        if (id == null) { // Tạo UUID nếu ID chưa được thiết lập
+            id = UUID.randomUUID(); // THAY ĐỔI: Tạo đối tượng UUID, không gọi .toString()
+        }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
@@ -107,5 +90,4 @@ public class NotificationModel {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
 }

@@ -1,8 +1,8 @@
-// backend/matching-upload-nestjs-service/src/proto/matching_upload.proto
 syntax = "proto3";
 
 package matchingupload;
 
+// Enums must use numeric values
 enum SwipeAction {
   LIKE = 0;
   PASS = 1;
@@ -14,6 +14,7 @@ enum FriendRequestStatus {
   REJECTED = 2;
 }
 
+// Services
 service UploadService {
   rpc UploadAvatar (UploadAvatarRequest) returns (UploadAvatarResponse);
 }
@@ -23,15 +24,12 @@ service MatchingService {
   rpc SendFriendRequest (SendFriendRequestRequest) returns (SendFriendRequestResponse);
   rpc UpdateFriendRequestStatus (UpdateFriendRequestStatusRequest) returns (FriendRequest); 
 }
-message UpdateFriendRequestStatusRequest {
-  string id = 1;
-  string userId = 2; // Người dùng thực hiện cập nhật
-  FriendRequestStatus newStatus = 3; // Enum status mới (ACCEPTED, REJECTED)
-}
+
+// Messages
 message UploadAvatarRequest {
   string userId = 1;
-  bytes fileData = 2; // Dữ liệu của file
-  string contentType = 3; // Ví dụ: "image/jpeg"
+  bytes fileData = 2;
+  string contentType = 3;
   string originalFileName = 4;
 }
 
@@ -61,6 +59,12 @@ message SendFriendRequestResponse {
   // optional FriendRequest friendRequest = 3;
 }
 
+message UpdateFriendRequestStatusRequest {
+  string id = 1;
+  string userId = 2;
+  FriendRequestStatus newStatus = 3;
+}
+
 message FriendRequest {
   string id = 1;
   string senderId = 2;
@@ -68,4 +72,7 @@ message FriendRequest {
   FriendRequestStatus status = 4;
   string createdAt = 5;
   string updatedAt = 6;
+  string statusName = 7;
+  string statusColor = 8;
+  string statusCode = 9;
 }

@@ -1,9 +1,7 @@
-import { IsIn, IsNotEmpty } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 import { SwipeAction } from 'src/entities';
 
 export class CreateSwipeDto {
-  @IsNotEmpty()
-  @IsIn([SwipeAction.LIKE, SwipeAction.PASS])
   action: SwipeAction;
 
   @IsNotEmpty()
@@ -16,7 +14,7 @@ export class FriendRequest {
   id: string;
   senderId: string;
   receiverId: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   createdAt: Date;
   updatedAt: Date;
 }

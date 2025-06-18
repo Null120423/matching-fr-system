@@ -2,11 +2,16 @@ syntax = "proto3";
 
 package notification;
 
+option java_multiple_files = true;
+option java_package = "notification";
+option java_outer_classname = "NotificationProto";
+
 service NotificationService {
   rpc GetNotifications(UserRequest) returns (NotificationListResponse);
   rpc GetNotificationById(NotificationIdRequest) returns (Notification);
   rpc MarkAsRead(NotificationIdRequest) returns (Notification);
   rpc GetUnreadCount(UserRequest) returns (UnreadCountResponse);
+  rpc CreateNotification(CreateNotificationRequest) returns (Notification); // API mới
 }
 
 message UserRequest {
@@ -34,4 +39,10 @@ message NotificationListResponse {
 
 message UnreadCountResponse {
   int32 count = 1;
+}
+message CreateNotificationRequest {
+  string userId = 1;
+  string type = 2;
+  string content = 3;
+  string title = 4;
 }

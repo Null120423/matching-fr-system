@@ -2,10 +2,30 @@ import { Column, Entity } from 'typeorm';
 import { BaseEntityCustom } from './base.entity';
 
 export enum FriendRequestStatus {
-  PENDING = 'pending',
-  ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
 }
+export const FriendRequestStatusData = {
+  [FriendRequestStatus.PENDING]: {
+    value: FriendRequestStatus.PENDING,
+    label: 'Pending',
+    name: 'Pending',
+    color: '#FFA500',
+  },
+  [FriendRequestStatus.ACCEPTED]: {
+    value: FriendRequestStatus.ACCEPTED,
+    label: 'Accepted',
+    name: 'Accepted',
+    color: '#008000',
+  },
+  [FriendRequestStatus.REJECTED]: {
+    value: FriendRequestStatus.REJECTED,
+    label: 'Rejected',
+    name: 'Rejected',
+    color: '#FF0000',
+  },
+};
 
 @Entity('friend_request')
 export class FriendRequestEntity extends BaseEntityCustom {
