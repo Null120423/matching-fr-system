@@ -21,9 +21,13 @@ service UploadService {
 service MatchingService {
   rpc RecordSwipe (RecordSwipeRequest) returns (RecordSwipeResponse);
   rpc SendFriendRequest (SendFriendRequestRequest) returns (SendFriendRequestResponse);
-  // rpc AcceptFriendRequest (AcceptFriendRequestRequest) returns (FriendRequest);
+  rpc UpdateFriendRequestStatus (UpdateFriendRequestStatusRequest) returns (FriendRequest); 
 }
-
+message UpdateFriendRequestStatusRequest {
+  string id = 1;
+  string userId = 2; // Người dùng thực hiện cập nhật
+  FriendRequestStatus newStatus = 3; // Enum status mới (ACCEPTED, REJECTED)
+}
 message UploadAvatarRequest {
   string userId = 1;
   bytes fileData = 2; // Dữ liệu của file

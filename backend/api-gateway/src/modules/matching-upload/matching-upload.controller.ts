@@ -9,65 +9,35 @@ import {
   Param,
   ParseFilePipe,
   Post,
+  Put,
   Req,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { Client, ClientGrpc, Transport } from '@nestjs/microservices';
 import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { join } from 'path';
-import { lastValueFrom, Observable } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
 import { RequestWithUser } from 'src/dto/request.dto';
+import {
+  FriendRequest,
+  FriendRequestStatus,
+  MatchingServiceGrpc,
+  SendFriendRequestRequest,
+  SwipeAction,
+  UploadServiceGrpc,
+} from './dto';
 
-// Định nghĩa các interface cho gRPC messages (lấy từ proto)
-enum SwipeAction {
-  LIKE = 0,
-  PASS = 1,
-}
-
-interface UploadAvatarResponse {
-  url: string;
-}
-
-interface RecordSwipeRequest {
-  swiperId: string;
-  swipedId: string;
-  action: SwipeAction;
-}
-
-interface RecordSwipeResponse {
-  success: boolean;
-  match: boolean;
-}
-
-interface SendFriendRequestRequest {
-  senderId: string;
-  receiverId: string;
-}
-
-interface SendFriendRequestResponse {
-  success: boolean;
-  message: string;
-}
-
-// Định nghĩa Interface cho service gRPC
-interface MatchingServiceGrpc {
-  recordSwipe(data: RecordSwipeRequest): Observable<RecordSwipeResponse>;
-  sendFriendRequest(
-    data: SendFriendRequestRequest,
-  ): Observable<SendFriendRequestResponse>;
-}
-
-interface UploadServiceGrpc {
-  uploadAvatar(data: {
-    userId: string;
-    fileData: Buffer;
-    contentType: string;
-    originalFileName: string;
-  }): Observable<UploadAvatarResponse>;
-}
-
-@Controller()
+@ApiTags('matching-upload')
+@ApiBearerAuth()
+@Controller('matching-upload')
 export class MatchingUploadController {
   @Client({
     transport: Transport.GRPC,
@@ -99,20 +69,31 @@ export class MatchingUploadController {
       Object.keys(this.matchingServiceGrpc),
     );
   }
-
+  @ApiOperation({ summary: 'Record swipe between two users' })
+  @ApiResponse({ status: 200, description: 'Swipe recorded successfully' })
   @Post('users/:userId/swipe')
   @HttpCode(HttpStatus.OK)
   async createSwipe(
+    @Body()
+    body: {
+      action: SwipeAction;
+    },
     @Param('userId') swipedId: string,
-    @Body('action') action: SwipeAction,
     @Req() req: RequestWithUser,
   ): Promise<{ success: boolean; match?: boolean }> {
     const swiperId = req.user.id;
     return lastValueFrom(
-      this.matchingServiceGrpc.recordSwipe({ swiperId, swipedId, action }),
+      this.matchingServiceGrpc.recordSwipe({
+        swiperId,
+        swipedId,
+        action: body.action,
+      }),
     );
   }
 
+  @ApiOperation({ summary: 'Send friend request between users' })
+  @ApiBody({ type: SendFriendRequestRequest })
+  @ApiResponse({ status: 200, description: 'Friend request sent' })
   @Post('users/:userId/friend-request')
   @HttpCode(HttpStatus.OK)
   async sendFriendRequest(
@@ -124,7 +105,18 @@ export class MatchingUploadController {
       this.matchingServiceGrpc.sendFriendRequest({ senderId, receiverId }),
     );
   }
-
+  @ApiOperation({ summary: 'Upload avatar for user' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        userId: { type: 'string' },
+        contentType: { type: 'string', example: 'image/jpeg' },
+        originalFileName: { type: 'string', example: 'avatar.jpg' },
+        fileData: { type: 'string', format: 'binary' },
+      },
+    },
+  })
   @Post('uploads/avatar')
   @UseInterceptors(FileInterceptor('file')) // 'file' là tên trường trong form-data
   async uploadAvatar(
@@ -149,5 +141,22 @@ export class MatchingUploadController {
       }),
     );
     return { url: response.url };
+  }
+
+  @Put('users/friend-requests/:id/status') // Endpoint mới trong API Gateway
+  @HttpCode(HttpStatus.OK)
+  async updateFriendRequestStatus(
+    @Param('id') requestId: string,
+    @Body('newStatus') newStatus: FriendRequestStatus, // Nhận trạng thái mới từ client
+    @Req() req: RequestWithUser,
+  ): Promise<FriendRequest> {
+    const userId = req.user.id; // Người dùng hiện tại
+    return await lastValueFrom(
+      this.matchingServiceGrpc.updateFriendRequestStatus({
+        id: requestId,
+        userId,
+        newStatus,
+      }),
+    );
   }
 }

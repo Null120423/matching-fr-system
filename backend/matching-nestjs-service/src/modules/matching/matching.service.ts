@@ -14,6 +14,7 @@ import {
   FriendRequestRepository,
   SwipeRepository,
 } from 'src/repositories/index.repository';
+import { FriendRequest } from './dto/create-swipe.dto';
 
 // Để kiểm tra tồn tại của user, bạn cần giao tiếp với Auth Service
 // import { ClientProxy } from '@nestjs/microservices';
@@ -38,7 +39,7 @@ export class MatchingService {
 
     // Kiểm tra xem đã tồn tại swipe từ swiperId đến swipedId chưa
     const existingSwipe = await this.swipeRepository.findOne({
-      where: { swiperId, swipedId },
+      where: { swiperId: swiperId, swipedId },
     });
 
     if (existingSwipe) {
@@ -48,7 +49,7 @@ export class MatchingService {
     } else {
       // Tạo swipe mới
       const newSwipe = this.swipeRepository.create({
-        swiperId,
+        swiperId: swiperId,
         swipedId,
         action,
       });
@@ -142,6 +143,30 @@ export class MatchingService {
 
     request.status = FriendRequestStatus.ACCEPTED;
     // TODO: Gửi thông báo đã chấp nhận kết bạn đến người gửi
+    return this.friendRequestRepository.save(request);
+  }
+
+  async rejectFriendRequest(
+    requestId: string,
+    userId: string,
+  ): Promise<FriendRequest> {
+    const request = await this.friendRequestRepository.findOne({
+      where: { id: requestId },
+    });
+    if (!request) {
+      throw new NotFoundException('Friend request not found.');
+    }
+    if (request.receiverId !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to reject this request.',
+      );
+    }
+    if (request.status !== FriendRequestStatus.PENDING) {
+      throw new BadRequestException('Friend request is not in pending status.');
+    }
+
+    request.status = FriendRequestStatus.REJECTED;
+    // TODO: Gửi thông báo đã từ chối kết bạn đến người gửi
     return this.friendRequestRepository.save(request);
   }
 }
