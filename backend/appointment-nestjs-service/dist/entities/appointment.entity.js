@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppointmentEntity = exports.AppointmentStatus = void 0;
+exports.AppointmentEntity = exports.MapNumberStatusToNumber = exports.AppointmentStatus = void 0;
 const typeorm_1 = require("typeorm");
 const base_entity_1 = require("./base.entity");
 var AppointmentStatus;
@@ -20,6 +20,13 @@ var AppointmentStatus;
     AppointmentStatus["CANCELLED"] = "cancelled";
     AppointmentStatus["COMPLETED"] = "completed";
 })(AppointmentStatus || (exports.AppointmentStatus = AppointmentStatus = {}));
+exports.MapNumberStatusToNumber = {
+    [0]: AppointmentStatus.PENDING,
+    [1]: AppointmentStatus.ACCEPTED,
+    [2]: AppointmentStatus.DECLINED,
+    [3]: AppointmentStatus.CANCELLED,
+    [4]: AppointmentStatus.COMPLETED,
+};
 let AppointmentEntity = class AppointmentEntity extends base_entity_1.BaseEntityCustom {
     activity;
     time;

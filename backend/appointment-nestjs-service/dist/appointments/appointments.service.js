@@ -28,7 +28,6 @@ let AppointmentsService = class AppointmentsService {
     }
     async getAppointmentsByUserId(userId, filterType) {
         const query = await this.repo.createQueryBuilder('appointment');
-        query.where('appointment.fromUserId = :userId OR appointment.toUserId = :userId', { userId });
         const now = new Date();
         switch (filterType) {
             case 'received':
@@ -55,6 +54,7 @@ let AppointmentsService = class AppointmentsService {
                 break;
             case 'all':
             default:
+                query.where('appointment.fromUserId = :userId OR appointment.toUserId = :userId', { userId });
                 break;
         }
         query.orderBy('appointment.createdAt', 'DESC');

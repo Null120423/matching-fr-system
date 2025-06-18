@@ -17,8 +17,8 @@ import { RequestWithUser } from 'src/dto/request.dto';
 import {
   Appointment,
   AppointmentServiceGrpc,
-  AppointmentStatus,
   CreateAppointmentRequest,
+  UpdateAppointmentStatus,
 } from './dto';
 
 @ApiTags('appointments')
@@ -53,11 +53,11 @@ export class AppointmentController {
     @Body() createAppointmentDto: CreateAppointmentRequest,
     @Req() req: RequestWithUser,
   ): Promise<Appointment> {
-    const fromUserId = req.user.id;
+    const userId = req.user.id;
     return lastValueFrom(
       this.appointmentServiceGrpc.createAppointment({
         ...createAppointmentDto,
-        fromUserId,
+        fromUserId: userId,
       }),
     );
   }
@@ -88,8 +88,9 @@ export class AppointmentController {
 
   @Put(':id/status')
   async updateAppointmentStatus(
+    @Body()
+    body: UpdateAppointmentStatus,
     @Param('id') id: string,
-    @Body('newStatus') newStatus: AppointmentStatus,
     @Req() req: RequestWithUser,
   ): Promise<Appointment> {
     const userId = req.user.id;
@@ -97,7 +98,7 @@ export class AppointmentController {
       this.appointmentServiceGrpc.updateAppointmentStatus({
         id,
         userId,
-        newStatus,
+        newStatus: body.newStatus,
       }),
     );
   }

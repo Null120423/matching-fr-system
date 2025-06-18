@@ -9,6 +9,14 @@ export enum AppointmentStatus {
   COMPLETED = 'completed',
 }
 
+export const MapNumberStatusToNumber = {
+  [0]: AppointmentStatus.PENDING,
+  [1]: AppointmentStatus.ACCEPTED,
+  [2]: AppointmentStatus.DECLINED,
+  [3]: AppointmentStatus.CANCELLED,
+  [4]: AppointmentStatus.COMPLETED,
+};
+
 @Entity('appointment')
 export class AppointmentEntity extends BaseEntityCustom {
   @Column()

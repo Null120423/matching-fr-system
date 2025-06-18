@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppointmentsController = void 0;
 const common_1 = require("@nestjs/common");
 const microservices_1 = require("@nestjs/microservices");
+const entities_1 = require("../entities");
 const appointments_service_1 = require("./appointments.service");
 let AppointmentsController = class AppointmentsController {
     appointmentsService;
@@ -19,7 +20,7 @@ let AppointmentsController = class AppointmentsController {
         this.appointmentsService = appointmentsService;
     }
     async createAppointment(payload) {
-        const { userId: fromUserId, ...createAppointmentDto } = payload;
+        const { fromUserId, ...createAppointmentDto } = payload;
         return this.appointmentsService.createAppointment(fromUserId, createAppointmentDto);
     }
     async getAppointments(payload) {
@@ -32,7 +33,11 @@ let AppointmentsController = class AppointmentsController {
     }
     async updateAppointmentStatus(payload) {
         const { id, userId, ...rest } = payload;
-        return this.appointmentsService.updateAppointmentStatus(id, userId, rest.newStatus);
+        const status = entities_1.MapNumberStatusToNumber[rest.newStatus];
+        if (!status) {
+            throw new Error(`Invalid status code: ${rest.newStatus}`);
+        }
+        return this.appointmentsService.updateAppointmentStatus(id, userId, status);
     }
 };
 exports.AppointmentsController = AppointmentsController;

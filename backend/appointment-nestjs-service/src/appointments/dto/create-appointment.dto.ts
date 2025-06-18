@@ -14,6 +14,6 @@ export class CreateAppointmentDto {
   location: string;
 
   @IsNotEmpty()
-  @IsUUID() // Đảm bảo toUserId là UUID
-  toUserId: string; // Người nhận lời mời
+  @IsUUID()
+  toUserId: string;
 }

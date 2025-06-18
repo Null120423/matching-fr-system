@@ -36,7 +36,7 @@ message CreateAppointmentRequest {
   string time = 2;
   string location = 3;
   string toUserId = 4;
-  string fromUserId = 5; // Sẽ được điền từ JWT trong service
+  string fromUserId = 5; 
 }
 
 message GetAppointmentsRequest {

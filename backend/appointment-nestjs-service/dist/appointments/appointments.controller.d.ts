@@ -6,7 +6,7 @@ export declare class AppointmentsController {
     private readonly appointmentsService;
     constructor(appointmentsService: AppointmentsService);
     createAppointment(payload: CreateAppointmentDto & {
-        userId: string;
+        fromUserId: string;
     }): Promise<AppointmentEntity>;
     getAppointments(payload: {
         filterType: string;

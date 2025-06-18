@@ -1,6 +1,10 @@
 import { Controller } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
-import { AppointmentEntity } from 'src/entities';
+import {
+  AppointmentEntity,
+  AppointmentStatus,
+  MapNumberStatusToNumber,
+} from 'src/entities';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto';
 import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto';
@@ -11,10 +15,10 @@ export class AppointmentsController {
   @GrpcMethod('AppointmentService', 'CreateAppointment')
   async createAppointment(
     payload: CreateAppointmentDto & {
-      userId: string;
+      fromUserId: string;
     },
   ): Promise<AppointmentEntity> {
-    const { userId: fromUserId, ...createAppointmentDto } = payload;
+    const { fromUserId, ...createAppointmentDto } = payload;
     return this.appointmentsService.createAppointment(
       fromUserId,
       createAppointmentDto,
@@ -49,10 +53,14 @@ export class AppointmentsController {
     },
   ): Promise<AppointmentEntity> {
     const { id, userId, ...rest } = payload;
+    const status: string = MapNumberStatusToNumber[rest.newStatus];
+    if (!status) {
+      throw new Error(`Invalid status code: ${rest.newStatus}`);
+    }
     return this.appointmentsService.updateAppointmentStatus(
       id,
       userId,
-      rest.newStatus,
+      status as AppointmentStatus,
     );
   }
 }

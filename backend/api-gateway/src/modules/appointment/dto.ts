@@ -1,6 +1,13 @@
 // backend/api-gateway/src/appointment/appointment.controller.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { Observable } from 'rxjs';
 
 // Định nghĩa các interface cho gRPC messages
@@ -10,6 +17,17 @@ export enum AppointmentStatus {
   DECLINED = 2,
   CANCELLED = 3,
   COMPLETED = 4,
+}
+
+export class UpdateAppointmentStatus {
+  @ApiProperty({
+    description: 'New status for the appointment',
+    enum: AppointmentStatus,
+    example: AppointmentStatus.ACCEPTED,
+  })
+  @IsEnum(AppointmentStatus)
+  @IsNotEmpty()
+  newStatus: AppointmentStatus;
 }
 
 // Add ApiProperty to your DTO classes (which will act as DTOs for Swagger)
@@ -94,18 +112,44 @@ export class GetAppointmentsResponse {
 
 export class CreateAppointmentRequest {
   @ApiProperty({
-    description: 'ID of the user requesting the appointment details',
-    example: 'user-id-1',
-  })
-  userId: string;
-
-  @ApiProperty({
-    description: 'ID of the user who initiated the appointment',
+    description: 'ID of the user creating the appointment',
     example: 'user-id-1',
   })
   @IsOptional()
   @IsString()
-  fromUserId?: string;
+  fromUserId: string;
+
+  @ApiProperty({
+    description: 'Activity or purpose of the appointment',
+    example: 'Coffee meeting',
+  })
+  @IsNotEmpty()
+  @IsString()
+  activity: string;
+
+  @ApiProperty({
+    description: 'Scheduled time of the appointment (ISO 8601 format)',
+    example: '2025-06-18T15:30:00.000Z',
+  })
+  @IsNotEmpty()
+  @IsDateString()
+  time: string;
+
+  @ApiProperty({
+    description: 'Location where the appointment will take place',
+    example: '123 Nguyen Trai, District 1, Ho Chi Minh City',
+  })
+  @IsNotEmpty()
+  @IsString()
+  location: string;
+
+  @ApiProperty({
+    description: 'ID of the user receiving the appointment request',
+    example: 'e0c8c0e6-4f3a-4eaa-b47d-1d1c8a25b73e',
+  })
+  @IsNotEmpty()
+  @IsUUID()
+  toUserId: string;
 }
 
 export class UpdateAppointmentStatusRequest {

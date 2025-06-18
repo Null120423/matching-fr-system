@@ -31,10 +31,6 @@ export class AppointmentsService {
     appointments: AppointmentEntity[];
   }> {
     const query = await this.repo.createQueryBuilder('appointment');
-    query.where(
-      'appointment.fromUserId = :userId OR appointment.toUserId = :userId',
-      { userId },
-    );
 
     const now = new Date();
 
@@ -63,10 +59,15 @@ export class AppointmentsService {
         break;
       case 'all':
       default:
+        query.where(
+          'appointment.fromUserId = :userId OR appointment.toUserId = :userId',
+          { userId },
+        );
         break;
     }
 
     query.orderBy('appointment.createdAt', 'DESC');
+
     const res = await query.getMany();
     return {
       appointments: res,
