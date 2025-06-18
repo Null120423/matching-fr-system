@@ -5,7 +5,9 @@ export declare class AppointmentsService {
     private readonly repo;
     constructor(repo: AppointmentRepository);
     createAppointment(fromUserId: string, createAppointmentDto: CreateAppointmentDto): Promise<AppointmentEntity>;
-    getAppointmentsByUserId(userId: string, filterType: string): Promise<AppointmentEntity[]>;
+    getAppointmentsByUserId(userId: string, filterType: string): Promise<{
+        appointments: AppointmentEntity[];
+    }>;
     getAppointmentById(id: string, userId: string): Promise<AppointmentEntity>;
     updateAppointmentStatus(id: string, userId: string, newStatus: AppointmentStatus): Promise<AppointmentEntity>;
 }

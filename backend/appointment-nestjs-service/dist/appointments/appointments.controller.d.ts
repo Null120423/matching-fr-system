@@ -11,7 +11,9 @@ export declare class AppointmentsController {
     getAppointments(payload: {
         filterType: string;
         userId: string;
-    }): Promise<AppointmentEntity[]>;
+    }): Promise<{
+        appointments: AppointmentEntity[];
+    }>;
     getAppointmentById(payload: {
         id: string;
         userId: string;

@@ -58,7 +58,10 @@ let AppointmentsService = class AppointmentsService {
                 break;
         }
         query.orderBy('appointment.createdAt', 'DESC');
-        return query.getMany();
+        const res = await query.getMany();
+        return {
+            appointments: res,
+        };
     }
     async getAppointmentById(id, userId) {
         const appointment = await this.repo.findOne({

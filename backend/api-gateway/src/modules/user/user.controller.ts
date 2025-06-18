@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Put, Query, Req } from '@nestjs/common';
 import { Client, ClientGrpc, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { lastValueFrom, Observable } from 'rxjs';
-import { UserDTO } from 'src/auth/dto';
+
 import { RequestWithUser } from 'src/dto/request.dto';
 import { GetUsersDiscoverDto, UpdateUserProfileDto } from './dto';
 
@@ -16,6 +16,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { UserDTO } from '../auth/dto';
 
 interface UserProfileServiceGrpc {
   getMyProfile(data: { userId: string }): Observable<UserDTO>;

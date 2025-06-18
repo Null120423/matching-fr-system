@@ -1,23 +1,27 @@
 grpc:
   client:
     local-grpc-server:
-      address: static://localhost:50051
+      address: static://localhost:50051 # Cấu hình phía client, có thể không liên quan nếu dịch vụ thông báo chỉ là máy chủ.
       negotiationType: plaintext
 
   server:
-    port: 50051
+    port: 50051 # Đây là cổng gRPC server, được API Gateway sử dụng.
     address: 0.0.0.0
 
 server:
   port: 30001
 
-spring.datasource.url=jdbc:postgresql://103.75.184.206:3307/micro_matching
-spring.datasource.username=root
-spring.datasource.password=gennydev@123
-spring.jpa.hibernate.ddl-auto=update # hoặc none và dùng Flyway/Liquibase
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-spring.jpa.show-sql=true
+spring:
+  datasource:
+    url: jdbc:postgresql://103.75.184.206:3307/micro_matching
+    username: root
+    password: gennydev@123
+    driver-class-name: org.postgresql.Driver
 
-# Cấu hình gRPC Server (nếu dùng gRPC)
-grpc.server.port=50051 # Cổng gRPC cho Notification Service
-grpc.server.enable-reflection=true # Cho phép gRPC reflection để kiểm tra dịch vụ
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect

@@ -8,76 +8,22 @@ import {
   Put,
   Query,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 import { Client, ClientGrpc, Transport } from '@nestjs/microservices';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { join } from 'path';
-import { lastValueFrom, Observable } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
 import { RequestWithUser } from 'src/dto/request.dto';
-import { JwtAuthGuard } from '../../auth/jwt.auth.guard';
+import {
+  Appointment,
+  AppointmentServiceGrpc,
+  AppointmentStatus,
+  CreateAppointmentRequest,
+} from './dto';
 
-// Định nghĩa các interface cho gRPC messages
-enum AppointmentStatus {
-  PENDING = 0,
-  ACCEPTED = 1,
-  DECLINED = 2,
-  CANCELLED = 3,
-  COMPLETED = 4,
-}
-
-interface Appointment {
-  id: string;
-  activity: string;
-  time: string;
-  location: string;
-  fromUserId: string;
-  toUserId: string;
-  status: AppointmentStatus;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface CreateAppointmentRequest {
-  activity: string;
-  time: string;
-  location: string;
-  toUserId: string;
-  fromUserId: string;
-}
-
-interface GetAppointmentsRequest {
-  userId: string;
-  filterType: string;
-}
-
-interface GetAppointmentsResponse {
-  appointments: Appointment[];
-}
-
-interface GetAppointmentByIdRequest {
-  id: string;
-  userId: string;
-}
-
-interface UpdateAppointmentStatusRequest {
-  id: string;
-  userId: string;
-  newStatus: AppointmentStatus;
-}
-
-interface AppointmentServiceGrpc {
-  createAppointment(data: CreateAppointmentRequest): Observable<Appointment>;
-  getAppointments(
-    data: GetAppointmentsRequest,
-  ): Observable<GetAppointmentsResponse>;
-  getAppointmentById(data: GetAppointmentByIdRequest): Observable<Appointment>;
-  updateAppointmentStatus(
-    data: UpdateAppointmentStatusRequest,
-  ): Observable<Appointment>;
-}
-
+@ApiTags('appointments')
+@ApiBearerAuth()
 @Controller('appointments')
-@UseGuards(JwtAuthGuard)
 export class AppointmentController {
   @Client({
     transport: Transport.GRPC,
@@ -124,7 +70,9 @@ export class AppointmentController {
     const userId = req.user.id;
     return lastValueFrom(
       this.appointmentServiceGrpc.getAppointments({ userId, filterType }),
-    ).then((res) => res.appointments);
+    ).then((res) => {
+      return res.appointments || [];
+    });
   }
 
   @Get(':id')

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/await-thenable */
 import {
   ForbiddenException,
   Injectable,
@@ -18,7 +19,7 @@ export class AppointmentsService {
     const newAppointment = await this.repo.create({
       ...createAppointmentDto,
       fromUserId: fromUserId,
-      status: AppointmentStatus.PENDING, // Mặc định là pending
+      status: AppointmentStatus.PENDING,
     });
     return await this.repo.save(newAppointment);
   }
@@ -26,7 +27,9 @@ export class AppointmentsService {
   async getAppointmentsByUserId(
     userId: string,
     filterType: string,
-  ): Promise<AppointmentEntity[]> {
+  ): Promise<{
+    appointments: AppointmentEntity[];
+  }> {
     const query = await this.repo.createQueryBuilder('appointment');
     query.where(
       'appointment.fromUserId = :userId OR appointment.toUserId = :userId',
@@ -64,7 +67,10 @@ export class AppointmentsService {
     }
 
     query.orderBy('appointment.createdAt', 'DESC');
-    return query.getMany();
+    const res = await query.getMany();
+    return {
+      appointments: res,
+    };
   }
 
   async getAppointmentById(

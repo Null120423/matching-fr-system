@@ -1,15 +1,22 @@
 package com.example.notification_service.grpc;
-
-import com.example.notification_service.model.Notification;
+ 
+import com.example.notification_service.exception.NotificationNotFoundException;
+import com.example.notification_service.exception.UnauthorizedNotificationAccessException;
+import com.example.notification_service.model.NotificationModel;
 import com.example.notification_service.service.NotificationService;
-import com.google.protobuf.Timestamp;
+
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
-
-import java.time.ZoneOffset;
+import notification.NotificationIdRequest;
+import notification.NotificationListResponse;
+// gRPC generated
+import notification.NotificationServiceGrpc;
+import notification.UnreadCountResponse;
+import notification.UserRequest;
 
 @GrpcService
-public class NotificationGrpcService extends NotificationGrpcService.NotificationServiceImpl {
+public class NotificationGrpcService extends NotificationServiceGrpc.NotificationServiceImplBase {
 
     private final NotificationService notificationService;
 
@@ -18,57 +25,70 @@ public class NotificationGrpcService extends NotificationGrpcService.Notificatio
     }
 
     @Override
-    public void createNotification(CreateNotificationRequest request, StreamObserver<NotificationProto.Notification> responseObserver) {
-        Notification created = notificationService.createNotification(
-                request.getUserId(),
-                request.getType(),
-                request.getContent()
-        );
-        responseObserver.onNext(toProto(created));
-        responseObserver.onCompleted();
-    }
-
-    @Override
-    public void getNotifications(UserRequest request, StreamObserver<NotificationList> responseObserver) {
-        var notifications = notificationService.getNotificationsByUserId(request.getUserId());
-        var listBuilder = NotificationList.newBuilder();
-        for (Notification n : notifications) {
-            listBuilder.addNotifications(toProto(n));
+    public void getNotifications(UserRequest request, StreamObserver<NotificationListResponse> responseObserver) {
+        try {
+            var notifications = notificationService.getNotificationsByUserId(request.getUserId());
+            var listBuilder = NotificationListResponse.newBuilder();
+            for (NotificationModel n : notifications) {
+                listBuilder.addNotifications(toProto(n));
+            }
+            responseObserver.onNext(listBuilder.build());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL.withDescription("Failed to retrieve notifications: " + e.getMessage()).asRuntimeException());
         }
-        responseObserver.onNext(listBuilder.build());
-        responseObserver.onCompleted();
     }
 
     @Override
-    public void getNotificationById(NotificationIdRequest request, StreamObserver<NotificationProto.Notification> responseObserver) {
-        Notification n = notificationService.getNotificationById(request.getNotificationId(), request.getUserId());
-        responseObserver.onNext(toProto(n));
-        responseObserver.onCompleted();
+    public void getNotificationById(NotificationIdRequest request, StreamObserver<notification.Notification> responseObserver) {
+        try {
+            NotificationModel n = notificationService.getNotificationById(request.getNotificationId(), request.getUserId());
+            responseObserver.onNext(toProto(n));
+            responseObserver.onCompleted();
+        } catch (NotificationNotFoundException e) {
+            responseObserver.onError(Status.NOT_FOUND.withDescription(e.getMessage()).asRuntimeException());
+        } catch (UnauthorizedNotificationAccessException e) {
+            responseObserver.onError(Status.PERMISSION_DENIED.withDescription(e.getMessage()).asRuntimeException());
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL.withDescription("Failed to get notification by ID: " + e.getMessage()).asRuntimeException());
+        }
     }
 
     @Override
-    public void markAsRead(NotificationIdRequest request, StreamObserver<NotificationProto.Notification> responseObserver) {
-        Notification updated = notificationService.markNotificationAsRead(request.getNotificationId(), request.getUserId());
-        responseObserver.onNext(toProto(updated));
-        responseObserver.onCompleted();
+    public void markAsRead(NotificationIdRequest request, StreamObserver<notification.Notification> responseObserver) {
+        try {
+            NotificationModel updated = notificationService.markNotificationAsRead(request.getNotificationId(), request.getUserId());
+            responseObserver.onNext(toProto(updated));
+            responseObserver.onCompleted();
+        } catch (NotificationNotFoundException e) {
+            responseObserver.onError(Status.NOT_FOUND.withDescription(e.getMessage()).asRuntimeException());
+        } catch (UnauthorizedNotificationAccessException e) {
+            responseObserver.onError(Status.PERMISSION_DENIED.withDescription(e.getMessage()).asRuntimeException());
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL.withDescription("Failed to mark notification as read: " + e.getMessage()).asRuntimeException());
+        }
     }
 
     @Override
     public void getUnreadCount(UserRequest request, StreamObserver<UnreadCountResponse> responseObserver) {
-        long count = notificationService.getUnreadNotificationsCount(request.getUserId());
-        responseObserver.onNext(UnreadCountResponse.newBuilder().setCount(count).build());
-        responseObserver.onCompleted();
+        try {
+            long count = notificationService.getUnreadNotificationsCount(request.getUserId());
+            responseObserver.onNext(UnreadCountResponse.newBuilder().setCount((int) count).build());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL.withDescription("Failed to get unread count: " + e.getMessage()).asRuntimeException());
+        }
     }
 
-    private NotificationProto.Notification toProto(Notification n) {
-        return NotificationProto.Notification.newBuilder()
+    private notification.Notification toProto(NotificationModel n) {
+        return notification.Notification.newBuilder()
                 .setId(n.getId())
                 .setUserId(n.getUserId())
                 .setType(n.getType())
                 .setContent(n.getContent())
                 .setIsRead(n.isRead())
-                .setCreatedAt(n.getCreatedAt().toInstant(ZoneOffset.UTC).toString())
-                .setUpdatedAt(n.getUpdatedAt().toInstant(ZoneOffset.UTC).toString())
+                .setCreatedAt(n.getCreatedAt().toString())
+                .setUpdatedAt( n.getUpdatedAt().toString())
                 .build();
     }
 }

@@ -21,6 +21,6 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
 
   await app.listen();
-  console.log('✅ gRPC Microservice is running on port 50053');
+  console.log('✅ gRPC Microservice is running on port 50054');
 }
 bootstrap();

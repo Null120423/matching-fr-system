@@ -25,7 +25,9 @@ export class AppointmentsController {
   async getAppointments(payload: {
     filterType: string;
     userId: string;
-  }): Promise<AppointmentEntity[]> {
+  }): Promise<{
+    appointments: AppointmentEntity[];
+  }> {
     const { filterType, userId } = payload;
     return this.appointmentsService.getAppointmentsByUserId(userId, filterType);
   }
