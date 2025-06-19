@@ -14,14 +14,11 @@ interface AuthContextType {
   refreshToken: string | null;
   isAuthenticated: boolean;
   isAuthenticating: boolean;
-
-  setAuthData: (data: {
+  onSignIn: (data: {
     user: UserDTO;
     tokens: { accessToken: string; refreshToken: string };
   }) => Promise<void>;
-
   setAuthAccessToken: (token: string | null) => Promise<void>;
-
   signOut: () => Promise<void>;
 }
 
@@ -78,7 +75,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     }
   }, []);
 
-  const setAuthData = useCallback(
+  const onSignIn = useCallback(
     async (data: {
       user: UserDTO;
       tokens: { accessToken: string; refreshToken: string };
@@ -127,7 +124,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     refreshToken,
     isAuthenticated: !!accessToken && !!currentUser?.id,
     isAuthenticating,
-    setAuthData,
+    onSignIn,
     setAuthAccessToken,
     signOut,
   };

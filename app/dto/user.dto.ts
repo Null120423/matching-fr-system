@@ -1,4 +1,6 @@
-export interface UserDTO {
+import { BaseDTO } from "./base.dto";
+
+export interface UserDTO extends BaseDTO {
   id: string;
   username: string;
   email: string;

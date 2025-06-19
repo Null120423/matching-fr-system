@@ -20,7 +20,7 @@ const initApi = (url?: string, headers = {}) => {
     },
   });
 
-  api.interceptors.request.use(async (config) => {
+  api.interceptors.request.use(async (config: any) => {
     try {
       const token = await AuthTokenService.getAccessToken();
       if (token != null) {
@@ -37,8 +37,8 @@ const initApi = (url?: string, headers = {}) => {
   });
 
   api.interceptors.response.use(
-    (response) => response,
-    (error) => {
+    (response: any) => response?.data,
+    (error: any) => {
       // Accessing the URL and the body of the request
       console.log("\x1b[31m", error.config?.headers?.Authorization);
       console.log(
