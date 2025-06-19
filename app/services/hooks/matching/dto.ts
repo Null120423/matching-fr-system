@@ -3,6 +3,7 @@ export interface UseSwipeRequest {
   userId: string;
   action: "LIKE" | "PASS";
 }
+
 export interface SwipeCreateResponse extends BaseResponseDTO {
   success: boolean;
   match: boolean;
