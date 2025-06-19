@@ -1,4 +1,3 @@
-import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Platform,
@@ -24,13 +23,6 @@ import Separator from "@/components/@core/separator";
 import TextDefault from "@/components/@core/text-default"; // Assuming TextDefault uses theme colors internally or can receive them
 import { scale } from "@/helper/helpers";
 
-// Mock API service
-import {
-  fetchNotifications,
-  markNotificationAsRead,
-  Notification,
-} from "@/services/notifications";
-
 // Theme Context
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -51,45 +43,46 @@ export default function NotificationsListScreen() {
   const { theme } = useTheme();
   const currentColors = Colors[theme || "light"];
 
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadNotifications = async () => {
-      setIsLoading(true);
-      try {
-        const fetchedNotifications = await fetchNotifications();
-        setNotifications(fetchedNotifications);
-      } catch (error) {
-        console.error("Failed to load notifications:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadNotifications();
+    // todo
+    // const loadNotifications = async () => {
+    //   setIsLoading(true);
+    //   try {
+    //     const fetchedNotifications = await fetchNotifications();
+    //     setNotifications(fetchedNotifications);
+    //   } catch (error) {
+    //     console.error("Failed to load notifications:", error);
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // };
+    // loadNotifications();
   }, []);
 
   const handleNotificationPress = async (notificationId: string) => {
-    try {
-      // Mark as read via API and update state
-      await markNotificationAsRead(notificationId);
-      const updatedNotifications = notifications.map((notif) =>
-        notif.id === notificationId ? { ...notif, isRead: true } : notif
-      );
-      setNotifications(updatedNotifications);
-
-      const selectedNotif = updatedNotifications.find(
-        (notif) => notif.id === notificationId
-      );
-      if (selectedNotif) {
-        router.push({
-          pathname: "/(common)/notification/detail",
-          params: { id: selectedNotif.id },
-        });
-      }
-    } catch (error) {
-      console.error("Failed to mark notification as read or navigate:", error);
-    }
+    // todo
+    // try {
+    //   // Mark as read via API and update state
+    //   await markNotificationAsRead(notificationId);
+    //   const updatedNotifications = notifications.map((notif) =>
+    //     notif.id === notificationId ? { ...notif, isRead: true } : notif
+    //   );
+    //   setNotifications(updatedNotifications);
+    //   const selectedNotif = updatedNotifications.find(
+    //     (notif) => notif.id === notificationId
+    //   );
+    //   if (selectedNotif) {
+    //     router.push({
+    //       pathname: "/(common)/notification/detail",
+    //       params: { id: selectedNotif.id },
+    //     });
+    //   }
+    // } catch (error) {
+    //   console.error("Failed to mark notification as read or navigate:", error);
+    // }
   };
 
   const getNotificationIcon = (type: string) => {

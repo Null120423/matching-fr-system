@@ -4,7 +4,7 @@ import TextDefault from "@/components/@core/text-default"; // Sử dụng TextDe
 import { Colors } from "@/constants/Colors"; // Import Colors
 import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
 import { scale } from "@/helper/helpers";
-import { fetchAppointments } from "@/services/appointments"; // Import fetchAppointments API
+// import { fetchAppointments } from "@/services/appointments"; // Import fetchAppointments API
 import { router } from "expo-router";
 import {
   Bell,
@@ -496,38 +496,38 @@ export default function Appointments() {
 
   // Fetch data for the active tab
   useEffect(() => {
-    const loadAppointments = async () => {
-      let data: Appointment[] = [];
-      try {
-        if (activeTab === "received") {
-          setIsLoadingReceived(true);
-          data = (await fetchAppointments("received")) as Appointment[];
-          setReceivedAppointments(data);
-        } else if (activeTab === "sent") {
-          setIsLoadingSent(true);
-          data = (await fetchAppointments("sent")) as Appointment[];
-          setSentAppointments(data);
-        } else if (activeTab === "upcoming") {
-          setIsLoadingUpcoming(true);
-          data = (await fetchAppointments("upcoming")) as Appointment[];
-          setUpcomingAppointments(data);
-        } else if (activeTab === "history") {
-          setIsLoadingHistory(true);
-          data = (await fetchAppointments("history")) as Appointment[];
-          setHistoryAppointments(data);
-        }
-      } catch (error) {
-        console.error(`Failed to fetch ${activeTab} appointments:`, error);
-        // Handle error (e.g., show an alert)
-      } finally {
-        if (activeTab === "received") setIsLoadingReceived(false);
-        else if (activeTab === "sent") setIsLoadingSent(false);
-        else if (activeTab === "upcoming") setIsLoadingUpcoming(false);
-        else if (activeTab === "history") setIsLoadingHistory(false);
-      }
-    };
-
-    loadAppointments();
+    // todo
+    // const loadAppointments = async () => {
+    //   let data: Appointment[] = [];
+    //   try {
+    //     if (activeTab === "received") {
+    //       setIsLoadingReceived(true);
+    //       data = (await fetchAppointments("received")) as Appointment[];
+    //       setReceivedAppointments(data);
+    //     } else if (activeTab === "sent") {
+    //       setIsLoadingSent(true);
+    //       data = (await fetchAppointments("sent")) as Appointment[];
+    //       setSentAppointments(data);
+    //     } else if (activeTab === "upcoming") {
+    //       setIsLoadingUpcoming(true);
+    //       data = (await fetchAppointments("upcoming")) as Appointment[];
+    //       setUpcomingAppointments(data);
+    //     } else if (activeTab === "history") {
+    //       setIsLoadingHistory(true);
+    //       data = (await fetchAppointments("history")) as Appointment[];
+    //       setHistoryAppointments(data);
+    //     }
+    //   } catch (error) {
+    //     console.error(`Failed to fetch ${activeTab} appointments:`, error);
+    //     // Handle error (e.g., show an alert)
+    //   } finally {
+    //     if (activeTab === "received") setIsLoadingReceived(false);
+    //     else if (activeTab === "sent") setIsLoadingSent(false);
+    //     else if (activeTab === "upcoming") setIsLoadingUpcoming(false);
+    //     else if (activeTab === "history") setIsLoadingHistory(false);
+    //   }
+    // };
+    // loadAppointments();
   }, [activeTab]); // Re-fetch when activeTab changes
 
   const getCurrentAppointments = () => {

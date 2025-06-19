@@ -5,7 +5,6 @@ import TextDefault from "@/components/@core/text-default"; // Sử dụng TextDe
 import { Colors } from "@/constants/Colors"; // Import Colors
 import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
 import { scale } from "@/helper/helpers";
-import { getAppointmentById } from "@/services/appointments"; // Import getAppointmentById API
 import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
 import {
@@ -443,43 +442,43 @@ export default function currentAppointmentDetailsScreen() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadAppointmentDetails = async () => {
-      if (id) {
-        setIsLoading(true);
-        try {
-          const fetchedAppointment = (await getAppointmentById(
-            id
-          )) as unknown as AppointmentDetail;
-          if (fetchedAppointment) {
-            // Adjust isCreator, isPending, etc. based on fetched data and route type
-            // This is crucial as mock data might not provide these flags
-            const processedAppointment = {
-              ...fetchedAppointment,
-              isCreator: type === "sent", // Assuming 'sent' type means current user is creator
-              isPending: fetchedAppointment.status === "pending",
-              isConfirmed: fetchedAppointment.status === "accepted", // Assuming accepted means confirmed
-              isDeclined: fetchedAppointment.status === "declined",
-              isCancelled: fetchedAppointment.status === "cancelled" || false,
-            };
-            setCurrentAppointment(processedAppointment);
-          } else {
-            Alert.alert("Lỗi", "Không tìm thấy cuộc hẹn này.");
-          }
-        } catch (error) {
-          console.error("Failed to fetch appointment details:", error);
-          Alert.alert(
-            "Lỗi",
-            "Không thể tải chi tiết cuộc hẹn. Vui lòng thử lại."
-          );
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        setIsLoading(false); // No ID provided
-      }
-    };
-
-    loadAppointmentDetails();
+    // todo loadAppointmentDetails
+    // const loadAppointmentDetails = async () => {
+    //   if (id) {
+    //     setIsLoading(true);
+    //     try {
+    //       const fetchedAppointment = (await getAppointmentById(
+    //         id
+    //       )) as unknown as AppointmentDetail;
+    //       if (fetchedAppointment) {
+    //         // Adjust isCreator, isPending, etc. based on fetched data and route type
+    //         // This is crucial as mock data might not provide these flags
+    //         const processedAppointment = {
+    //           ...fetchedAppointment,
+    //           isCreator: type === "sent", // Assuming 'sent' type means current user is creator
+    //           isPending: fetchedAppointment.status === "pending",
+    //           isConfirmed: fetchedAppointment.status === "accepted", // Assuming accepted means confirmed
+    //           isDeclined: fetchedAppointment.status === "declined",
+    //           isCancelled: fetchedAppointment.status === "cancelled" || false,
+    //         };
+    //         setCurrentAppointment(processedAppointment);
+    //       } else {
+    //         Alert.alert("Lỗi", "Không tìm thấy cuộc hẹn này.");
+    //       }
+    //     } catch (error) {
+    //       console.error("Failed to fetch appointment details:", error);
+    //       Alert.alert(
+    //         "Lỗi",
+    //         "Không thể tải chi tiết cuộc hẹn. Vui lòng thử lại."
+    //       );
+    //     } finally {
+    //       setIsLoading(false);
+    //     }
+    //   } else {
+    //     setIsLoading(false); // No ID provided
+    //   }
+    // };
+    // loadAppointmentDetails();
   }, [id, type]); // Re-fetch if ID or type changes
 
   const handleAccept = () => {

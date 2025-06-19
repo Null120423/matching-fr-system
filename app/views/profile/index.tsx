@@ -4,7 +4,7 @@ import TextDefault from "@/components/@core/text-default";
 import { Colors } from "@/constants/Colors"; // Import Colors
 import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
 import { scale } from "@/helper/helpers";
-import { fetchMyProfile } from "@/services/users"; // Import fetchMyProfile API
+// import { fetchMyProfile } from "@/services/users"; // Import fetchMyProfile API
 import { router } from "expo-router";
 import {
   Briefcase,
@@ -324,20 +324,20 @@ export default function ProfileView({ navigation }: any) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadMyProfile = async () => {
-      setIsLoading(true);
-      try {
-        const profile = (await fetchMyProfile()) as MyProfileData;
-        setMyProfile(profile);
-      } catch (error) {
-        console.error("Failed to load my profile:", error);
-        // Handle error, e.g., show a message to the user
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadMyProfile();
+    // todo
+    // const loadMyProfile = async () => {
+    //   setIsLoading(true);
+    //   try {
+    //     const profile = (await fetchMyProfile()) as MyProfileData;
+    //     setMyProfile(profile);
+    //   } catch (error) {
+    //     console.error("Failed to load my profile:", error);
+    //     // Handle error, e.g., show a message to the user
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // };
+    // loadMyProfile();
   }, []);
 
   if (isLoading) {

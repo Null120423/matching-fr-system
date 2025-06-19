@@ -3,7 +3,6 @@ import TextDefault from "@/components/@core/text-default"; // For loading/empty 
 import { Colors } from "@/constants/Colors"; // Import Colors
 import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
 import { normalize, scale } from "@/helper/helpers";
-import { fetchDiscoverUsers } from "@/services/users"; // Import fetchDiscoverUsers
 import React, { useEffect, useState } from "react"; // Import useState, useEffect
 import { Platform, StyleSheet, View } from "react-native"; // Import StyleSheet
 import DiscoverItem from "./discover-item";
@@ -17,20 +16,20 @@ function DiscoverView() {
   const [currentIndex, setCurrentIndex] = useState(0); // Để theo dõi card hiện tại
 
   useEffect(() => {
-    const loadUsers = async () => {
-      setIsLoading(true);
-      try {
-        const users = await fetchDiscoverUsers(); // Gọi mock API
-        setDiscoverUsers(users as any[]);
-      } catch (error) {
-        console.error("Failed to fetch discover users:", error);
-        // Xử lý lỗi (hiển thị thông báo cho người dùng)
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUsers();
+    // todo
+    // const loadUsers = async () => {
+    //   setIsLoading(true);
+    //   try {
+    //     const users = await fetchDiscoverUsers(); // Gọi mock API
+    //     setDiscoverUsers(users as any[]);
+    //   } catch (error) {
+    //     console.error("Failed to fetch discover users:", error);
+    //     // Xử lý lỗi (hiển thị thông báo cho người dùng)
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // };
+    // loadUsers();
   }, []);
 
   const handleSwipeLeft = (userId: string) => {

@@ -5,7 +5,6 @@ import TextDefault from "@/components/@core/text-default";
 import { Colors } from "@/constants/Colors"; // Import Colors
 import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
 import { scale } from "@/helper/helpers";
-import { fetchDiscoverUsers } from "@/services/users"; // Import mock API
 import { Ionicons } from "@expo/vector-icons"; // Dùng Ionicons thay cho HomeIcon trong nhiều trường hợp
 import { router, useLocalSearchParams } from "expo-router"; // Import useLocalSearchParams
 import React, { useEffect, useState } from "react"; // Import useEffect, useState
@@ -300,27 +299,26 @@ export default function UserProfileView() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (userId) {
-        setIsLoading(true);
-        try {
-          const users = (await fetchDiscoverUsers()) as DiscoverUser[];
-          const foundUser = users.find((u) => u.id === userId);
-          setUser(foundUser || null);
-        } catch (error) {
-          console.error("Failed to fetch user profile:", error);
-          setUser(null); // Clear user data on error
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        setIsLoading(false); // No userId provided
-        setUser(null);
-      }
-    };
-
-    fetchUserProfile();
-  }, [userId]); // Re-fetch if userId changes
+    // const fetchUserProfile = async () => {
+    //   if (userId) {
+    //     setIsLoading(true);
+    //     try {
+    //       const users = (await fetchDiscoverUsers()) as DiscoverUser[];
+    //       const foundUser = users.find((u) => u.id === userId);
+    //       setUser(foundUser || null);
+    //     } catch (error) {
+    //       console.error("Failed to fetch user profile:", error);
+    //       setUser(null); // Clear user data on error
+    //     } finally {
+    //       setIsLoading(false);
+    //     }
+    //   } else {
+    //     setIsLoading(false); // No userId provided
+    //     setUser(null);
+    //   }
+    // };
+    // fetchUserProfile();
+  }, [userId]);
 
   if (isLoading) {
     return (

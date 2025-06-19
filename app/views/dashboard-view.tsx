@@ -17,9 +17,9 @@ import TextDefault from "@/components/@core/text-default";
 import { scale } from "@/helper/helpers";
 
 // Import mock API services
-import { fetchAppointments } from "@/services/appointments";
-import { getUnreadNotificationsCount } from "@/services/notifications";
-import { fetchMyProfile } from "@/services/users";
+// import { fetchAppointments } from "@/services/appointments";
+// import { getUnreadNotificationsCount } from "@/services/notifications";
+// import { fetchMyProfile } from "@/services/users";
 
 // Import theme and colors
 import { Colors } from "@/constants/Colors";
@@ -47,26 +47,24 @@ export default function DashboardScreen() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadDashboardData = async () => {
-      setIsLoading(true);
-      try {
-        const profile = await fetchMyProfile();
-        setMyProfile(profile);
-
-        const upcoming = await fetchAppointments("upcoming");
-        setUpcomingAppointments(upcoming);
-
-        const count = await getUnreadNotificationsCount();
-        setUnreadCount(count);
-      } catch (error) {
-        console.error("Failed to load dashboard data:", error);
-        // Handle error: show a message to the user
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadDashboardData();
+    // todo
+    // const loadDashboardData = async () => {
+    //   setIsLoading(true);
+    //   try {
+    //     const profile = await fetchMyProfile();
+    //     setMyProfile(profile);
+    //     const upcoming = await fetchAppointments("upcoming");
+    //     setUpcomingAppointments(upcoming);
+    //     const count = await getUnreadNotificationsCount();
+    //     setUnreadCount(count);
+    //   } catch (error) {
+    //     console.error("Failed to load dashboard data:", error);
+    //     // Handle error: show a message to the user
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // };
+    // loadDashboardData();
   }, []);
 
   // Update stats data based on fetched data

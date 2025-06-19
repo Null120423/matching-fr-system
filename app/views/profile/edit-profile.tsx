@@ -4,7 +4,6 @@ import TextDefault from "@/components/@core/text-default"; // Sử dụng TextDe
 import { Colors } from "@/constants/Colors"; // Import Colors
 import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
 import { scale } from "@/helper/helpers";
-import { fetchMyProfile, updateMyProfile } from "@/services/users"; // Import fetch and update mock API
 import { Picker } from "@react-native-picker/picker";
 import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
@@ -487,34 +486,34 @@ export default function EditProfileView() {
 
   // Load user data on component mount
   useEffect(() => {
-    const loadUserData = async () => {
-      setIsLoading(true);
-      try {
-        const fetchedUser = (await fetchMyProfile()) as EditableUserData; // Adjust based on your API
-        if (fetchedUser) {
-          setUser(fetchedUser);
-          setName(fetchedUser.name);
-          setAge(String(fetchedUser.age));
-          setGender(fetchedUser.gender);
-          setLocation(fetchedUser.location);
-          setBio(fetchedUser.bio);
-          setInterests(fetchedUser.interests);
-          setFreeTime(fetchedUser.freeTime);
-          setAvatarUri(fetchedUser.avatar);
-        } else {
-          Alert.alert("Lỗi", "Không tìm thấy hồ sơ để chỉnh sửa.");
-          router.back();
-        }
-      } catch (error) {
-        console.error("Failed to load user profile for editing:", error);
-        Alert.alert("Lỗi", "Không thể tải hồ sơ. Vui lòng thử lại.");
-        router.back();
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUserData();
+    // todo
+    // const loadUserData = async () => {
+    //   setIsLoading(true);
+    //   try {
+    //     const fetchedUser = (await fetchMyProfile()) as EditableUserData; // Adjust based on your API
+    //     if (fetchedUser) {
+    //       setUser(fetchedUser);
+    //       setName(fetchedUser.name);
+    //       setAge(String(fetchedUser.age));
+    //       setGender(fetchedUser.gender);
+    //       setLocation(fetchedUser.location);
+    //       setBio(fetchedUser.bio);
+    //       setInterests(fetchedUser.interests);
+    //       setFreeTime(fetchedUser.freeTime);
+    //       setAvatarUri(fetchedUser.avatar);
+    //     } else {
+    //       Alert.alert("Lỗi", "Không tìm thấy hồ sơ để chỉnh sửa.");
+    //       router.back();
+    //     }
+    //   } catch (error) {
+    //     console.error("Failed to load user profile for editing:", error);
+    //     Alert.alert("Lỗi", "Không thể tải hồ sơ. Vui lòng thử lại.");
+    //     router.back();
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // };
+    // loadUserData();
   }, [userId]); // Depend on userId if you are fetching specific user data
 
   const handleAddInterest = () => {
@@ -541,14 +540,16 @@ export default function EditProfileView() {
       avatar: avatarUri,
     };
 
-    try {
-      await updateMyProfile(updatedUser); // Call mock update API
-      Alert.alert("Thành công", "Hồ sơ của bạn đã được cập nhật.");
-      router.back();
-    } catch (error) {
-      console.error("Error saving profile:", error);
-      Alert.alert("Lỗi", "Không thể lưu hồ sơ. Vui lòng thử lại.");
-    }
+    // todo
+
+    // try {
+    //   await updateMyProfile(updatedUser); // Call mock update API
+    //   Alert.alert("Thành công", "Hồ sơ của bạn đã được cập nhật.");
+    //   router.back();
+    // } catch (error) {
+    //   console.error("Error saving profile:", error);
+    //   Alert.alert("Lỗi", "Không thể lưu hồ sơ. Vui lòng thử lại.");
+    // }
   };
 
   const handleCancel = () => {
