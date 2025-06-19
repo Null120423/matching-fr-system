@@ -1,5 +1,4 @@
 import { BaseResponseDTO, FriendRequestDTO } from "@/dto";
-
 export interface UseSwipeRequest {
   userId: string;
   action: "LIKE" | "PASS";
