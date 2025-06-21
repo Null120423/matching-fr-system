@@ -4,68 +4,89 @@ import { ButtonPrimary } from "@/components/@core/button";
 import Row from "@/components/@core/row";
 import Separator from "@/components/@core/separator";
 import TextDefault from "@/components/@core/text-default";
+import { showToastInfo } from "@/contexts/ToastEventEmitter";
 import { normalize } from "@/helper/helpers";
 import DefaultLayout from "@/layouts/default-layout";
-import { useSignUp } from "@clerk/clerk-expo";
+import useSignUp from "@/services/hooks/auth/useSignUp";
 import { Stack } from "expo-router";
-import { Fragment, useState } from "react";
+import React, { Fragment, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Header from "../header";
 
 const Register = () => {
-  const { isLoaded, signUp, setActive } = useSignUp();
+  // const { isLoaded, signUp, setActive } = useSignUp();
 
   const [emailAddress, setEmailAddress] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const { onRegister, isLoading: isRegisterLoading } = useSignUp();
 
+  const clearState = () => {
+    setUsername("");
+    setEmailAddress("");
+    setPassword("");
+    setConfirmPassword("");
+  };
   // Create the user and send the verification email
   const onSignUpPress = async () => {
-    if (!isLoaded) {
+    if (!emailAddress || !password || !confirmPassword || !username) {
+      showToastInfo("Please fill in all fields.");
       return;
     }
-    setLoading(true);
-
-    try {
-      // Create the user on Clerk
-      await signUp.create({
-        emailAddress,
-        password,
-      });
-
-      // Send verification Email
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-
-      // change the UI to verify the email address
-      setPendingVerification(true);
-    } catch (err: any) {
-      alert(err.errors[0].message);
-    } finally {
-      setLoading(false);
+    if (password !== confirmPassword) {
+      showToastInfo("Passwords do not match.");
+      return;
     }
+    onRegister({
+      username: username,
+      email: emailAddress,
+      password,
+      confirmPassword,
+    }).then(() => {
+      clearState();
+    });
+
+    // if (!isLoaded) {
+    //   return;
+    // }
+    // setLoading(true);
+    // try {
+    //   // Create the user on Clerk
+    //   await signUp.create({
+    //     emailAddress,
+    //     password,
+    //   });
+    //   // Send verification Email
+    //   await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+    //   // change the UI to verify the email address
+    //   setPendingVerification(true);
+    // } catch (err: any) {
+    //   alert(err.errors[0].message);
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   // Verify the email address
   const onPressVerify = async () => {
-    if (!isLoaded) {
-      return;
-    }
-    setLoading(true);
-
-    try {
-      const completeSignUp = await signUp.attemptEmailAddressVerification({
-        code,
-      });
-
-      await setActive({ session: completeSignUp.createdSessionId });
-    } catch (err: any) {
-      alert(err.errors[0].message);
-    } finally {
-      setLoading(false);
-    }
+    // if (!isLoaded) {
+    //   return;
+    // }
+    // setLoading(true);
+    // try {
+    //   const completeSignUp = await signUp.attemptEmailAddressVerification({
+    //     code,
+    //   });
+    //   await setActive({ session: completeSignUp.createdSessionId });
+    // } catch (err: any) {
+    //   alert(err.errors[0].message);
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   return (
@@ -84,17 +105,20 @@ const Register = () => {
           <Row start direction="column" rowGap={10} full>
             <Row direction="column" rowGap={20} full>
               <Input
+                placeholder="Username"
+                text={username}
+                onChangeText={setUsername}
+              />
+              <Input
                 placeholder="simon@galaxies.dev"
                 text={emailAddress}
                 onChangeText={setEmailAddress}
               />
-
               <InputPassword
                 placeholder="password"
                 text={password}
                 onChangeText={setPassword}
               />
-
               <InputPassword
                 placeholder="Confirm password"
                 text={confirmPassword}

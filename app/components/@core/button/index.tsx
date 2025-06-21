@@ -85,10 +85,11 @@ const ButtonPrimary = ({
             color: "white",
             fontWeight: 600,
             textAlign: "center",
-            fontSize: normalize(13),
+            fontSize: normalize(14),
           },
           styleTitle,
         ]}
+        bold
       >
         {title}
       </TextDefault>
@@ -110,7 +111,7 @@ const ButtonOutlined = ({
   disabled = false,
   activeOutlined = false,
   borderColor,
-  height = normalize(32),
+  height = normalize(50),
 }: ButtonPrimaryProps) => {
   return (
     <TouchableOpacity
@@ -123,10 +124,10 @@ const ButtonOutlined = ({
         {
           borderRadius: round,
           borderColor: "#5451D6",
-          width: 100,
+          width: "48%",
           minWidth,
           height,
-          backgroundColor: "rgba(0,0,0,0.05)",
+          backgroundColor: "#D9D0FB",
         },
         full && { width: "100%" },
         disabled && styles.disabled,
@@ -136,10 +137,11 @@ const ButtonOutlined = ({
         {isLoading && <ActivityIndicator color={"blue"} />}
         {!isLoading && iconLeft && iconLeft}
         <TextDefault
+          bold
           style={[
             {
               color: "#5451D6",
-              fontWeight: 600,
+              fontSize: normalize(14),
             },
             styles.txt,
           ]}

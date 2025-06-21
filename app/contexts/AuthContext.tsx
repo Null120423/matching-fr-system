@@ -1,5 +1,6 @@
 import { UserDTO } from "@/dto";
 import { AuthTokenService } from "@/helper";
+import useProfileMe from "@/services/hooks/user/useProfileMe";
 import React, {
   createContext,
   ReactNode,
@@ -45,6 +46,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(true); // Để quản lý trạng thái loading ban đầu
+  const { onLoadProfileMe } = useProfileMe();
 
   // Hàm hydrate để khôi phục trạng thái từ SecureStore
   const hydrate = useCallback(async () => {
@@ -58,16 +60,20 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
 
       // TODO: Nếu có access token, bạn có thể gọi API /users/me để lấy lại thông tin user
       // và xác thực token ở đây. Nếu API trả về lỗi (ví dụ token không hợp lệ), hãy clearAuth.
-      // try {
-      //   if (storedAccessToken) {
-      //     const { AuthService } = await import('../services/users'); // Import động để tránh circular dependency
-      //     const user = await AuthService.getCurrentUser();
-      //     setCurrentUser(user);
-      //   }
-      // } catch (fetchError) {
-      //   console.warn('Failed to fetch current user after hydrate, clearing auth:', fetchError);
-      //   await signOut(); // Clear any invalid tokens
-      // }
+      try {
+        if (storedAccessToken) {
+          const res = await onLoadProfileMe();
+          if (res) {
+            setCurrentUser(res);
+          }
+        }
+      } catch (fetchError) {
+        console.warn(
+          "Failed to fetch current user after hydrate, clearing auth:",
+          fetchError
+        );
+        await signOut(); // Clear any invalid tokens
+      }
     } catch (error) {
       console.error("Failed to hydrate AuthContext from SecureStore", error);
     } finally {

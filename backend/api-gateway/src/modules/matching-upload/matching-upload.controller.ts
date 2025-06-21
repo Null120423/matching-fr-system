@@ -71,7 +71,7 @@ export class MatchingUploadController {
   }
   @ApiOperation({ summary: 'Record swipe between two users' })
   @ApiResponse({ status: 200, description: 'Swipe recorded successfully' })
-  @Post('users/:userId/swipe')
+  @Post(':userId/swipe')
   @HttpCode(HttpStatus.OK)
   async createSwipe(
     @Body()
@@ -94,7 +94,7 @@ export class MatchingUploadController {
   @ApiOperation({ summary: 'Send friend request between users' })
   @ApiBody({ type: SendFriendRequestRequest })
   @ApiResponse({ status: 200, description: 'Friend request sent' })
-  @Post('users/:userId/friend-request')
+  @Post(':userId/friend-request')
   @HttpCode(HttpStatus.OK)
   async sendFriendRequest(
     @Param('userId') receiverId: string,

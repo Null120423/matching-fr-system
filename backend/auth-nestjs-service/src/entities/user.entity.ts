@@ -61,6 +61,9 @@ export class UserEntity extends BaseEntityCustom {
   @Column({ type: 'simple-array', nullable: true })
   activities: string[];
 
+  @Column({ type: 'simple-array', nullable: true })
+  availableTimeSlots: string[];
+
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {

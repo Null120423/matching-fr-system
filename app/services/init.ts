@@ -1,8 +1,8 @@
 // import { showToastError } from "@helper/ToastEventEmitter";
+import { showToastError } from "@/contexts/ToastEventEmitter";
 import { AuthTokenService } from "@/helper";
 import axios from "axios";
 import * as Updates from "expo-updates";
-import { Alert } from "react-native";
 
 const initApi = (url?: string, headers = {}) => {
   if (url == null) throw new Error("URL is required");
@@ -53,14 +53,13 @@ const initApi = (url?: string, headers = {}) => {
 
       switch (error?.response?.data?.httpCode) {
         case 401: {
-          message =
-            "Phiên đăng nhập của bạn đã hết hạn, vui lòng đăng nhập lại!";
-          /// xử lý thông báo ở hàm user Info
+          message = "Your session has expired, please log in again!";
+          /// handle notification in user Info function
           return Promise.reject(error);
         }
         case 500: {
           message =
-            "Hiện tại chúng tôi đang bảo trì để nâng cấp hệ thống. Quý khách vui lòng quay lại sau ít phút!";
+            "We are currently undergoing maintenance to upgrade our system. Please try again in a few minutes!";
           break;
         }
         default: {
@@ -69,8 +68,7 @@ const initApi = (url?: string, headers = {}) => {
         }
       }
 
-      // showToastError(message);
-      Alert.alert("Thông báo", message);
+      showToastError(message);
       return Promise.reject(error);
     }
   );

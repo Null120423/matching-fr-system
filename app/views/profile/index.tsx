@@ -3,8 +3,9 @@ import Separator from "@/components/@core/separator";
 import TextDefault from "@/components/@core/text-default";
 import { Colors } from "@/constants/Colors"; // Import Colors
 import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
+import { UserDTO } from "@/dto";
 import { scale } from "@/helper/helpers";
-import { fetchMyProfile } from "@/services/users"; // Import fetchMyProfile API
+import useProfileMe from "@/services/hooks/user/useProfileMe";
 import { router } from "expo-router";
 import {
   Briefcase,
@@ -18,7 +19,7 @@ import {
   Settings,
   Users,
 } from "lucide-react-native";
-import React, { useEffect, useState } from "react"; // Import useEffect, useState
+import React, { useEffect } from "react"; // Import useEffect, useState
 import {
   Image,
   Platform,
@@ -98,7 +99,7 @@ function ProfileHeader({
 // Component con: ProfileSummaryCard
 // -----------------------------------------------------
 interface ProfileSummaryCardProps {
-  profile: MyProfileData;
+  profile: UserDTO;
   currentColors: any;
   shadowStyle: any;
 }
@@ -121,7 +122,7 @@ function ProfileSummaryCard({
     >
       <View style={profileStyles.avatarContainer}>
         <Image
-          source={{ uri: profile.avatar }}
+          source={{ uri: profile.avatarUrl }}
           style={[
             profileStyles.avatarImage,
             { borderColor: currentColors.secondary },
@@ -131,7 +132,7 @@ function ProfileSummaryCard({
       <TextDefault
         style={[profileStyles.profileName, { color: currentColors.text }]}
       >
-        {profile.name}
+        {profile.username}
       </TextDefault>
       <TextDefault
         style={[
@@ -139,7 +140,7 @@ function ProfileSummaryCard({
           { color: currentColors.textSecondary },
         ]}
       >
-        {profile.age} tuổi •{" "}
+        {profile.gender} Gender •{" "}
         <MapPin size={scale(14)} color={currentColors.textSecondary} />
         {profile.location}
       </TextDefault>
@@ -163,7 +164,7 @@ function ProfileSummaryCard({
           <TextDefault
             style={[profileStyles.statValue, { color: currentColors.text }]}
           >
-            {profile.friendsCount}
+            {10}
           </TextDefault>
           <TextDefault
             style={[
@@ -179,7 +180,7 @@ function ProfileSummaryCard({
           <TextDefault
             style={[profileStyles.statValue, { color: currentColors.text }]}
           >
-            {profile.activitiesCount}
+            {profile.activities?.length || 0}
           </TextDefault>
           <TextDefault
             style={[
@@ -319,25 +320,10 @@ export default function ProfileView({ navigation }: any) {
   const { theme } = useTheme();
   const currentColors = Colors[theme || "light"];
   const shadowStyle = getShadowStyle(currentColors); // Get themed shadow style
-
-  const [myProfile, setMyProfile] = useState<MyProfileData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: profile, isLoading, onLoadProfileMe } = useProfileMe();
 
   useEffect(() => {
-    const loadMyProfile = async () => {
-      setIsLoading(true);
-      try {
-        const profile = (await fetchMyProfile()) as MyProfileData;
-        setMyProfile(profile);
-      } catch (error) {
-        console.error("Failed to load my profile:", error);
-        // Handle error, e.g., show a message to the user
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadMyProfile();
+    onLoadProfileMe();
   }, []);
 
   if (isLoading) {
@@ -362,7 +348,8 @@ export default function ProfileView({ navigation }: any) {
     );
   }
 
-  if (!myProfile) {
+  console.log(profile);
+  if (!profile) {
     return (
       <View
         style={[
@@ -393,13 +380,13 @@ export default function ProfileView({ navigation }: any) {
         { backgroundColor: currentColors.background },
       ]}
     >
-      <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
+      <Separator height={Platform.OS === "ios" ? scale(55) : scale(30)} />
       <ProfileHeader
-        userName={myProfile.name}
+        userName={profile.username}
         onEditPress={() =>
           router.navigate({
             pathname: "/(common)/profile/edit",
-            params: { id: myProfile.id },
+            params: { id: profile.id },
           })
         }
         currentColors={currentColors}
@@ -408,7 +395,7 @@ export default function ProfileView({ navigation }: any) {
         <View style={profileStyles.content}>
           {/* Profile Card */}
           <ProfileSummaryCard
-            profile={myProfile}
+            profile={profile}
             currentColors={currentColors}
             shadowStyle={shadowStyle}
           />
@@ -427,7 +414,7 @@ export default function ProfileView({ navigation }: any) {
             shadowStyle={shadowStyle}
           >
             <View style={profileStyles.interestsContainer}>
-              {myProfile.interests.map((interest, index) => (
+              {profile.interests?.map((interest, index) => (
                 <View
                   key={index}
                   style={[
@@ -467,7 +454,7 @@ export default function ProfileView({ navigation }: any) {
                 { color: currentColors.textSecondary },
               ]}
             >
-              {myProfile.freeTime}
+              {"10 am - 12 pm, Thứ 2 đến Thứ 6"}
             </TextDefault>
           </ProfileSectionCard>
 
@@ -485,9 +472,9 @@ export default function ProfileView({ navigation }: any) {
             shadowStyle={shadowStyle}
           >
             <View style={profileStyles.activitiesList}>
-              {myProfile.recentActivities.map((activity) => (
+              {profile?.activities?.map((activity, _index) => (
                 <View
-                  key={activity.id}
+                  key={_index}
                   style={[
                     profileStyles.activityHistoryItem,
                     { borderBottomColor: currentColors.border },
@@ -499,7 +486,7 @@ export default function ProfileView({ navigation }: any) {
                       { color: currentColors.text },
                     ]}
                   >
-                    {activity.title}
+                    {activity}
                   </TextDefault>
                   <TextDefault
                     style={[
@@ -507,7 +494,12 @@ export default function ProfileView({ navigation }: any) {
                       { color: currentColors.textLight },
                     ]}
                   >
-                    {activity.date}
+                    {/* {activity} */}
+                    {new Date().toLocaleDateString("vi-VN", {
+                      day: "numeric",
+                      month: "numeric",
+                      year: "numeric",
+                    })}
                   </TextDefault>
                 </View>
               ))}

@@ -3,14 +3,16 @@ import HomeIcon from "@/assets/svg/home-icon";
 import NotificationIcon from "@/assets/svg/notification-icon";
 import PersonIcon from "@/assets/svg/person-icon";
 import Loading from "@/components/@core/loading";
+import { styleGlobal } from "@/components/@core/styles";
 import { Colors } from "@/constants/Colors"; // Import Colors
+import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
 import { normalize } from "@/helper/helpers";
 import DefaultLayout from "@/layouts/default-layout";
 import { useUser } from "@clerk/clerk-react";
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { Platform, StyleSheet, TouchableOpacity, View } from "react-native"; // Add StyleSheet, Platform
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
@@ -64,7 +66,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         styles.tabBarContainer,
         {
           backgroundColor: currentColors.tabBackground, // Themed background
-          shadowColor: currentColors.text, // Themed shadow color
+          shadowColor: currentColors.primary, // Themed shadow color
         },
       ]}
     >
@@ -102,6 +104,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             onLongPress={onLongPress}
             style={[
               styles.tabBarButton,
+              styleGlobal.shadow,
               {
                 backgroundColor: isFocused
                   ? currentColors.tabSelectedBackground // Themed selected background
@@ -120,6 +123,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
 export default function Layout() {
   const { user, isLoaded } = useUser();
+  const { currentUser } = useAuth();
   const { theme } = useTheme(); // Get theme from context
 
   if (!isLoaded) {
@@ -130,9 +134,9 @@ export default function Layout() {
     );
   }
 
-  // if (!user) {
-  //   return <Redirect href="/(auth)/intro" />;
-  // }
+  if (!currentUser) {
+    return <Redirect href="/(auth)/intro" />;
+  }
 
   return (
     <DefaultLayout>

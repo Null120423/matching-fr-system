@@ -12,9 +12,14 @@ import "react-native-reanimated";
 
 import { tokenCache } from "@/cache";
 import { Colors } from "@/constants/Colors"; // Import your centralized Colors
+import { AuthContextProvider } from "@/contexts/AuthContext";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext"; // Import your ThemeProvider and useTheme hook
+import { ToastProvider } from "@/contexts/ToastContext";
 import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-expo";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
+import React from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -150,11 +155,19 @@ function InitialLayout() {
     </Stack>
   );
 }
-
+const queryClient = new QueryClient();
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <RootLayoutContent />
-    </ThemeProvider>
+    <GestureHandlerRootView>
+      <ThemeProvider>
+        <ToastProvider>
+          <QueryClientProvider client={queryClient}>
+            <AuthContextProvider>
+              <RootLayoutContent />
+            </AuthContextProvider>
+          </QueryClientProvider>
+        </ToastProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

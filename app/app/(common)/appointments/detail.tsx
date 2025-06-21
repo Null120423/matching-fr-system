@@ -463,7 +463,6 @@ export default function currentAppointmentDetailsScreen() {
             };
             setCurrentAppointment(processedAppointment);
           } else {
-            Alert.alert("Lỗi", "Không tìm thấy cuộc hẹn này.");
           }
         } catch (error) {
           console.error("Failed to fetch appointment details:", error);

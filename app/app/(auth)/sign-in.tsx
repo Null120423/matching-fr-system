@@ -4,8 +4,10 @@ import { ButtonPrimary, IconButton } from "@/components/@core/button";
 import Row from "@/components/@core/row";
 import Separator from "@/components/@core/separator";
 import TextDefault from "@/components/@core/text-default";
+import { showToastInfo } from "@/contexts/ToastEventEmitter";
 import { normalize } from "@/helper/helpers";
 import DefaultLayout from "@/layouts/default-layout";
+import useLogin from "@/services/hooks/auth/useSignIn";
 import { useOAuth, useSignIn } from "@clerk/clerk-expo";
 import { AntDesign, FontAwesome6 } from "@expo/vector-icons";
 import * as Linking from "expo-linking";
@@ -16,8 +18,6 @@ import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import Header from "../header";
 export const useWarmUpBrowser = () => {
   React.useEffect(() => {
-    // Warm up the android browser to improve UX
-    // https://docs.expo.dev/guides/authentication/#improving-user-experience
     void WebBrowser.warmUpAsync();
     return () => {
       void WebBrowser.coolDownAsync();
@@ -28,6 +28,7 @@ export const useWarmUpBrowser = () => {
 WebBrowser.maybeCompleteAuthSession();
 const Login = () => {
   useWarmUpBrowser();
+  const { onLogin, isLoading: isLoadingLogin } = useLogin();
 
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
   const { startOAuthFlow: startOAuthFlowWithDiscord } = useOAuth({
@@ -44,7 +45,17 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const onSignInPress = async () => {
-    router.push("/(home)");
+    if (!emailAddress || !password) {
+      showToastInfo("Please enter email and password");
+      return;
+    }
+
+    onLogin({
+      username: emailAddress,
+      password,
+    });
+
+    // router.push("/(home)");
     // if (!isLoaded) {
     //   return;
     // }
@@ -54,7 +65,6 @@ const Login = () => {
     //     identifier: emailAddress,
     //     password,
     //   });
-
     //   // This indicates the user is signed in
     //   await setActive({ session: completeSignIn.createdSessionId });
     // } catch (err: any) {
@@ -145,12 +155,12 @@ const Login = () => {
           }}
         >
           <Input
-            placeholder="email"
+            placeholder="Username or email address"
             text={emailAddress}
             onChangeText={setEmailAddress}
           />
           <InputPassword
-            placeholder="password"
+            placeholder="Password"
             text={password}
             onChangeText={setPassword}
           />
@@ -174,7 +184,7 @@ const Login = () => {
           minWidth={"100%"}
           onPress={onSignInPress}
           title="Login"
-          isLoading={loading}
+          isLoading={isLoadingLogin}
         />
 
         <Separator height={normalize(20)} />

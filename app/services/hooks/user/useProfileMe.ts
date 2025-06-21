@@ -1,19 +1,22 @@
 import { ENDPOINTS } from "@/services/endpoints";
 import { rootApi } from "@/services/rootApi";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { UserProfileResponse } from "./dto";
 
 const useProfileMe = () => {
-  const { data, isLoading, error } = useQuery<UserProfileResponse, Error>({
-    queryKey: [ENDPOINTS.USER.GET_SELF_PROFILE],
-    queryFn: () =>
-      rootApi.get<null, UserProfileResponse>(ENDPOINTS.USER.GET_SELF_PROFILE),
+  const { data, isPending, error, mutateAsync } = useMutation<
+    UserProfileResponse,
+    Error
+  >({
+    mutationFn: () =>
+      rootApi.get<null, UserProfileResponse>(ENDPOINTS.USER.UPDATE_PROFILE),
   });
 
   return {
-    data: data ?? null,
-    isLoading: isLoading,
+    data: data,
+    isLoading: isPending,
     error,
+    onLoadProfileMe: mutateAsync,
   };
 };
 

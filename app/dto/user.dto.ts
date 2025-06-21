@@ -6,9 +6,15 @@ export interface UserDTO extends BaseDTO {
   email: string;
   gender?: string;
   dob?: string;
-  avatarUrl?: string;
-  favoriteActivities?: string[];
+  avatarUrl: string;
+  activities?: string[];
+  interests?: string[];
   availableTimeSlots?: string[];
   location?: string;
   bio?: string;
 }
+
+export const GENDER_CONST = {
+  MALE: "MALE",
+  FEMALE: "FEMALE",
+};

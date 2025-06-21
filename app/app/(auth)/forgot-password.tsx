@@ -3,6 +3,7 @@ import { Input, InputPassword } from "@/components/@core";
 import { ButtonPrimary } from "@/components/@core/button";
 import Row from "@/components/@core/row";
 import Separator from "@/components/@core/separator";
+import { showToastError, showToastSuccess } from "@/contexts/ToastEventEmitter";
 import { normalize } from "@/helper/helpers";
 import DefaultLayout from "@/layouts/default-layout";
 import { useSignIn } from "@clerk/clerk-expo";
@@ -31,7 +32,7 @@ const PwReset = () => {
       setSuccessfulCreation(true);
       setLoading(false);
     } catch (err: any) {
-      alert(err.errors[0].message);
+      showToastError(err.errors[0].message);
       setLoading(false);
     }
   };
@@ -47,12 +48,12 @@ const PwReset = () => {
       });
       console.log(result);
       setLoading(false);
-      alert("Password reset successfully");
+      showToastSuccess("Password reset successfully");
 
       // Set the user session active, which will log in the user automatically
       setActive && (await setActive({ session: result?.createdSessionId }));
     } catch (err: any) {
-      alert(err.errors[0].message);
+      showToastError(err.errors[0].message);
       setLoading(false);
     }
   };

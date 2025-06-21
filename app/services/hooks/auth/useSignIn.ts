@@ -21,7 +21,6 @@ const useLogin = () => {
       );
     },
     onSuccess: async (data: SignInResponse) => {
-      Alert.alert("Login successful", "Welcome back!");
       onSignIn({
         user: data.user,
         tokens: {
@@ -36,7 +35,7 @@ const useLogin = () => {
     isError,
     data,
     error,
-    onSignIn: mutateAsync,
+    onLogin: mutateAsync,
   };
 };
 

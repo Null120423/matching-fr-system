@@ -1,5 +1,6 @@
 import { BadRequestException, Controller } from '@nestjs/common';
 import { GrpcLog, GrpcMethod } from 'src/decorators';
+import { SwipeAction } from 'src/entities';
 import { CreateSwipeDto, FriendRequest } from './dto/create-swipe.dto';
 import { MatchingService } from './matching.service';
 GrpcLog();
@@ -12,14 +13,14 @@ export class MatchingController {
   async recordSwipe(
     payload: CreateSwipeDto,
   ): Promise<{ success: boolean; match?: boolean }> {
-    const action = payload.action;
-    if (!action) {
+    const action = payload.action.toLowerCase();
+    if (!Object.values(SwipeAction).includes(action as SwipeAction)) {
       throw new BadRequestException('Invalid swipe action.');
     }
     const result = await this.matchingService.recordSwipe(
       payload.swiperId,
       payload.swipedId,
-      action,
+      action as SwipeAction,
     );
     return { success: true, match: result.match };
   }

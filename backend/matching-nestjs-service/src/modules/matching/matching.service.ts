@@ -9,6 +9,7 @@ import {
   FriendRequestEntity,
   FriendRequestStatus,
   SwipeAction,
+  SwipeEntity,
 } from 'src/entities';
 import {
   FriendRequestRepository,
@@ -44,16 +45,15 @@ export class MatchingService {
 
     if (existingSwipe) {
       // Nếu đã swipe, cập nhật hành động
-      existingSwipe.action = action;
+      existingSwipe.action = SwipeAction[action];
       await this.swipeRepository.save(existingSwipe);
     } else {
       // Tạo swipe mới
-      const newSwipe = this.swipeRepository.create({
-        swiperId: swiperId,
-        swipedId,
-        action,
-      });
-      await this.swipeRepository.save(newSwipe);
+      const newSwipe = new SwipeEntity();
+      newSwipe.swiperId = swiperId;
+      newSwipe.swipedId = swipedId;
+      newSwipe.action = action;
+      await this.swipeRepository.insert(newSwipe);
     }
 
     let match = false;

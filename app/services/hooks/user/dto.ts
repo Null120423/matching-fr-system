@@ -26,4 +26,6 @@ export interface DiscoverUsersRequest {
 }
 export interface DiscoverUsersResponse extends Array<UserDTO> {}
 
-export interface UserProfileResponse extends UserDTO {}
+export interface UserProfileResponse extends UserDTO {
+  dateOfBirth: string | number | Date;
+}

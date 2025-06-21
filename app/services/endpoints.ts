@@ -29,7 +29,7 @@ export const ENDPOINTS = {
   },
   MATCHING: {
     SWIPE: (userId: string, params?: Record<string, any>) =>
-      buildUrlWithParams(`${prefix}/matching/${userId}/swipe`, params),
+      buildUrlWithParams(`${prefix}/matching-upload/${userId}/swipe`, params),
     FRIEND_REQUEST: (userId: string) =>
       `${prefix}/matching-upload/${userId}/friend-request`,
     UPDATE_STATUS_FRIEND_REQUEST: (userId: string) =>

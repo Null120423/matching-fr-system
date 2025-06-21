@@ -2,8 +2,8 @@ import { Column, Entity } from 'typeorm';
 import { BaseEntityCustom } from './base.entity';
 
 export enum SwipeAction {
-  LIKE = 'LIKE',
-  PASS = 'PASS',
+  LIKE = 'like',
+  PASS = 'pass',
 }
 
 export const SwipeActionData = {

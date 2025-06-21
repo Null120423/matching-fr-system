@@ -1,4 +1,5 @@
 import { scale } from "@/helper/helpers";
+import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 interface BadgeProps {
   children: React.ReactNode;
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start", // Để không kéo dài toàn bộ chiều rộng
   },
   badgeDefault: {
-    backgroundColor: "#22c55e", // bg-green-500
+    backgroundColor: "rgba(0,0,0,0.6)", // bg-green-500
   },
   badgeSecondary: {
     backgroundColor: "#e5e7eb", // bg-gray-200

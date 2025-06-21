@@ -2,9 +2,9 @@ import { Column, Entity } from 'typeorm';
 import { BaseEntityCustom } from './base.entity';
 
 export enum FriendRequestStatus {
-  PENDING = 'PENDING',
-  ACCEPTED = 'ACCEPTED',
-  REJECTED = 'REJECTED',
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
 }
 export const FriendRequestStatusData = {
   [FriendRequestStatus.PENDING]: {

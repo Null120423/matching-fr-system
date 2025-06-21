@@ -1,8 +1,7 @@
 import { IsNotEmpty } from 'class-validator';
-import { SwipeAction } from 'src/entities';
 
 export class CreateSwipeDto {
-  action: SwipeAction;
+  action: string;
 
   @IsNotEmpty()
   swiperId: string;
@@ -14,7 +13,7 @@ export class FriendRequest {
   id: string;
   senderId: string;
   receiverId: string;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  status: string;
   createdAt: Date;
   updatedAt: Date;
 }

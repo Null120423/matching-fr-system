@@ -2,17 +2,6 @@ syntax = "proto3";
 
 package matchingupload;
 
-// Enums must use numeric values
-enum SwipeAction {
-  LIKE = 0;
-  PASS = 1;
-}
-
-enum FriendRequestStatus {
-  PENDING = 0;
-  ACCEPTED = 1;
-  REJECTED = 2;
-}
 
 // Services
 service UploadService {
@@ -40,7 +29,7 @@ message UploadAvatarResponse {
 message RecordSwipeRequest {
   string swiperId = 1;
   string swipedId = 2;
-  SwipeAction action = 3;
+  string action = 3;
 }
 
 message RecordSwipeResponse {
@@ -56,20 +45,19 @@ message SendFriendRequestRequest {
 message SendFriendRequestResponse {
   bool success = 1;
   string message = 2;
-  // optional FriendRequest friendRequest = 3;
 }
 
 message UpdateFriendRequestStatusRequest {
   string id = 1;
   string userId = 2;
-  FriendRequestStatus newStatus = 3;
+  string newStatus = 3;
 }
 
 message FriendRequest {
   string id = 1;
   string senderId = 2;
   string receiverId = 3;
-  FriendRequestStatus status = 4;
+  string status = 4;
   string createdAt = 5;
   string updatedAt = 6;
   string statusName = 7;

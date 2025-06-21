@@ -24,7 +24,7 @@ export const tints = {
 };
 
 export const darkTints = {
-  primary: "#9C27B0", // Darker purple for dark mode primary
+  primary: "#745AFF", // Darker purple for dark mode primary
   secondary: "#E91E63", // Darker pink
   success: "#4CAF50",
   warning: "#FFC107",

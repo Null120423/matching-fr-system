@@ -1,5 +1,5 @@
 import { normalize } from "@/helper/helpers";
-import { Platform, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 
 export const styleGlobal = StyleSheet.create({
   input: {
@@ -51,7 +51,6 @@ export const styleGlobal = StyleSheet.create({
     },
     shadowOpacity: 1,
     shadowRadius: 10,
-    elevation: Platform.OS === "android" ? 2 : undefined,
   },
   badge: {
     position: "absolute",

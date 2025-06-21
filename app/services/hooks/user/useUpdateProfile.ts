@@ -1,7 +1,8 @@
+import { showToastSuccess } from "@/contexts/ToastEventEmitter";
 import { ENDPOINTS } from "@/services/endpoints";
 import { rootApi } from "@/services/rootApi";
 import { useMutation } from "@tanstack/react-query";
-import { Alert } from "react-native";
+import { router } from "expo-router";
 import { UpdateProfileRequest, UpdateProfileResponse } from "./dto";
 
 const useUpdateProfile = () => {
@@ -12,14 +13,9 @@ const useUpdateProfile = () => {
         variables
       );
     },
-    onError: (e: any) => {
-      Alert.alert(
-        "Login failed",
-        e?.response?.data?.message || "Đã có lỗi xảy ra"
-      );
-    },
     onSuccess: async (data: UpdateProfileResponse) => {
-      Alert.alert(data?.message || "", "Welcome back!");
+      showToastSuccess(data?.message || "Update profile successful");
+      router.back();
     },
   });
   return {

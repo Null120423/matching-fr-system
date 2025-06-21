@@ -1,14 +1,16 @@
-// views/discover/user-profile/index.tsx
-import Loading from "@/components/@core/loading"; // Import Loading component
+import { ButtonPrimary } from "@/components/@core/button";
+import Loading from "@/components/@core/loading";
 import Separator from "@/components/@core/separator";
 import TextDefault from "@/components/@core/text-default";
 import { Colors } from "@/constants/Colors"; // Import Colors
 import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
+import { UserDTO } from "@/dto";
 import { scale } from "@/helper/helpers";
-import { fetchDiscoverUsers } from "@/services/users"; // Import mock API
+import useSendFriendRequest from "@/services/hooks/matching/useSendFriendRequest";
+import useProfile from "@/services/hooks/user/useProfile";
 import { Ionicons } from "@expo/vector-icons"; // Dùng Ionicons thay cho HomeIcon trong nhiều trường hợp
 import { router, useLocalSearchParams } from "expo-router"; // Import useLocalSearchParams
-import React, { useEffect, useState } from "react"; // Import useEffect, useState
+import React, { useEffect } from "react"; // Import useEffect, useState
 import {
   Image,
   Platform,
@@ -17,20 +19,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-// Define User Interface
-interface DiscoverUser {
-  id: string;
-  name: string;
-  age: number;
-  location: string;
-  avatar: string;
-  compatibility: number;
-  interests: string[];
-  bio: string;
-  activities: string[];
-  freeTime: string;
-}
 
 // -----------------------------------------------------
 // Component con: ProfileHeader
@@ -66,33 +54,12 @@ function ProfileHeader({
         >
           Chi tiết hồ sơ
         </TextDefault>
-        <TextDefault
-          style={[
-            styles.headerSubtitle,
-            { color: currentColors.textSecondary },
-          ]}
-        >
-          Thông tin chi tiết về {userName}
-        </TextDefault>
       </View>
     </View>
   );
 }
 
-// -----------------------------------------------------
-// Component con: ProfileImageCard
-// -----------------------------------------------------
-interface ProfileImageCardProps {
-  avatar: string;
-  compatibility: number;
-  currentColors: any;
-}
-
-function ProfileImageCard({
-  avatar,
-  compatibility,
-  currentColors,
-}: ProfileImageCardProps) {
+function ProfileImageCard({ avatar, compatibility, currentColors }: any) {
   return (
     <View
       style={[
@@ -124,29 +91,22 @@ function ProfileImageCard({
     </View>
   );
 }
-
-// -----------------------------------------------------
-// Component con: ProfileInfoSection
-// -----------------------------------------------------
 interface ProfileInfoSectionProps {
-  user: DiscoverUser;
+  user: UserDTO;
   currentColors: any;
 }
 
 function ProfileInfoSection({ user, currentColors }: ProfileInfoSectionProps) {
+  const { onSend, isLoading } = useSendFriendRequest();
+
   return (
     <View style={[styles.cardContent]}>
       <TextDefault style={[styles.profileName, { color: currentColors.text }]}>
-        {user.name}, {user.age}
+        {user.username}, {user.gender}
       </TextDefault>
       <TextDefault
         style={[styles.profileLocation, { color: currentColors.textSecondary }]}
       >
-        <Ionicons
-          name="location-outline"
-          size={scale(16)}
-          color={currentColors.textSecondary}
-        />
         {user.location}
       </TextDefault>
       <TextDefault
@@ -154,7 +114,6 @@ function ProfileInfoSection({ user, currentColors }: ProfileInfoSectionProps) {
       >
         {user.bio}
       </TextDefault>
-
       <View style={styles.section}>
         <TextDefault
           style={[styles.sectionTitle, { color: currentColors.text }]}
@@ -163,12 +122,11 @@ function ProfileInfoSection({ user, currentColors }: ProfileInfoSectionProps) {
             name="sparkles"
             size={scale(16)}
             color={currentColors.primary}
-            style={styles.iconMargin}
           />
           Sở thích
         </TextDefault>
         <View style={styles.interestsContainer}>
-          {user.interests.map((interest: string, index: number) => (
+          {user?.interests?.map((interest: string, index: number) => (
             <View
               key={index}
               style={[
@@ -197,29 +155,29 @@ function ProfileInfoSection({ user, currentColors }: ProfileInfoSectionProps) {
             name="walk"
             size={scale(16)}
             color={currentColors.primary}
-            style={styles.iconMargin}
           />
           Hoạt động thường xuyên
         </TextDefault>
         <View style={styles.activitiesList}>
-          {user.activities.map((activity: string, index: number) => (
-            <View key={index} style={styles.activityItem}>
-              <View
-                style={[
-                  styles.bulletPoint,
-                  { backgroundColor: currentColors.primary },
-                ]}
-              />
-              <TextDefault
-                style={[
-                  styles.activityText,
-                  { color: currentColors.textSecondary },
-                ]}
-              >
-                {activity}
-              </TextDefault>
-            </View>
-          ))}
+          {user.activities &&
+            user.activities?.map((activity: string, index: number) => (
+              <View key={index} style={styles.activityItem}>
+                <View
+                  style={[
+                    styles.bulletPoint,
+                    { backgroundColor: currentColors.primary },
+                  ]}
+                />
+                <TextDefault
+                  style={[
+                    styles.activityText,
+                    { color: currentColors.textSecondary },
+                  ]}
+                >
+                  {activity}
+                </TextDefault>
+              </View>
+            ))}
         </View>
       </View>
 
@@ -231,98 +189,57 @@ function ProfileInfoSection({ user, currentColors }: ProfileInfoSectionProps) {
             name="time"
             size={scale(16)}
             color={currentColors.primary}
-            style={styles.iconMargin}
           />
           Thời gian rảnh
         </TextDefault>
         <TextDefault
           style={[styles.freeTimeText, { color: currentColors.textSecondary }]}
         >
-          {user.freeTime}
+          {user.availableTimeSlots
+            ? user.availableTimeSlots.join(", ")
+            : "Chưa cập nhật"}
         </TextDefault>
       </View>
 
       <View style={styles.actionButtonsContainer}>
-        <TouchableOpacity
-          style={[
-            styles.inviteButton,
-            { backgroundColor: currentColors.primary },
-          ]}
-        >
-          <Ionicons
-            name="mail"
-            size={scale(16)}
-            color={currentColors.backgroundCard}
-            style={styles.iconMargin}
-          />
-          <TextDefault
-            style={[
-              styles.inviteButtonText,
-              { color: currentColors.backgroundCard },
-            ]}
-          >
-            Gửi lời mời hẹn
-          </TextDefault>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.addFriendButton,
-            { borderColor: currentColors.border },
-          ]}
-        >
-          <Ionicons
-            name="person-add"
-            size={scale(16)}
-            color={currentColors.text}
-            style={styles.iconMargin}
-          />
-          <TextDefault
-            style={[styles.addFriendButtonText, { color: currentColors.text }]}
-          >
-            Kết bạn
-          </TextDefault>
-        </TouchableOpacity>
+        <ButtonPrimary
+          minWidth={"90%"}
+          onPress={() => onSend(user.id)}
+          title="Send Request Friend"
+          styleTitle={{
+            fontSize: scale(12),
+          }}
+          isLoading={isLoading}
+          iconLeft={
+            <Ionicons
+              name="person-add"
+              size={scale(24)}
+              color={currentColors.text}
+            />
+          }
+        />
       </View>
     </View>
   );
 }
-
 // -----------------------------------------------------
 // Main Component: UserProfileView
 // -----------------------------------------------------
 export default function UserProfileView() {
   const { theme } = useTheme();
   const currentColors = Colors[theme || "light"];
-  const params = useLocalSearchParams(); // Lấy params từ URL
-  const userId = params.userId as string; // Đảm bảo bạn truyền userId qua router push
-
-  const [user, setUser] = useState<DiscoverUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const params = useLocalSearchParams();
+  const userId = params.userId as string;
+  const { data: user, isLoading, isRefetching } = useProfile(userId);
+  const [currentUser, setCurrentUser] = React.useState<UserDTO | null>(null);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (userId) {
-        setIsLoading(true);
-        try {
-          const users = (await fetchDiscoverUsers()) as DiscoverUser[];
-          const foundUser = users.find((u) => u.id === userId);
-          setUser(foundUser || null);
-        } catch (error) {
-          console.error("Failed to fetch user profile:", error);
-          setUser(null); // Clear user data on error
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        setIsLoading(false); // No userId provided
-        setUser(null);
-      }
-    };
+    if (!isLoading && !isRefetching && user) {
+      setCurrentUser(user);
+    }
+  }, [isRefetching, isLoading, user]);
 
-    fetchUserProfile();
-  }, [userId]); // Re-fetch if userId changes
-
-  if (isLoading) {
+  if (isLoading || !currentUser || !user || isRefetching) {
     return (
       <View
         style={[
@@ -344,7 +261,7 @@ export default function UserProfileView() {
     );
   }
 
-  if (!user) {
+  if (!currentUser || !user) {
     return (
       <View
         style={[
@@ -392,20 +309,21 @@ export default function UserProfileView() {
     >
       <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
       <ProfileHeader
-        userName={user.name}
+        userName={user.username}
         onBackPress={() => router.back()}
         currentColors={currentColors}
       />
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
           <ProfileImageCard
-            avatar={user.avatar}
-            compatibility={user.compatibility}
+            avatar={user.avatarUrl}
+            compatibility={10}
             currentColors={currentColors}
           />
+          <Separator height={scale(16)} />
           <ProfileInfoSection user={user} currentColors={currentColors} />
         </View>
-        <Separator height={scale(70)} />
+        <Separator height={scale(120)} />
       </ScrollView>
     </View>
   );
@@ -423,9 +341,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-start", // Left align back button
     paddingHorizontal: scale(16),
-    paddingVertical: scale(16),
+    paddingTop: scale(30),
+    paddingBottom: scale(10),
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB", // will be themed
   },
   backButton: {
     paddingRight: scale(10),
@@ -444,7 +362,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: scale(16),
-    paddingVertical: scale(24),
   },
   profileCard: {
     backgroundColor: "white",
@@ -474,10 +391,7 @@ const styles = StyleSheet.create({
     fontSize: scale(12),
     fontWeight: "600",
   },
-  cardContent: {
-    padding: scale(24),
-    gap: scale(24), // space-y-6
-  },
+  cardContent: {},
   profileName: {
     fontSize: scale(24),
     fontWeight: "bold",
@@ -502,9 +416,6 @@ const styles = StyleSheet.create({
     marginBottom: scale(12),
     flexDirection: "row",
     alignItems: "center",
-  },
-  iconMargin: {
-    marginRight: scale(8),
   },
   interestsContainer: {
     flexDirection: "row",
@@ -540,7 +451,7 @@ const styles = StyleSheet.create({
   },
   actionButtonsContainer: {
     flexDirection: "row",
-    gap: scale(12),
+    justifyContent: "center",
     paddingTop: scale(16),
   },
   inviteButton: {

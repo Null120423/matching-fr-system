@@ -1,19 +1,25 @@
-import Loading from "@/components/@core/loading"; // Import Loading component
-import Separator from "@/components/@core/separator";
-import TextDefault from "@/components/@core/text-default"; // Sử dụng TextDefault
-import { Colors } from "@/constants/Colors"; // Import Colors
-import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
-import { scale } from "@/helper/helpers";
-import { fetchMyProfile, updateMyProfile } from "@/services/users"; // Import fetch and update mock API
+"use client";
+
+import { ButtonOutlined, ButtonPrimary } from "@/components/@core/button";
+import Loading from "@/components/@core/loading";
+import DatePicker from "@/components/@core/Picker/DatePicker";
+import FreeTimePicker from "@/components/@core/Picker/FreeTimePicker";
+import RangePicker from "@/components/@core/Picker/RangerPicker";
+import TextDefault from "@/components/@core/text-default";
+import TimePicker from "@/components/@core/TimePicker";
+import { Colors } from "@/constants/Colors";
+import { useTheme } from "@/contexts/ThemeContext";
+import type { GENDER_CONST } from "@/dto";
+import { normalize, scale } from "@/helper/helpers";
+import useProfileMe from "@/services/hooks/user/useProfileMe";
+import useUpdateProfile from "@/services/hooks/user/useUpdateProfile";
 import { Picker } from "@react-native-picker/picker";
-import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
-import { Plus, Save, X } from "lucide-react-native";
-import React, { useEffect, useState } from "react"; // Import useEffect
+import { Clock, Heart, MapPin, Plus, Save, X } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
-  Platform,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -21,66 +27,37 @@ import {
   View,
 } from "react-native";
 
-// Define User Interface (should match your MOCK_MY_PROFILE_DATA)
 interface EditableUserData {
-  id: string;
-  name: string;
-  gender: string;
-  age: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: Date;
+  gender: keyof typeof GENDER_CONST;
   location: string;
   bio: string;
-  avatar: string;
   interests: string[];
-  freeTime: string;
+  avatarUrl: string;
+  minAgePreference: number;
+  maxAgePreference: number;
+  preferredGender: keyof typeof GENDER_CONST;
+  activities: string[];
+  availableTimeSlots: string[];
+  // New fields
+  specificTimes: string[];
+  freeTimes: any[];
+  workingHours: { start: string; end: string };
+  preferredMeetingTimes: string[];
+  relationshipGoals: string[];
+  lifestyle: string[];
+  education: string;
+  occupation: string;
+  languages: string[];
 }
 
-// Helper for platform-specific shadows (now uses currentColors)
-const getShadowStyle = (currentColors: any) =>
-  Platform.select({
-    ios: {
-      shadowColor: currentColors.shadow, // Themed shadow color
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
-    },
-    android: {
-      elevation: 2,
-    },
-  });
-
-// -----------------------------------------------------
-// Component con: EditProfileHeader
-// -----------------------------------------------------
-interface EditProfileHeaderProps {
-  currentColors: any;
-}
-
-function EditProfileHeader({ currentColors }: EditProfileHeaderProps) {
-  return (
-    <View style={editProfileStyles.header}>
-      <TextDefault
-        style={[editProfileStyles.headerTitle, { color: currentColors.text }]}
-      >
-        Chỉnh sửa hồ sơ
-      </TextDefault>
-      <TextDefault
-        style={[
-          editProfileStyles.headerSubtitle,
-          { color: currentColors.textSecondary },
-        ]}
-      >
-        Cập nhật thông tin cá nhân của bạn
-      </TextDefault>
-    </View>
-  );
-}
-
-// -----------------------------------------------------
-// Component con: AvatarEditSection
-// -----------------------------------------------------
+// Component: AvatarEditSection
 interface AvatarEditSectionProps {
   avatarUri: string;
-  onChooseAvatar: () => void; // Placeholder for image picker logic
+  onChooseAvatar: () => void;
   currentColors: any;
 }
 
@@ -118,63 +95,56 @@ function AvatarEditSection({
   );
 }
 
-// -----------------------------------------------------
-// Component con: ProfileFormSection
-// -----------------------------------------------------
-interface ProfileFormSectionProps {
-  name: string;
-  setName: (text: string) => void;
-  age: string;
-  setAge: (text: string) => void;
-  gender: string;
-  setGender: (value: string) => void;
-  location: string;
-  setLocation: (text: string) => void;
-  bio: string;
-  setBio: (text: string) => void;
-  interests: string[];
-  handleRemoveInterest: (interest: string) => void;
-  newInterest: string;
-  setNewInterest: (text: string) => void;
-  handleAddInterest: () => void;
-  freeTime: string;
-  setFreeTime: (text: string) => void;
+// Component: BasicInfoSection
+interface BasicInfoSectionProps {
+  state: any;
+  handleChangeState: (key: string, value: any) => void;
   currentColors: any;
-  shadowStyle: any;
 }
 
-function ProfileFormSection({
-  name,
-  setName,
-  age,
-  setAge,
-  gender,
-  setGender,
-  location,
-  setLocation,
-  bio,
-  setBio,
-  interests,
-  handleRemoveInterest,
-  newInterest,
-  setNewInterest,
-  handleAddInterest,
-  freeTime,
-  setFreeTime,
+function BasicInfoSection({
+  state,
+  handleChangeState,
   currentColors,
-  shadowStyle,
-}: ProfileFormSectionProps) {
+}: BasicInfoSectionProps) {
   return (
     <View
       style={[
         editProfileStyles.formCard,
-        shadowStyle,
         {
           backgroundColor: currentColors.backgroundCard,
           borderColor: currentColors.border,
         },
       ]}
     >
+      <TextDefault
+        style={[editProfileStyles.sectionTitle, { color: currentColors.text }]}
+      >
+        Thông tin cơ bản
+      </TextDefault>
+
+      <View style={editProfileStyles.formGroup}>
+        <TextDefault
+          style={[editProfileStyles.label, { color: currentColors.text }]}
+        >
+          Họ
+        </TextDefault>
+        <TextInput
+          style={[
+            editProfileStyles.input,
+            {
+              borderColor: currentColors.border,
+              color: currentColors.text,
+              backgroundColor: currentColors.backgroundCard,
+            },
+          ]}
+          value={state.firstName}
+          onChangeText={(val) => handleChangeState("firstName", val)}
+          placeholderTextColor={currentColors.textLight}
+          placeholder="Nhập họ của bạn"
+        />
+      </View>
+
       <View style={editProfileStyles.formGroup}>
         <TextDefault
           style={[editProfileStyles.label, { color: currentColors.text }]}
@@ -190,9 +160,10 @@ function ProfileFormSection({
               backgroundColor: currentColors.backgroundCard,
             },
           ]}
-          value={name}
-          onChangeText={setName}
+          value={state.lastName}
+          onChangeText={(val) => handleChangeState("lastName", val)}
           placeholderTextColor={currentColors.textLight}
+          placeholder="Nhập tên của bạn"
         />
       </View>
 
@@ -200,7 +171,7 @@ function ProfileFormSection({
         <TextDefault
           style={[editProfileStyles.label, { color: currentColors.text }]}
         >
-          Tuổi
+          Email
         </TextDefault>
         <TextInput
           style={[
@@ -211,10 +182,11 @@ function ProfileFormSection({
               backgroundColor: currentColors.backgroundCard,
             },
           ]}
-          value={age}
-          onChangeText={setAge}
-          keyboardType="numeric"
+          value={state.email}
+          onChangeText={(val) => handleChangeState("email", val)}
           placeholderTextColor={currentColors.textLight}
+          placeholder="Nhập email của bạn"
+          keyboardType="email-address"
         />
       </View>
 
@@ -234,31 +206,16 @@ function ProfileFormSection({
           ]}
         >
           <Picker
-            selectedValue={gender}
-            onValueChange={(itemValue) => setGender(String(itemValue))}
+            selectedValue={state.gender}
+            onValueChange={(itemValue) =>
+              handleChangeState("gender", itemValue)
+            }
             style={[editProfileStyles.picker, { color: currentColors.text }]}
-            // itemStyle={editProfileStyles.pickerItem} // itemStyle is only for iOS
           >
-            <Picker.Item
-              label="Chọn giới tính"
-              value=""
-              style={{ color: currentColors.text }}
-            />
-            <Picker.Item
-              label="Nam"
-              value="Nam"
-              style={{ color: currentColors.text }}
-            />
-            <Picker.Item
-              label="Nữ"
-              value="Nữ"
-              style={{ color: currentColors.text }}
-            />
-            <Picker.Item
-              label="Khác"
-              value="Khác"
-              style={{ color: currentColors.text }}
-            />
+            <Picker.Item label="Chọn giới tính" value="" />
+            <Picker.Item label="Nam" value="male" />
+            <Picker.Item label="Nữ" value="female" />
+            <Picker.Item label="Khác" value="other" />
           </Picker>
         </View>
       </View>
@@ -269,19 +226,28 @@ function ProfileFormSection({
         >
           Vị trí
         </TextDefault>
-        <TextInput
-          style={[
-            editProfileStyles.input,
-            {
-              borderColor: currentColors.border,
-              color: currentColors.text,
-              backgroundColor: currentColors.backgroundCard,
-            },
-          ]}
-          value={location}
-          onChangeText={setLocation}
-          placeholderTextColor={currentColors.textLight}
-        />
+        <View style={editProfileStyles.inputWithIcon}>
+          <MapPin
+            size={scale(20)}
+            color={currentColors.textLight}
+            style={editProfileStyles.inputIcon}
+          />
+          <TextInput
+            style={[
+              editProfileStyles.input,
+              editProfileStyles.inputWithIconText,
+              {
+                borderColor: currentColors.border,
+                color: currentColors.text,
+                backgroundColor: currentColors.backgroundCard,
+              },
+            ]}
+            value={state.location}
+            onChangeText={(val) => handleChangeState("location", val)}
+            placeholderTextColor={currentColors.textLight}
+            placeholder="Nhập địa chỉ của bạn"
+          />
+        </View>
       </View>
 
       <View style={editProfileStyles.formGroup}>
@@ -300,13 +266,49 @@ function ProfileFormSection({
               backgroundColor: currentColors.backgroundCard,
             },
           ]}
-          value={bio}
-          onChangeText={setBio}
+          value={state.bio}
+          onChangeText={(val) => handleChangeState("bio", val)}
           multiline
           numberOfLines={4}
           placeholderTextColor={currentColors.textLight}
+          placeholder="Viết vài dòng về bản thân bạn..."
         />
       </View>
+    </View>
+  );
+}
+
+// Component: InterestsSection
+interface InterestsSectionProps {
+  state: any;
+  handleChangeState: (key: string, value: any) => void;
+  handleAddInterest: () => void;
+  handleRemoveInterest: (interest: string) => void;
+  currentColors: any;
+}
+
+function InterestsSection({
+  state,
+  handleChangeState,
+  handleAddInterest,
+  handleRemoveInterest,
+  currentColors,
+}: InterestsSectionProps) {
+  return (
+    <View
+      style={[
+        editProfileStyles.formCard,
+        {
+          backgroundColor: currentColors.backgroundCard,
+          borderColor: currentColors.border,
+        },
+      ]}
+    >
+      <TextDefault
+        style={[editProfileStyles.sectionTitle, { color: currentColors.text }]}
+      >
+        Sở thích & Hoạt động
+      </TextDefault>
 
       <View style={editProfileStyles.formGroup}>
         <TextDefault
@@ -326,8 +328,8 @@ function ProfileFormSection({
               },
             ]}
             placeholder="Thêm sở thích mới..."
-            value={newInterest}
-            onChangeText={setNewInterest}
+            value={state.newInterest}
+            onChangeText={(val) => handleChangeState("newInterest", val)}
             onSubmitEditing={handleAddInterest}
             placeholderTextColor={currentColors.textLight}
           />
@@ -342,7 +344,7 @@ function ProfileFormSection({
           </TouchableOpacity>
         </View>
         <View style={editProfileStyles.interestsTagsContainer}>
-          {interests.map((interest, index) => (
+          {(state.interests || []).map((interest: string, index: number) => (
             <View
               key={index}
               style={[
@@ -373,193 +375,630 @@ function ProfileFormSection({
         <TextDefault
           style={[editProfileStyles.label, { color: currentColors.text }]}
         >
-          Thời gian rảnh
+          Hoạt động yêu thích
+        </TextDefault>
+        <View
+          style={[
+            editProfileStyles.pickerContainer,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.backgroundCard,
+            },
+          ]}
+        >
+          <Picker
+            selectedValue={state.selectedActivity}
+            onValueChange={(itemValue) => {
+              if (itemValue && !state.activities.includes(itemValue)) {
+                handleChangeState("activities", [
+                  ...(state.activities || []),
+                  itemValue,
+                ]);
+              }
+            }}
+            style={[editProfileStyles.picker, { color: currentColors.text }]}
+          >
+            <Picker.Item label="Chọn hoạt động" value="" />
+            <Picker.Item label="Thể thao" value="sports" />
+            <Picker.Item label="Du lịch" value="travel" />
+            <Picker.Item label="Âm nhạc" value="music" />
+            <Picker.Item label="Điện ảnh" value="movies" />
+            <Picker.Item label="Đọc sách" value="reading" />
+            <Picker.Item label="Nấu ăn" value="cooking" />
+            <Picker.Item label="Nhiếp ảnh" value="photography" />
+            <Picker.Item label="Yoga" value="yoga" />
+            <Picker.Item label="Gym" value="gym" />
+            <Picker.Item label="Khiêu vũ" value="dancing" />
+          </Picker>
+        </View>
+        <View style={editProfileStyles.interestsTagsContainer}>
+          {(state.activities || []).map((activity: string, index: number) => (
+            <View
+              key={index}
+              style={[
+                editProfileStyles.interestTag,
+                { backgroundColor: currentColors.success + "20" },
+              ]}
+            >
+              <TextDefault
+                style={[
+                  editProfileStyles.interestTagText,
+                  { color: currentColors.success },
+                ]}
+              >
+                {activity}
+              </TextDefault>
+              <TouchableOpacity
+                onPress={() => {
+                  const newActivities = state.activities.filter(
+                    (a: string) => a !== activity
+                  );
+                  handleChangeState("activities", newActivities);
+                }}
+                style={editProfileStyles.removeInterestButton}
+              >
+                <X size={scale(14)} color={currentColors.danger} />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// Component: TimePreferencesSection
+interface TimePreferencesSectionProps {
+  state: any;
+  handleChangeState: (key: string, value: any) => void;
+  currentColors: any;
+}
+
+function TimePreferencesSection({
+  state,
+  handleChangeState,
+  currentColors,
+}: TimePreferencesSectionProps) {
+  return (
+    <View
+      style={[
+        editProfileStyles.formCard,
+        {
+          backgroundColor: currentColors.backgroundCard,
+          borderColor: currentColors.border,
+        },
+      ]}
+    >
+      <TextDefault
+        style={[editProfileStyles.sectionTitle, { color: currentColors.text }]}
+      >
+        <Clock size={scale(18)} color={currentColors.text} /> Thời gian & Lịch
+        trình
+      </TextDefault>
+
+      <View style={editProfileStyles.formGroup}>
+        <TextDefault
+          style={[editProfileStyles.label, { color: currentColors.text }]}
+        >
+          Ngày sinh
+        </TextDefault>
+        <DatePicker
+          selectedDate={state.dateOfBirth || new Date()}
+          onDateChange={(date: any) => handleChangeState("dateOfBirth", date)}
+          title="Chọn ngày sinh"
+        />
+      </View>
+
+      <View style={editProfileStyles.formGroup}>
+        <TextDefault
+          style={[editProfileStyles.label, { color: currentColors.text }]}
+        >
+          Thời gian cụ thể có thể gặp
+        </TextDefault>
+        <TimePicker
+          selectedTimes={state.specificTimes || []}
+          onTimesChange={(times: any) =>
+            handleChangeState("specificTimes", times)
+          }
+          title="Chọn thời gian cụ thể"
+        />
+      </View>
+
+      <View style={editProfileStyles.formGroup}>
+        <TextDefault
+          style={[editProfileStyles.label, { color: currentColors.text }]}
+        >
+          Thời gian rảnh trong ngày
+        </TextDefault>
+        <FreeTimePicker
+          freeTimes={state.freeTimes || []}
+          onFreeTimesChange={(times: any) =>
+            handleChangeState("freeTimes", times)
+          }
+          title="Chọn thời gian rảnh"
+        />
+      </View>
+
+      <View style={editProfileStyles.formGroup}>
+        <TextDefault
+          style={[editProfileStyles.label, { color: currentColors.text }]}
+        >
+          Thời gian làm việc ưa thích
+        </TextDefault>
+        <View
+          style={[
+            editProfileStyles.pickerContainer,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.backgroundCard,
+            },
+          ]}
+        >
+          <Picker
+            selectedValue={state.workingHoursPreference}
+            onValueChange={(itemValue) =>
+              handleChangeState("workingHoursPreference", itemValue)
+            }
+            style={[editProfileStyles.picker, { color: currentColors.text }]}
+          >
+            <Picker.Item label="Chọn thời gian làm việc" value="" />
+            <Picker.Item
+              label="Sáng sớm (6:00 - 10:00)"
+              value="early_morning"
+            />
+            <Picker.Item label="Buổi sáng (8:00 - 12:00)" value="morning" />
+            <Picker.Item label="Buổi trưa (12:00 - 16:00)" value="afternoon" />
+            <Picker.Item label="Buổi chiều (16:00 - 20:00)" value="evening" />
+            <Picker.Item label="Buổi tối (20:00 - 24:00)" value="night" />
+            <Picker.Item label="Linh hoạt" value="flexible" />
+          </Picker>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// Component: PreferencesSection
+interface PreferencesSectionProps {
+  state: any;
+  handleChangeState: (key: string, value: any) => void;
+  currentColors: any;
+}
+
+function PreferencesSection({
+  state,
+  handleChangeState,
+  currentColors,
+}: PreferencesSectionProps) {
+  return (
+    <View
+      style={[
+        editProfileStyles.formCard,
+        {
+          backgroundColor: currentColors.backgroundCard,
+          borderColor: currentColors.border,
+        },
+      ]}
+    >
+      <TextDefault
+        style={[editProfileStyles.sectionTitle, { color: currentColors.text }]}
+      >
+        <Heart size={scale(18)} color={currentColors.text} /> Sở thích hẹn hò
+      </TextDefault>
+
+      <View style={editProfileStyles.formGroup}>
+        <TextDefault
+          style={[editProfileStyles.label, { color: currentColors.text }]}
+        >
+          Độ tuổi mong muốn
+        </TextDefault>
+        <RangePicker
+          minValue={state.minAgePreference || 18}
+          maxValue={state.maxAgePreference || 35}
+          onRangeChange={(min: any, max: any) => {
+            handleChangeState("minAgePreference", min);
+            handleChangeState("maxAgePreference", max);
+          }}
+          min={18}
+          max={60}
+          title="Chọn độ tuổi mong muốn"
+        />
+      </View>
+
+      <View style={editProfileStyles.formGroup}>
+        <TextDefault
+          style={[editProfileStyles.label, { color: currentColors.text }]}
+        >
+          Giới tính mong muốn
+        </TextDefault>
+        <View
+          style={[
+            editProfileStyles.pickerContainer,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.backgroundCard,
+            },
+          ]}
+        >
+          <Picker
+            selectedValue={state.preferredGender}
+            onValueChange={(itemValue) =>
+              handleChangeState("preferredGender", itemValue)
+            }
+            style={[editProfileStyles.picker, { color: currentColors.text }]}
+          >
+            <Picker.Item label="Chọn giới tính mong muốn" value="" />
+            <Picker.Item label="Nam" value="male" />
+            <Picker.Item label="Nữ" value="female" />
+            <Picker.Item label="Tất cả" value="all" />
+          </Picker>
+        </View>
+      </View>
+
+      <View style={editProfileStyles.formGroup}>
+        <TextDefault
+          style={[editProfileStyles.label, { color: currentColors.text }]}
+        >
+          Mục tiêu mối quan hệ
+        </TextDefault>
+        <View
+          style={[
+            editProfileStyles.pickerContainer,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.backgroundCard,
+            },
+          ]}
+        >
+          <Picker
+            selectedValue={state.relationshipGoal}
+            onValueChange={(itemValue) => {
+              if (itemValue && !state.relationshipGoals?.includes(itemValue)) {
+                handleChangeState("relationshipGoals", [
+                  ...(state.relationshipGoals || []),
+                  itemValue,
+                ]);
+              }
+            }}
+            style={[editProfileStyles.picker, { color: currentColors.text }]}
+          >
+            <Picker.Item label="Chọn mục tiêu" value="" />
+            <Picker.Item label="Tìm hiểu" value="casual" />
+            <Picker.Item label="Hẹn hò nghiêm túc" value="serious" />
+            <Picker.Item label="Kết hôn" value="marriage" />
+            <Picker.Item label="Bạn bè" value="friendship" />
+            <Picker.Item label="Mạng lưới xã hội" value="networking" />
+          </Picker>
+        </View>
+        <View style={editProfileStyles.interestsTagsContainer}>
+          {(state.relationshipGoals || []).map(
+            (goal: string, index: number) => (
+              <View
+                key={index}
+                style={[
+                  editProfileStyles.interestTag,
+                  { backgroundColor: currentColors.warning + "20" },
+                ]}
+              >
+                <TextDefault
+                  style={[
+                    editProfileStyles.interestTagText,
+                    { color: currentColors.warning },
+                  ]}
+                >
+                  {goal}
+                </TextDefault>
+                <TouchableOpacity
+                  onPress={() => {
+                    const newGoals = state.relationshipGoals.filter(
+                      (g: string) => g !== goal
+                    );
+                    handleChangeState("relationshipGoals", newGoals);
+                  }}
+                  style={editProfileStyles.removeInterestButton}
+                >
+                  <X size={scale(14)} color={currentColors.danger} />
+                </TouchableOpacity>
+              </View>
+            )
+          )}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// Component: AdditionalInfoSection
+interface AdditionalInfoSectionProps {
+  state: any;
+  handleChangeState: (key: string, value: any) => void;
+  currentColors: any;
+}
+
+function AdditionalInfoSection({
+  state,
+  handleChangeState,
+  currentColors,
+}: AdditionalInfoSectionProps) {
+  return (
+    <View
+      style={[
+        editProfileStyles.formCard,
+        {
+          backgroundColor: currentColors.backgroundCard,
+          borderColor: currentColors.border,
+        },
+      ]}
+    >
+      <TextDefault
+        style={[editProfileStyles.sectionTitle, { color: currentColors.text }]}
+      >
+        Thông tin bổ sung
+      </TextDefault>
+
+      <View style={editProfileStyles.formGroup}>
+        <TextDefault
+          style={[editProfileStyles.label, { color: currentColors.text }]}
+        >
+          Trình độ học vấn
+        </TextDefault>
+        <View
+          style={[
+            editProfileStyles.pickerContainer,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.backgroundCard,
+            },
+          ]}
+        >
+          <Picker
+            selectedValue={state.education}
+            onValueChange={(itemValue) =>
+              handleChangeState("education", itemValue)
+            }
+            style={[editProfileStyles.picker, { color: currentColors.text }]}
+          >
+            <Picker.Item label="Chọn trình độ học vấn" value="" />
+            <Picker.Item label="Trung học phổ thông" value="high_school" />
+            <Picker.Item label="Cao đẳng" value="college" />
+            <Picker.Item label="Đại học" value="university" />
+            <Picker.Item label="Thạc sĩ" value="master" />
+            <Picker.Item label="Tiến sĩ" value="phd" />
+            <Picker.Item label="Khác" value="other" />
+          </Picker>
+        </View>
+      </View>
+
+      <View style={editProfileStyles.formGroup}>
+        <TextDefault
+          style={[editProfileStyles.label, { color: currentColors.text }]}
+        >
+          Nghề nghiệp
         </TextDefault>
         <TextInput
           style={[
             editProfileStyles.input,
-            editProfileStyles.textArea,
             {
               borderColor: currentColors.border,
               color: currentColors.text,
               backgroundColor: currentColors.backgroundCard,
             },
           ]}
-          value={freeTime}
-          onChangeText={setFreeTime}
-          multiline
-          numberOfLines={3}
+          value={state.occupation}
+          onChangeText={(val) => handleChangeState("occupation", val)}
           placeholderTextColor={currentColors.textLight}
+          placeholder="Nhập nghề nghiệp của bạn"
         />
+      </View>
+
+      <View style={editProfileStyles.formGroup}>
+        <TextDefault
+          style={[editProfileStyles.label, { color: currentColors.text }]}
+        >
+          Lối sống
+        </TextDefault>
+        <View
+          style={[
+            editProfileStyles.pickerContainer,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.backgroundCard,
+            },
+          ]}
+        >
+          <Picker
+            selectedValue={state.selectedLifestyle}
+            onValueChange={(itemValue) => {
+              if (itemValue && !state.lifestyle?.includes(itemValue)) {
+                handleChangeState("lifestyle", [
+                  ...(state.lifestyle || []),
+                  itemValue,
+                ]);
+              }
+            }}
+            style={[editProfileStyles.picker, { color: currentColors.text }]}
+          >
+            <Picker.Item label="Chọn lối sống" value="" />
+            <Picker.Item label="Tích cực" value="active" />
+            <Picker.Item label="Thư giãn" value="relaxed" />
+            <Picker.Item label="Phiêu lưu" value="adventurous" />
+            <Picker.Item label="Gia đình" value="family_oriented" />
+            <Picker.Item label="Sự nghiệp" value="career_focused" />
+            <Picker.Item label="Sáng tạo" value="creative" />
+            <Picker.Item label="Xã hội" value="social" />
+            <Picker.Item label="Nội tâm" value="introverted" />
+          </Picker>
+        </View>
+        <View style={editProfileStyles.interestsTagsContainer}>
+          {(state.lifestyle || []).map((style: string, index: number) => (
+            <View
+              key={index}
+              style={[
+                editProfileStyles.interestTag,
+                { backgroundColor: currentColors.info + "20" },
+              ]}
+            >
+              <TextDefault
+                style={[
+                  editProfileStyles.interestTagText,
+                  { color: currentColors.info },
+                ]}
+              >
+                {style}
+              </TextDefault>
+              <TouchableOpacity
+                onPress={() => {
+                  const newLifestyle = state.lifestyle.filter(
+                    (s: string) => s !== style
+                  );
+                  handleChangeState("lifestyle", newLifestyle);
+                }}
+                style={editProfileStyles.removeInterestButton}
+              >
+                <X size={scale(14)} color={currentColors.danger} />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
       </View>
     </View>
   );
 }
 
-// -----------------------------------------------------
-// Component con: ActionButtons
-// -----------------------------------------------------
+// Component: ActionButtons
 interface ActionButtonsProps {
   onSave: () => void;
   onCancel: () => void;
   currentColors: any;
+  isLoading?: boolean;
 }
 
 function ActionButtons({
   onSave,
   onCancel,
   currentColors,
+  isLoading = false,
 }: ActionButtonsProps) {
   return (
     <View style={editProfileStyles.actionButtonsContainer}>
-      <TouchableOpacity
-        style={[
-          editProfileStyles.cancelButton,
-          {
-            borderColor: currentColors.border,
-            backgroundColor: currentColors.backgroundCard,
-          },
-        ]}
+      <ButtonOutlined
+        title="Hủy"
+        iconLeft={<X size={scale(24)} color={currentColors.primary} />}
         onPress={onCancel}
-      >
-        <X
-          size={scale(20)}
-          color={currentColors.text}
-          style={editProfileStyles.buttonIcon}
-        />
-        <TextDefault
-          style={[
-            editProfileStyles.cancelButtonText,
-            { color: currentColors.text },
-          ]}
-        >
-          Hủy
-        </TextDefault>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[
-          editProfileStyles.saveButton,
-          { backgroundColor: currentColors.success },
-        ]}
+        disabled={isLoading}
+      />
+      <ButtonPrimary
         onPress={onSave}
-      >
-        <Save
-          size={scale(20)}
-          color={currentColors.backgroundCard}
-          style={editProfileStyles.buttonIcon}
-        />
-        <TextDefault
-          style={[
-            editProfileStyles.saveButtonText,
-            { color: currentColors.backgroundCard },
-          ]}
-        >
-          Lưu
-        </TextDefault>
-      </TouchableOpacity>
+        title={isLoading ? "Đang lưu..." : "Lưu"}
+        iconLeft={<Save size={scale(24)} color={currentColors.text} />}
+        disabled={isLoading}
+      />
     </View>
   );
 }
 
-// -----------------------------------------------------
 // Main Component: EditProfileView
-// -----------------------------------------------------
 export default function EditProfileView() {
   const { theme } = useTheme();
   const currentColors = Colors[theme || "light"];
-  const shadowStyle = getShadowStyle(currentColors);
+  const { data: user, isLoading, onLoadProfileMe } = useProfileMe();
 
-  const params = useRoute()?.params as { id: string };
-  const userId = params.id;
+  const [state, setState] = useState<any>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    dateOfBirth: new Date(),
+    gender: "",
+    location: "",
+    bio: "",
+    interests: [],
+    newInterest: "",
+    activities: [],
+    specificTimes: [],
+    freeTimes: [],
+    workingHoursPreference: "",
+    minAgePreference: 18,
+    maxAgePreference: 35,
+    preferredGender: "",
+    relationshipGoals: [],
+    education: "",
+    occupation: "",
+    lifestyle: [],
+    avatarUrl: "https://example.com/default-avatar.png",
+  });
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<EditableUserData | null>(null);
+  const { onUpdate, isLoading: isLoadingUpdate } = useUpdateProfile();
 
-  const [name, setName] = useState("");
-  const [age, setAge] = useState("");
-  const [gender, setGender] = useState("");
-  const [location, setLocation] = useState("");
-  const [bio, setBio] = useState("");
-  const [interests, setInterests] = useState<string[]>([]);
-  const [newInterest, setNewInterest] = useState("");
-  const [freeTime, setFreeTime] = useState("");
-  const [avatarUri, setAvatarUri] = useState("");
-
-  // Load user data on component mount
-  useEffect(() => {
-    const loadUserData = async () => {
-      setIsLoading(true);
-      try {
-        const fetchedUser = (await fetchMyProfile()) as EditableUserData; // Adjust based on your API
-        if (fetchedUser) {
-          setUser(fetchedUser);
-          setName(fetchedUser.name);
-          setAge(String(fetchedUser.age));
-          setGender(fetchedUser.gender);
-          setLocation(fetchedUser.location);
-          setBio(fetchedUser.bio);
-          setInterests(fetchedUser.interests);
-          setFreeTime(fetchedUser.freeTime);
-          setAvatarUri(fetchedUser.avatar);
-        } else {
-          Alert.alert("Lỗi", "Không tìm thấy hồ sơ để chỉnh sửa.");
-          router.back();
-        }
-      } catch (error) {
-        console.error("Failed to load user profile for editing:", error);
-        Alert.alert("Lỗi", "Không thể tải hồ sơ. Vui lòng thử lại.");
-        router.back();
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUserData();
-  }, [userId]); // Depend on userId if you are fetching specific user data
+  const handleChangeState = (key: string, value: any) => {
+    setState((prevState: any) => ({
+      ...prevState,
+      [key]: value,
+    }));
+  };
 
   const handleAddInterest = () => {
-    if (newInterest.trim() !== "" && !interests.includes(newInterest.trim())) {
-      setInterests([...interests, newInterest.trim()]);
-      setNewInterest("");
+    if (
+      state?.newInterest?.trim() !== "" &&
+      !state?.interests?.includes(state?.newInterest?.trim())
+    ) {
+      handleChangeState("interests", [
+        ...(state?.interests || []),
+        state?.newInterest.trim(),
+      ]);
+      handleChangeState("newInterest", "");
     }
   };
 
   const handleRemoveInterest = (interestToRemove: string) => {
-    setInterests(interests.filter((interest) => interest !== interestToRemove));
+    const newInterests = state.interests.filter(
+      (interest: string) => interest !== interestToRemove
+    );
+    handleChangeState("interests", newInterests);
   };
 
   const handleSave = async () => {
-    const updatedUser: EditableUserData = {
-      ...user!, // Use fetched user as base
-      name,
-      age: parseInt(age) || 0,
-      gender,
-      location,
-      bio,
-      interests,
-      freeTime,
-      avatar: avatarUri,
+    const updatedData: EditableUserData = {
+      ...state,
+      dateOfBirth: state.dateOfBirth.toISOString(),
+      specificTimes: state.specificTimes.map((time: any) => time.toISOString()),
+      freeTimes: state.freeTimes.map((time: any) => time.toISOString()),
     };
-
-    try {
-      await updateMyProfile(updatedUser); // Call mock update API
-      Alert.alert("Thành công", "Hồ sơ của bạn đã được cập nhật.");
-      router.back();
-    } catch (error) {
-      console.error("Error saving profile:", error);
-      Alert.alert("Lỗi", "Không thể lưu hồ sơ. Vui lòng thử lại.");
-    }
+    await onUpdate(updatedData);
   };
 
   const handleCancel = () => {
-    router.back();
+    Alert.alert(
+      "Confirmation",
+      "Are you sure you want to cancel? Changes will not be saved.",
+      [
+        { text: "Continue editing", style: "cancel" },
+        { text: "Cancel", style: "destructive", onPress: () => router.back() },
+      ]
+    );
   };
 
-  // Placeholder for image picker logic
   const handleChooseAvatar = () => {
     Alert.alert("Thay đổi ảnh", "Chức năng chọn ảnh chưa được triển khai.");
-    // Implement image picker here (e.g., using expo-image-picker)
   };
+
+  useEffect(() => {
+    if (user) {
+      setState({
+        ...user,
+        dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : new Date(),
+        interests: user.interests || [],
+        activities: user.activities || [],
+        specificTimes: user.availableTimeSlots || [],
+        freeTimes: [],
+        relationshipGoals: [],
+        lifestyle: [],
+      });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    onLoadProfileMe();
+  }, []);
 
   if (isLoading) {
     return (
@@ -598,11 +1037,6 @@ export default function EditProfileView() {
         <TextDefault style={{ color: currentColors.text }}>
           Không thể tải hồ sơ để chỉnh sửa.
         </TextDefault>
-        <TextDefault
-          style={{ color: currentColors.textSecondary, marginTop: scale(5) }}
-        >
-          Vui lòng kiểm tra lại ID hoặc thử lại.
-        </TextDefault>
         <TouchableOpacity
           onPress={() => router.back()}
           style={[
@@ -625,44 +1059,53 @@ export default function EditProfileView() {
         { backgroundColor: currentColors.background },
       ]}
     >
-      <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
-      <EditProfileHeader currentColors={currentColors} />
       <ScrollView style={editProfileStyles.scrollView}>
         <View style={editProfileStyles.content}>
           <AvatarEditSection
-            avatarUri={avatarUri}
+            avatarUri={state.avatarUrl}
             onChooseAvatar={handleChooseAvatar}
             currentColors={currentColors}
           />
 
-          <ProfileFormSection
-            name={name}
-            setName={setName}
-            age={age}
-            setAge={setAge}
-            gender={gender}
-            setGender={setGender}
-            location={location}
-            setLocation={setLocation}
-            bio={bio}
-            setBio={setBio}
-            interests={interests}
-            handleRemoveInterest={handleRemoveInterest}
-            newInterest={newInterest}
-            setNewInterest={setNewInterest}
-            handleAddInterest={handleAddInterest}
-            freeTime={freeTime}
-            setFreeTime={setFreeTime}
+          <BasicInfoSection
+            state={state}
+            handleChangeState={handleChangeState}
             currentColors={currentColors}
-            shadowStyle={shadowStyle}
           />
 
-          <ActionButtons
-            onSave={handleSave}
-            onCancel={handleCancel}
+          <InterestsSection
+            state={state}
+            handleChangeState={handleChangeState}
+            handleAddInterest={handleAddInterest}
+            handleRemoveInterest={handleRemoveInterest}
+            currentColors={currentColors}
+          />
+
+          <TimePreferencesSection
+            state={state}
+            handleChangeState={handleChangeState}
+            currentColors={currentColors}
+          />
+
+          <PreferencesSection
+            state={state}
+            handleChangeState={handleChangeState}
+            currentColors={currentColors}
+          />
+
+          <AdditionalInfoSection
+            state={state}
+            handleChangeState={handleChangeState}
             currentColors={currentColors}
           />
         </View>
+
+        <ActionButtons
+          onSave={handleSave}
+          onCancel={handleCancel}
+          currentColors={currentColors}
+          isLoading={isLoadingUpdate}
+        />
       </ScrollView>
     </View>
   );
@@ -675,63 +1118,70 @@ const editProfileStyles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  header: {
-    paddingHorizontal: scale(16),
-    paddingTop: scale(16),
-    paddingBottom: scale(16),
-  },
-  headerTitle: {
-    fontSize: scale(20),
-    fontWeight: "bold",
-  },
-  headerSubtitle: {
-    fontSize: scale(14),
-    marginTop: scale(4),
-  },
   content: {
     paddingHorizontal: scale(16),
     paddingVertical: scale(24),
-    gap: scale(24),
+    gap: scale(20),
   },
   avatarSection: {
     alignItems: "center",
     marginBottom: scale(24),
   },
   editAvatarImage: {
-    width: scale(100),
-    height: scale(100),
-    borderRadius: scale(50),
-    borderWidth: scale(2),
+    width: scale(120),
+    height: scale(120),
+    borderRadius: scale(60),
+    borderWidth: scale(3),
     marginBottom: scale(12),
   },
   changeAvatarButton: {
-    paddingVertical: scale(8),
-    paddingHorizontal: scale(16),
-    borderRadius: scale(20),
+    paddingVertical: scale(10),
+    paddingHorizontal: scale(20),
+    borderRadius: scale(25),
   },
   changeAvatarButtonText: {
     fontSize: scale(14),
     fontWeight: "600",
   },
   formCard: {
-    borderRadius: scale(8),
+    borderRadius: scale(12),
     padding: scale(20),
     borderWidth: 1,
+  },
+  sectionTitle: {
+    fontSize: scale(18),
+    fontWeight: "bold",
+    marginBottom: scale(16),
+    flexDirection: "row",
+    alignItems: "center",
   },
   formGroup: {
     marginBottom: scale(16),
   },
   label: {
     fontSize: scale(14),
-    fontWeight: "500",
+    fontWeight: "600",
     marginBottom: scale(8),
   },
   input: {
     borderWidth: 1,
     borderRadius: scale(8),
     paddingHorizontal: scale(12),
-    paddingVertical: scale(10),
+    paddingVertical: scale(12),
     fontSize: scale(16),
+  },
+  inputWithIcon: {
+    flexDirection: "row",
+    alignItems: "center",
+    position: "relative",
+  },
+  inputIcon: {
+    position: "absolute",
+    left: scale(12),
+    zIndex: 1,
+  },
+  inputWithIconText: {
+    paddingLeft: scale(40),
   },
   textArea: {
     height: scale(100),
@@ -744,10 +1194,9 @@ const editProfileStyles = StyleSheet.create({
     overflow: "hidden",
   },
   picker: {
-    height: scale(40),
+    height: scale(50),
     width: "100%",
   },
-  // pickerItem is only for iOS, not used in cross-platform StyleSheet
   interestsInputContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -759,7 +1208,7 @@ const editProfileStyles = StyleSheet.create({
   },
   addInterestButton: {
     borderRadius: scale(8),
-    padding: scale(10),
+    padding: scale(12),
     justifyContent: "center",
     alignItems: "center",
   },
@@ -773,12 +1222,13 @@ const editProfileStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: scale(20),
-    paddingVertical: scale(6),
-    paddingHorizontal: scale(10),
+    paddingVertical: scale(8),
+    paddingHorizontal: scale(12),
   },
   interestTagText: {
     fontSize: scale(14),
-    marginRight: scale(4),
+    marginRight: scale(6),
+    fontWeight: "500",
   },
   removeInterestButton: {
     padding: scale(2),
@@ -787,39 +1237,12 @@ const editProfileStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     gap: scale(12),
-    marginTop: scale(16),
-  },
-  saveButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: scale(8),
-    paddingVertical: scale(12),
-  },
-  saveButtonText: {
-    fontSize: scale(16),
-    fontWeight: "600",
-  },
-  cancelButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: scale(8),
-    paddingVertical: scale(12),
-    borderWidth: 1,
-  },
-  cancelButtonText: {
-    fontSize: scale(16),
-    fontWeight: "600",
-  },
-  buttonIcon: {
-    marginRight: scale(8),
+    padding: normalize(20),
+    paddingBottom: normalize(50),
   },
   backButton: {
-    paddingVertical: scale(10),
-    paddingHorizontal: scale(20),
+    paddingVertical: scale(12),
+    paddingHorizontal: scale(24),
     borderRadius: scale(8),
   },
 });

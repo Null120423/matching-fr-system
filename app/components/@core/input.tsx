@@ -41,9 +41,12 @@ const Input = ({
 }: InputProps) => {
   return (
     <Row
-      style={{
-        width: width as any,
-      }}
+      style={[
+        {
+          width: width as any,
+        },
+        styleGlobal.shadow,
+      ]}
       full
       direction="column"
       start
@@ -58,7 +61,7 @@ const Input = ({
             </TextDefault>
           )}
           <TextDefault bold style={[styles.label, { color: "black" }]}>
-            {label}
+            {label.substring(0, 1).toUpperCase() + label.substring(1)}
           </TextDefault>
         </Row>
       )}
@@ -118,7 +121,7 @@ const InputPassword = ({
       direction="column"
       start
       rowGap={5}
-      style={[{ position: "relative" }]}
+      style={[styleGlobal.shadow, { position: "relative" }]}
     >
       {label && (
         <Row start={!isCenterLabel} center={isCenterLabel} full>
