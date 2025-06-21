@@ -130,24 +130,23 @@ export default function NotificationsListScreen() {
     <View
       style={[styles.safeArea, { backgroundColor: currentColors.background }]}
     >
+      <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
+      <View style={styles.header}>
+        <TextDefault
+          style={[styles.headerTitle, { color: currentColors.text }]}
+        >
+          Thông báo
+        </TextDefault>
+        <TextDefault
+          style={[
+            styles.headerSubtitle,
+            { color: currentColors.textSecondary },
+          ]}
+        >
+          Tất cả cập nhật và thông báo của bạn
+        </TextDefault>
+      </View>
       <ScrollView style={styles.scrollView}>
-        <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
-        <View style={styles.header}>
-          <TextDefault
-            style={[styles.headerTitle, { color: currentColors.text }]}
-          >
-            Thông báo
-          </TextDefault>
-          <TextDefault
-            style={[
-              styles.headerSubtitle,
-              { color: currentColors.textSecondary },
-            ]}
-          >
-            Tất cả cập nhật và thông báo của bạn
-          </TextDefault>
-        </View>
-
         <View style={styles.content}>
           {notifications.length > 0 ? (
             notifications.map((notif) => (

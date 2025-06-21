@@ -34,6 +34,11 @@ export const ENDPOINTS = {
       `${prefix}/matching-upload/${userId}/friend-request`,
     UPDATE_STATUS_FRIEND_REQUEST: (userId: string) =>
       `${prefix}/matching-upload/friend-request/${userId}/status`,
+    GET_FRIEND_REQUEST: (param: Record<string, any>) =>
+      buildUrlWithParams(
+        `${prefix}/matching-upload/users/friend-requests`,
+        param
+      ),
   },
   UPLOAD: {
     UPLOAD_AVATAR: `${prefix}/matching-upload/uploads/avatar`,

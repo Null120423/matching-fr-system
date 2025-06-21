@@ -67,7 +67,7 @@ export class UserController {
     return lastValueFrom(this.userProfileServiceGrpc.getMyProfile({ userId }));
   }
 
-  @Put(':userId')
+  @Put('me')
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiParam({ name: 'userId', required: true, description: 'ID of the user' })
   @ApiBody({ type: UpdateUserProfileDto })
@@ -77,17 +77,14 @@ export class UserController {
     type: UserDTO,
   })
   async updateProfile(
-    @Param('userId') userId: string,
     @Body() updateUserProfileDto: UpdateUserProfileDto,
     @Req() req: RequestWithUser,
   ): Promise<UserDTO> {
     const currentUserId = req.user.id;
-    if (userId !== currentUserId) {
-      throw new Error('Forbidden: You can only update your own profile.');
-    }
+
     return lastValueFrom(
       this.userProfileServiceGrpc.updateUserProfile({
-        userId,
+        userId: currentUserId,
         ...updateUserProfileDto,
       }),
     );

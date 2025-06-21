@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
+import { UserDto } from 'src/dto';
 
 /** Enums */
 export enum SwipeAction {
@@ -66,6 +67,7 @@ export interface FriendRequest {
   status: FriendRequestStatus;
   createdAt: string;
   updatedAt: string;
+  sendRequestPerson: UserDto | null;
 }
 
 /** gRPC Service Interfaces */
@@ -77,6 +79,13 @@ export interface MatchingServiceGrpc {
   updateFriendRequestStatus(
     data: UpdateFriendRequestStatusRequest,
   ): Observable<FriendRequest>;
+
+  getFriendRequests(data: {
+    userId: string;
+    status?: FriendRequestStatus;
+  }): Observable<{
+    requests: FriendRequest[];
+  }>;
 }
 
 export interface UploadServiceGrpc {

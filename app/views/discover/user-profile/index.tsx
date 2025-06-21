@@ -211,11 +211,7 @@ function ProfileInfoSection({ user, currentColors }: ProfileInfoSectionProps) {
           }}
           isLoading={isLoading}
           iconLeft={
-            <Ionicons
-              name="person-add"
-              size={scale(24)}
-              color={currentColors.text}
-            />
+            <Ionicons name="person-add" size={scale(24)} color={"white"} />
           }
         />
       </View>

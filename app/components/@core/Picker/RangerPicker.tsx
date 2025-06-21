@@ -79,7 +79,7 @@ const RangePicker = ({
           <TextDefault
             style={[styles.valueLabel, { color: currentColors.textLight }]}
           >
-            Tối thiểu
+            Min
           </TextDefault>
           <TextDefault
             style={[styles.valueText, { color: currentColors.primary }]}
@@ -96,7 +96,7 @@ const RangePicker = ({
           <TextDefault
             style={[styles.valueLabel, { color: currentColors.textLight }]}
           >
-            Tối đa
+            Max
           </TextDefault>
           <TextDefault
             style={[styles.valueText, { color: currentColors.primary }]}
@@ -137,7 +137,6 @@ const RangePicker = ({
               styles.thumb,
               {
                 left: minPosition - 10,
-                backgroundColor: currentColors.primary,
               },
             ]}
             {...minPanResponder.panHandlers}
@@ -155,7 +154,6 @@ const RangePicker = ({
               styles.thumb,
               {
                 left: maxPosition - 10,
-                backgroundColor: currentColors.primary,
               },
             ]}
             {...maxPanResponder.panHandlers}

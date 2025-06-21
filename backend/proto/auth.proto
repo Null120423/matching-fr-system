@@ -1,38 +1,41 @@
-// backend/auth-nestjs-service/src/proto/auth.proto
 syntax = "proto3";
-import "google/protobuf/timestamp.proto";
+
 package auth;
 
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+// ====== SERVICES ======
 service AuthService {
   rpc SignIn (SignInRequest) returns (SignInResponse);
   rpc SignUp (SignUpRequest) returns (SignUpResponse);
   rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse);
   rpc ResetPasswordRequest (ResetPasswordRequestRequest) returns (ResetPasswordRequestResponse);
   rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse);
-  rpc OAuthGoogle (Empty) returns (SessionResponse); // Thêm input/output phù hợp nếu cần
+  rpc OAuthGoogle (Empty) returns (SessionResponse);
   rpc OAuthDiscord (Empty) returns (SessionResponse);
   rpc OAuthGithub (Empty) returns (SessionResponse);
   rpc SignOut (SignOutRequest) returns (SignOutResponse);
 }
 
-// New service for User Profile
 service UserProfileService {
   rpc GetMyProfile (GetMyProfileRequest) returns (User);
   rpc UpdateUserProfile (UpdateUserProfileRequest) returns (User);
   rpc GetUserById (GetUserByIdRequest) returns (User);
   rpc DiscoverUsers (DiscoverUsersRequest) returns (DiscoverUsersResponse);
+  rpc GetListUsersByIds (ListUserIdsRequest) returns (ListUserIdsResponse);
 }
 
+// ====== MESSAGES ======
 message Empty {}
 
-// Authentication messages
 message SignInRequest {
   string username = 1;
   string password = 2;
 }
 
 message SignInResponse {
-  string accessToken =1;
+  string accessToken = 1;
   string refreshToken = 2;
   User user = 3;
 }
@@ -80,7 +83,7 @@ message ResetPasswordResponse {
 }
 
 message SignOutRequest {
-  string accessToken = 1; // Hoặc một cách nào đó để xác định phiên
+  string accessToken = 1;
 }
 
 message SignOutResponse {
@@ -97,7 +100,7 @@ message User {
   string email = 2;
   string emailVerificationCode = 3;
   bool isEmailVerified = 4;
-  string resetPasswordCode = 5; 
+  string resetPasswordCode = 5;
   string firstName = 6;
   string lastName = 7;
   google.protobuf.Timestamp dateOfBirth = 8;
@@ -119,19 +122,20 @@ message GetMyProfileRequest {
   string userId = 1;
 }
 
+// Use wrappers for optional fields (recommended in proto3)
 message UpdateUserProfileRequest {
   string userId = 1;
-  optional string firstName = 2;
-  optional string lastName = 3;
-  optional string dateOfBirth = 4;
-  optional string gender = 5;
-  optional string location = 6;
-  optional string bio = 7;
-  optional string avatarUrl = 8;
+  google.protobuf.StringValue firstName = 2;
+  google.protobuf.StringValue lastName = 3;
+  google.protobuf.StringValue dateOfBirth = 4;
+  google.protobuf.StringValue gender = 5;
+  google.protobuf.StringValue location = 6;
+  google.protobuf.StringValue bio = 7;
+  google.protobuf.StringValue avatarUrl = 8;
   repeated string interests = 9;
-  optional int32 minAgePreference = 10;
-  optional int32 maxAgePreference = 11;
-  optional string preferredGender = 12;
+  google.protobuf.Int32Value minAgePreference = 10;
+  google.protobuf.Int32Value maxAgePreference = 11;
+  google.protobuf.StringValue preferredGender = 12;
   repeated string activities = 13;
 }
 
@@ -141,14 +145,22 @@ message GetUserByIdRequest {
 
 message DiscoverUsersRequest {
   string currentUserId = 1;
-  optional string query = 2;
-  optional string activity = 3;
-  optional string location = 4;
-  optional int32 minAge = 5;
-  optional int32 maxAge = 6;
-  optional string gender = 7;
+  google.protobuf.StringValue query = 2;
+  google.protobuf.StringValue activity = 3;
+  google.protobuf.StringValue location = 4;
+  google.protobuf.Int32Value minAge = 5;
+  google.protobuf.Int32Value maxAge = 6;
+  google.protobuf.StringValue gender = 7;
 }
 
 message DiscoverUsersResponse {
+  repeated User users = 1;
+}
+
+message ListUserIdsRequest {
+  repeated string userIds = 1;
+}
+
+message ListUserIdsResponse {
   repeated User users = 1;
 }

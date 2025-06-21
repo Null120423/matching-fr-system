@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   FileTypeValidator,
+  Get,
   HttpCode,
   HttpStatus,
   MaxFileSizeValidator,
@@ -10,6 +11,7 @@ import {
   ParseFilePipe,
   Post,
   Put,
+  Query,
   Req,
   UploadedFile,
   UseInterceptors,
@@ -161,5 +163,18 @@ export class MatchingUploadController {
         newStatus: body.newStatus,
       }),
     );
+  }
+
+  @Get('users/friend-requests')
+  @HttpCode(HttpStatus.OK)
+  async getFriendRequests(
+    @Req() req: RequestWithUser,
+    @Query('status') status: FriendRequestStatus,
+  ): Promise<{ requests: FriendRequest[] }> {
+    const userId = req.user.id;
+    const res = await lastValueFrom(
+      this.matchingServiceGrpc.getFriendRequests({ userId, status }),
+    );
+    return res;
   }
 }

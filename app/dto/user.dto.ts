@@ -1,6 +1,13 @@
 import { BaseDTO } from "./base.dto";
 
 export interface UserDTO extends BaseDTO {
+  firstName: any;
+  lastName: any;
+  isEmailVerified: any;
+  minAgePreference: any;
+  maxAgePreference: any;
+  preferredGender: string;
+  dateOfBirth: any;
   id: string;
   username: string;
   email: string;

@@ -52,8 +52,8 @@ export const Colors = {
   light: {
     switchTrackFalse: "#767577",
     switchTrackTrue: "#81b0ff", // Hoặc màu primary của bạn
-    switchThumb: "#f4f3f4",
-    switchThumbActive: "#f5dd4b", // Màu vàng cho thumb active
+    switchThumb: "#333333",
+    switchThumbActive: "#745AFF", // Màu vàng cho thumb active
 
     // Màu cho các icon/text cụ thể
     iconDefault: tints.text, // Màu icon mặc định
@@ -120,9 +120,9 @@ export const Colors = {
   },
   dark: {
     switchTrackFalse: "#555555",
-    switchTrackTrue: "#4B0082", // Màu primary tối hơn cho dark mode
-    switchThumb: "#cccccc",
-    switchThumbActive: "#FFD700", // Màu vàng cho thumb active
+    switchTrackTrue: "#4240A2", // Màu primary tối hơn cho dark mode
+    switchThumb: "#333333",
+    switchThumbActive: "#745AFF", // Màu vàng cho thumb active
 
     // Màu cho các icon/text cụ thể
     iconDefault: darkTints.text,

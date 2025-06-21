@@ -166,15 +166,12 @@ const FreeTimePicker = ({
               key={index}
               style={[
                 styles.freeTimeChip,
-                { backgroundColor: currentColors.success },
+                { backgroundColor: currentColors.background },
               ]}
             >
               <View style={styles.freeTimeInfo}>
                 <TextDefault
-                  style={[
-                    styles.freeTimeText,
-                    { color: currentColors.backgroundCard },
-                  ]}
+                  style={[styles.freeTimeText, { color: currentColors.text }]}
                 >
                   {freeTime.display}
                 </TextDefault>
@@ -186,7 +183,7 @@ const FreeTimePicker = ({
                 <TextDefault
                   style={[
                     styles.removeButtonText,
-                    { color: currentColors.backgroundCard },
+                    { color: currentColors.danger },
                   ]}
                 >
                   ×
@@ -198,7 +195,7 @@ const FreeTimePicker = ({
       </View>
 
       <TouchableOpacity
-        style={[styles.addButton, { backgroundColor: currentColors.warning }]}
+        style={[styles.addButton, { backgroundColor: currentColors.primary }]}
         onPress={() => setShowPicker(true)}
       >
         <TextDefault
@@ -207,13 +204,17 @@ const FreeTimePicker = ({
             { color: currentColors.backgroundCard },
           ]}
         >
-          + Thêm thời gian rảnh
+          + Add Free Time
         </TextDefault>
       </TouchableOpacity>
 
       <Modal visible={showPicker} transparent={true} animationType="slide">
-        <View style={styles.modalOverlay}>
+        <View
+          style={styles.modalOverlay}
+          onTouchEnd={() => setShowPicker(false)}
+        >
           <View
+            onTouchEnd={(e) => e.stopPropagation()}
             style={[
               styles.modalContent,
               { backgroundColor: currentColors.backgroundCard },
@@ -222,46 +223,46 @@ const FreeTimePicker = ({
             <TextDefault
               style={[styles.modalTitle, { color: currentColors.text }]}
             >
-              Chọn thời gian rảnh
+              Pick Free Time
             </TextDefault>
 
             <TextDefault
               style={[styles.sectionTitle, { color: currentColors.text }]}
             >
-              Thời gian bắt đầu
+              Start time
             </TextDefault>
             <View style={styles.pickerRow}>
               <NumberPicker
                 data={hours}
                 selected={startHour}
                 onSelect={setStartHour}
-                label="Giờ"
+                label="Hours"
               />
               <NumberPicker
                 data={minutes}
                 selected={startMinute}
                 onSelect={setStartMinute}
-                label="Phút"
+                label="Minutes"
               />
             </View>
 
             <TextDefault
               style={[styles.sectionTitle, { color: currentColors.text }]}
             >
-              Thời lượng rảnh
+              Duration free time
             </TextDefault>
             <View style={styles.pickerRow}>
               <NumberPicker
                 data={durationHourOptions}
                 selected={durationHours}
                 onSelect={setDurationHours}
-                label="Giờ"
+                label="Hours"
               />
               <NumberPicker
                 data={durationMinuteOptions}
                 selected={durationMinutes}
                 onSelect={setDurationMinutes}
-                label="Phút"
+                label="Minutes"
               />
             </View>
 
@@ -277,7 +278,7 @@ const FreeTimePicker = ({
                   { color: currentColors.textLight },
                 ]}
               >
-                Thời gian rảnh:
+                Free Time Preview
               </TextDefault>
               <TextDefault
                 style={[styles.previewText, { color: currentColors.primary }]}
@@ -297,7 +298,7 @@ const FreeTimePicker = ({
               <TouchableOpacity
                 style={[
                   styles.modalButton,
-                  { backgroundColor: currentColors.textLight },
+                  { backgroundColor: currentColors.background },
                 ]}
                 onPress={() => setShowPicker(false)}
               >
@@ -307,7 +308,7 @@ const FreeTimePicker = ({
                     { color: currentColors.text },
                   ]}
                 >
-                  Hủy
+                  Cancel
                 </TextDefault>
               </TouchableOpacity>
               <TouchableOpacity
@@ -323,7 +324,7 @@ const FreeTimePicker = ({
                     { color: currentColors.backgroundCard },
                   ]}
                 >
-                  Thêm
+                  Add
                 </TextDefault>
               </TouchableOpacity>
             </View>
@@ -337,8 +338,6 @@ const FreeTimePicker = ({
 const styles = StyleSheet.create({
   container: {
     borderRadius: scale(8),
-    padding: scale(12),
-    marginVertical: scale(8),
   },
   freeTimesContainer: {
     marginBottom: scale(10),
@@ -388,8 +387,12 @@ const styles = StyleSheet.create({
   modalContent: {
     borderRadius: scale(15),
     padding: scale(20),
-    width: "95%",
+    width: "100%",
     maxHeight: "90%",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   modalTitle: {
     fontSize: scale(18),
@@ -412,6 +415,7 @@ const styles = StyleSheet.create({
   pickerColumn: {
     flex: 1,
     alignItems: "center",
+    marginHorizontal: scale(5),
   },
   pickerLabel: {
     fontSize: scale(14),

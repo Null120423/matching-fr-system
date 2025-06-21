@@ -16,6 +16,7 @@ import { AuthContextProvider } from "@/contexts/AuthContext";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext"; // Import your ThemeProvider and useTheme hook
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-expo";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import React from "react";
@@ -151,6 +152,24 @@ function InitialLayout() {
           headerBackTitle: "Back",
         }}
       />
+      <Stack.Screen
+        name="(common)/fr-requests/index"
+        options={{
+          // headerTitle: "Friend Requests",
+          headerShown: false,
+          animation: "slide_from_right",
+          // headerBackTitle: "Back",
+        }}
+      />
+      <Stack.Screen
+        name="(common)/user-profile/index"
+        options={{
+          // headerTitle: "Friend Requests",
+          headerShown: false,
+          animation: "slide_from_right",
+          // headerBackTitle: "Back",
+        }}
+      />
       <Stack.Screen name="+not-found" options={{ animation: "fade" }} />{" "}
     </Stack>
   );
@@ -160,13 +179,15 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView>
       <ThemeProvider>
-        <ToastProvider>
-          <QueryClientProvider client={queryClient}>
-            <AuthContextProvider>
-              <RootLayoutContent />
-            </AuthContextProvider>
-          </QueryClientProvider>
-        </ToastProvider>
+        <BottomSheetModalProvider>
+          <ToastProvider>
+            <QueryClientProvider client={queryClient}>
+              <AuthContextProvider>
+                <RootLayoutContent />
+              </AuthContextProvider>
+            </QueryClientProvider>
+          </ToastProvider>
+        </BottomSheetModalProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );

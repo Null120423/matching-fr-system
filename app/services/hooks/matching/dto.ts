@@ -26,3 +26,7 @@ export interface UpdateFriendRequest {
 export interface UpdateFriendResponse
   extends BaseResponseDTO,
     FriendRequestDTO {}
+
+export interface GetFriendRequestResponse {
+  requests: FriendRequestDTO[];
+}

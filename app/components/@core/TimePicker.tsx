@@ -1,3 +1,5 @@
+import { Colors } from "@/constants/Colors";
+import { useTheme } from "@/contexts/ThemeContext";
 import React, { useState } from "react";
 import {
   Modal,
@@ -7,27 +9,29 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { ButtonPrimary } from "./button";
 
 const TimePicker = ({
   selectedTimes,
   onTimesChange,
-  title = "Chọn thời gian",
+  title = "Select Time",
 }: any) => {
   const [showPicker, setShowPicker] = useState(false);
   const [selectedHour, setSelectedHour] = useState(0);
   const [selectedMinute, setSelectedMinute] = useState(0);
   const [selectedSecond, setSelectedSecond] = useState(0);
 
-  // Tạo mảng giờ, phút, giây
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const minutes = Array.from({ length: 60 }, (_, i) => i);
   const seconds = Array.from({ length: 60 }, (_, i) => i);
 
-  const formatTime = (hour: number, minute: number, second: number) => {
-    return `${hour.toString().padStart(2, "0")}:${minute
+  const { theme } = useTheme();
+  const currentColors = Colors[theme || "light"];
+
+  const formatTime = (hour: number, minute: number, second: number) =>
+    `${hour.toString().padStart(2, "0")}:${minute
       .toString()
       .padStart(2, "0")}:${second.toString().padStart(2, "0")}`;
-  };
 
   const addTime = () => {
     const timeString = formatTime(selectedHour, selectedMinute, selectedSecond);
@@ -41,7 +45,7 @@ const TimePicker = ({
     onTimesChange(selectedTimes.filter((time: any) => time !== timeToRemove));
   };
 
-  const NumberPicker = ({ data, selected, onSelect, label }: any) => (
+  const NumberPicker = ({ data, selected, onSelect, label, color }: any) => (
     <View style={styles.pickerColumn}>
       <Text style={styles.pickerLabel}>{label}</Text>
       <ScrollView
@@ -53,7 +57,9 @@ const TimePicker = ({
             key={item}
             style={[
               styles.pickerItem,
-              selected === item && styles.selectedPickerItem,
+              selected === item && {
+                backgroundColor: color,
+              },
             ]}
             onPress={() => onSelect(item)}
           >
@@ -75,76 +81,98 @@ const TimePicker = ({
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
 
-      {/* Hiển thị thời gian đã chọn */}
+      {/* Selected Times */}
       <View style={styles.selectedTimesContainer}>
-        {selectedTimes.map((time: any, index: React.Key | null | undefined) => (
-          <View key={index} style={styles.timeChip}>
-            <Text style={styles.timeChipText}>{time}</Text>
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => removeTime(time)}
-            >
-              <Text style={styles.removeButtonText}>×</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
+        {selectedTimes.length === 0 ? (
+          <Text style={styles.emptyText}>No time selected</Text>
+        ) : (
+          selectedTimes.map(
+            (time: any, index: React.Key | null | undefined) => (
+              <View
+                key={index}
+                style={[
+                  styles.timeChip,
+                  {
+                    backgroundColor: currentColors.primary,
+                  },
+                ]}
+              >
+                <Text style={styles.timeChipText}>{time}</Text>
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => removeTime(time)}
+                >
+                  <Text style={styles.removeButtonText}>×</Text>
+                </TouchableOpacity>
+              </View>
+            )
+          )
+        )}
       </View>
 
-      {/* Nút thêm thời gian */}
+      {/* Add Time Button */}
       <TouchableOpacity
-        style={styles.addButton}
+        style={[
+          styles.addButton,
+          {
+            backgroundColor: currentColors.primary,
+          },
+        ]}
         onPress={() => setShowPicker(true)}
       >
-        <Text style={styles.addButtonText}>+ Thêm thời gian</Text>
+        <Text style={styles.addButtonText}>+ Add Time</Text>
       </TouchableOpacity>
 
-      {/* Modal chọn thời gian */}
-      <Modal visible={showPicker} transparent={true} animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Chọn thời gian</Text>
+      {/* Modal */}
+      <Modal visible={showPicker} transparent animationType="slide">
+        <View
+          style={styles.modalOverlay}
+          onTouchEnd={() => setShowPicker(false)}
+        >
+          <View
+            style={styles.modalContent}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+          >
+            <Text style={styles.modalTitle}>Select Time</Text>
 
             <View style={styles.pickerContainer}>
               <NumberPicker
                 data={hours}
                 selected={selectedHour}
                 onSelect={setSelectedHour}
-                label="Giờ"
+                label="Hour"
+                color={currentColors.primary}
               />
               <NumberPicker
                 data={minutes}
                 selected={selectedMinute}
                 onSelect={setSelectedMinute}
-                label="Phút"
+                label="Minute"
+                color={currentColors.primary}
               />
               <NumberPicker
                 data={seconds}
                 selected={selectedSecond}
                 onSelect={setSelectedSecond}
-                label="Giây"
+                label="Second"
+                color={currentColors.primary}
               />
             </View>
 
             <View style={styles.previewContainer}>
               <Text style={styles.previewText}>
-                Thời gian:{" "}
+                Selected Time:{" "}
                 {formatTime(selectedHour, selectedMinute, selectedSecond)}
               </Text>
             </View>
 
             <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setShowPicker(false)}
-              >
-                <Text style={styles.cancelButtonText}>Hủy</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.confirmButton]}
+              <ButtonPrimary
+                title="Confirm"
+                minWidth={"100%"}
                 onPress={addTime}
-              >
-                <Text style={styles.confirmButtonText}>Thêm</Text>
-              </TouchableOpacity>
+              />
             </View>
           </View>
         </View>
@@ -171,10 +199,14 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     marginBottom: 10,
   },
+  emptyText: {
+    fontSize: 14,
+    color: "#999",
+    fontStyle: "italic",
+  },
   timeChip: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#007AFF",
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -200,7 +232,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   addButton: {
-    backgroundColor: "#34C759",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
@@ -220,8 +251,12 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 15,
     padding: 20,
-    width: "90%",
+    width: "100%",
     maxHeight: "80%",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   modalTitle: {
     fontSize: 18,
@@ -238,6 +273,7 @@ const styles = StyleSheet.create({
   pickerColumn: {
     flex: 1,
     alignItems: "center",
+    marginHorizontal: 5,
   },
   pickerLabel: {
     fontSize: 14,
@@ -255,9 +291,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginVertical: 2,
   },
-  selectedPickerItem: {
-    backgroundColor: "#007AFF",
-  },
+  selectedPickerItem: {},
   pickerItemText: {
     fontSize: 16,
     color: "#333",

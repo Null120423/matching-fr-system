@@ -1,6 +1,7 @@
 import { UserDTO } from "@/dto";
 import { AuthTokenService } from "@/helper";
 import useProfileMe from "@/services/hooks/user/useProfileMe";
+import { router } from "expo-router";
 import React, {
   createContext,
   ReactNode,
@@ -20,7 +21,7 @@ interface AuthContextType {
     tokens: { accessToken: string; refreshToken: string };
   }) => Promise<void>;
   setAuthAccessToken: (token: string | null) => Promise<void>;
-  signOut: () => Promise<void>;
+  onSignOut: () => Promise<void>;
 }
 
 // Tạo Context với giá trị mặc định ban đầu
@@ -47,6 +48,14 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(true); // Để quản lý trạng thái loading ban đầu
   const { onLoadProfileMe } = useProfileMe();
+  const onSignOut = async () => {
+    setCurrentUser(null);
+    setAccessToken(null);
+    setRefreshToken(null);
+    await AuthTokenService.clearAllTokens();
+
+    router.navigate("/(auth)/sign-in");
+  };
 
   // Hàm hydrate để khôi phục trạng thái từ SecureStore
   const hydrate = useCallback(async () => {
@@ -68,10 +77,6 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
           }
         }
       } catch (fetchError) {
-        console.warn(
-          "Failed to fetch current user after hydrate, clearing auth:",
-          fetchError
-        );
         await signOut(); // Clear any invalid tokens
       }
     } catch (error) {
@@ -132,7 +137,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     isAuthenticating,
     onSignIn,
     setAuthAccessToken,
-    signOut,
+    onSignOut,
   };
 
   return (

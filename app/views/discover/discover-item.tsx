@@ -51,7 +51,7 @@ function DiscoverItem({
 
   const handleDetail = () => {
     router.push({
-      pathname: "/discover/user-profile",
+      pathname: "/(common)/user-profile",
       params: { userId: data.id },
     });
   };
@@ -70,9 +70,7 @@ function DiscoverItem({
         <View style={styles.imageContainer}>
           <Image
             source={{
-              uri: "https://media.daily.dev/image/upload/f_auto,q_auto/v1/posts/d4d5e30254defae6882c3ea15e387501?_a=AQAEulh",
-              // ||
-              // data.avatarUrl,
+              uri: data.avatarUrl,
             }}
             style={styles.mainImage}
             accessibilityLabel={data.username}

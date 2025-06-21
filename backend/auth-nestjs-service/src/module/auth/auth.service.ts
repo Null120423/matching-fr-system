@@ -25,8 +25,9 @@ export class AuthService {
   JWT_SECRET = 'JWT_SECRET';
 
   async signIn(signInDto: LoginRequestDTO) {
+    console.log(signInDto);
     const user: any = await this.repo.findOne({
-      where: [{ username: signInDto.username, isDeleted: false }],
+      where: { username: signInDto.username, isDeleted: false },
     });
 
     if (!user) {

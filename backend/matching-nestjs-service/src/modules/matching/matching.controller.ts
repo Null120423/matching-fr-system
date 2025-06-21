@@ -2,6 +2,7 @@ import { BadRequestException, Controller } from '@nestjs/common';
 import { GrpcLog, GrpcMethod } from 'src/decorators';
 import { SwipeAction } from 'src/entities';
 import { CreateSwipeDto, FriendRequest } from './dto/create-swipe.dto';
+import { FriendRequestResponseDto } from './dto/fr-request-response.dto';
 import { MatchingService } from './matching.service';
 GrpcLog();
 @Controller('matching')
@@ -60,5 +61,13 @@ export class MatchingController {
     } else {
       throw new BadRequestException('Invalid status for friend request.');
     }
+  }
+
+  @GrpcMethod('MatchingService', 'GetFriendRequests')
+  async getMyFriendRequests(payload: {
+    userId: string;
+    status: any;
+  }): Promise<FriendRequestResponseDto> {
+    return await this.matchingService.getFriendRequests(payload);
   }
 }

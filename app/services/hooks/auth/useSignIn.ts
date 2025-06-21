@@ -2,7 +2,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ENDPOINTS } from "@/services/endpoints";
 import { rootApi } from "@/services/rootApi";
 import { useMutation } from "@tanstack/react-query";
-import { Alert } from "react-native";
 import { SignInRequest, SignInResponse } from "./dto";
 
 const useLogin = () => {
@@ -12,12 +11,6 @@ const useLogin = () => {
       return rootApi.post<SignInRequest, SignInResponse>(
         ENDPOINTS.AUTH.SIGNIN,
         variables
-      );
-    },
-    onError: (e: any) => {
-      Alert.alert(
-        "Login failed",
-        e?.response?.data?.message || "Đã có lỗi xảy ra"
       );
     },
     onSuccess: async (data: SignInResponse) => {

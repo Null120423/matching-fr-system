@@ -1,48 +1,121 @@
-"use client";
-
 import TextDefault from "@/components/@core/text-default";
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { scale } from "@/helper/helpers";
+import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import moment from "moment";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
-  Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
+import { ButtonPrimary } from "../button";
+
+interface DatePickerProps {
+  selectedDate: Date | null;
+  onDateChange: (date: Date) => void;
+  title?: string;
+  placeholder?: string;
+}
+
+interface MonthItem {
+  label: string;
+  value: number;
+}
+
+const NumberPicker = <T,>({
+  data,
+  selected,
+  onSelect,
+  label,
+  renderItem,
+}: {
+  data: T[];
+  selected: T;
+  onSelect: (value: T) => void;
+  label: string;
+  renderItem?: (item: T) => string;
+}) => {
+  const { theme } = useTheme();
+  const currentColors = Colors[theme || "light"];
+
+  return (
+    <View style={styles.pickerColumn}>
+      <TextDefault style={[styles.pickerLabel, { color: currentColors.text }]}>
+        {" "}
+        {label}{" "}
+      </TextDefault>
+      <ScrollView
+        style={styles.pickerScroll}
+        showsVerticalScrollIndicator={false}
+      >
+        {data.map((item, index) => {
+          const display = renderItem ? renderItem(item) : String(item);
+          const isSelected = selected === item;
+          return (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.pickerItem,
+                isSelected && { backgroundColor: currentColors.primary },
+              ]}
+              onPress={() => onSelect(item)}
+            >
+              <TextDefault
+                style={{
+                  color: isSelected
+                    ? currentColors.backgroundCard
+                    : currentColors.text,
+                  fontWeight: isSelected ? "bold" : "normal",
+                }}
+              >
+                {display}
+              </TextDefault>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+};
 
 const DatePicker = ({
   selectedDate,
   onDateChange,
-  title = "Chọn ngày",
-}: any) => {
+  title = "Select Date",
+  placeholder = "Select Date",
+}: DatePickerProps) => {
   const { theme } = useTheme();
   const currentColors = Colors[theme || "light"];
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const [showPicker, setShowPicker] = useState(false);
-  const [selectedYear, setSelectedYear] = useState(moment(selectedDate).year());
-  const [selectedMonth, setSelectedMonth] = useState(
-    moment(selectedDate).month()
+  const [selectedYear, setSelectedYear] = useState(
+    moment(selectedDate || new Date()).year()
   );
-  const [selectedDay, setSelectedDay] = useState(moment(selectedDate).date());
+  const [selectedMonth, setSelectedMonth] = useState(
+    moment(selectedDate || new Date()).month()
+  );
+  const [selectedDay, setSelectedDay] = useState(
+    moment(selectedDate || new Date()).date()
+  );
 
   const currentYear = moment().year();
   const years = Array.from({ length: 100 }, (_, i) => currentYear - 50 + i);
-
-  const months = Array.from({ length: 12 }, (_, i) => ({
-    value: i,
-    label: moment().month(i).format("MMMM"),
-  }));
-
-  const getDaysInMonth = (year: number, month: number) => {
-    const daysCount = moment({ year, month }).daysInMonth();
-    return Array.from({ length: daysCount }, (_, i) => i + 1);
-  };
-
-  const days = getDaysInMonth(selectedYear, selectedMonth);
+  const months: MonthItem[] = moment
+    .months()
+    .map((label, i) => ({ value: i, label }));
+  const days = Array.from(
+    {
+      length: moment({
+        year: selectedYear,
+        month: selectedMonth,
+      }).daysInMonth(),
+    },
+    (_, i) => i + 1
+  );
 
   const confirmDate = () => {
     const newDate = moment({
@@ -51,200 +124,91 @@ const DatePicker = ({
       day: selectedDay,
     }).toDate();
     onDateChange(newDate);
-    setShowPicker(false);
+    bottomSheetRef.current?.close();
   };
 
-  const NumberPicker = ({
-    data,
-    selected,
-    onSelect,
-    label,
-    renderItem,
-  }: any) => (
-    <View style={styles.pickerColumn}>
-      <TextDefault style={[styles.pickerLabel, { color: currentColors.text }]}>
-        {label}
-      </TextDefault>
-      <ScrollView
-        style={styles.pickerScroll}
-        showsVerticalScrollIndicator={false}
-      >
-        {data.map((item: any) => {
-          const value = typeof item === "object" ? item.value : item;
-          const displayText = renderItem ? renderItem(item) : item.toString();
+  const openPicker = () => {
+    const m = moment(selectedDate);
+    setSelectedYear(m.year());
+    setSelectedMonth(m.month());
+    setSelectedDay(m.date());
+    bottomSheetRef.current?.present();
+  };
 
-          return (
-            <TouchableOpacity
-              key={value}
-              style={[
-                styles.pickerItem,
-                selected === value && {
-                  backgroundColor: currentColors.primary,
-                },
-              ]}
-              onPress={() => onSelect(value)}
-            >
-              <TextDefault
-                style={[
-                  styles.pickerItemText,
-                  {
-                    color:
-                      selected === value
-                        ? currentColors.backgroundCard
-                        : currentColors.text,
-                  },
-                ]}
-              >
-                {displayText}
-              </TextDefault>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-    </View>
-  );
+  const formatted =
+    selectedDate && moment(selectedDate).isValid()
+      ? moment(selectedDate).format("DD/MM/YYYY")
+      : null;
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: currentColors.backgroundCard },
-      ]}
-    >
-      <TouchableOpacity
-        style={[styles.dateButton, { backgroundColor: currentColors.primary }]}
-        onPress={() => setShowPicker(true)}
+    <>
+      <Pressable
+        onPress={openPicker}
+        style={[styles.inputWrapper, { borderColor: currentColors.border }]}
       >
         <TextDefault
-          style={[
-            styles.dateButtonText,
-            { color: currentColors.backgroundCard },
-          ]}
+          style={{
+            color: formatted ? currentColors.text : currentColors.textLight,
+            fontSize: scale(16),
+          }}
         >
-          {moment(selectedDate).format("DD/MM/YYYY - dddd")}
+          {formatted || placeholder}
         </TextDefault>
-      </TouchableOpacity>
+      </Pressable>
 
-      <Modal visible={showPicker} transparent={true} animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View
-            style={[
-              styles.modalContent,
-              { backgroundColor: currentColors.backgroundCard },
-            ]}
+      <BottomSheetModal
+        ref={bottomSheetRef}
+        snapPoints={["60%"]}
+        index={0}
+        backgroundStyle={{ borderTopLeftRadius: 20, borderTopRightRadius: 20 }}
+      >
+        <BottomSheetView style={{ padding: 20 }}>
+          <TextDefault
+            style={[styles.modalTitle, { color: currentColors.text }]}
           >
-            <TextDefault
-              style={[styles.modalTitle, { color: currentColors.text }]}
-            >
-              Chọn ngày
-            </TextDefault>
+            {" "}
+            {title}{" "}
+          </TextDefault>
 
-            <View style={styles.pickerContainer}>
-              <NumberPicker
-                data={years}
-                selected={selectedYear}
-                onSelect={setSelectedYear}
-                label="Năm"
-              />
-              <NumberPicker
-                data={months}
-                selected={selectedMonth}
-                onSelect={setSelectedMonth}
-                label="Tháng"
-                renderItem={(item: { label: any }) => item.label}
-              />
-              <NumberPicker
-                data={days}
-                selected={selectedDay}
-                onSelect={setSelectedDay}
-                label="Ngày"
-              />
-            </View>
-
-            <View
-              style={[
-                styles.previewContainer,
-                { backgroundColor: currentColors.background },
-              ]}
-            >
-              <TextDefault
-                style={[styles.previewText, { color: currentColors.primary }]}
-              >
-                {moment({
-                  year: selectedYear,
-                  month: selectedMonth,
-                  day: selectedDay,
-                }).format("DD/MM/YYYY - dddd")}
-              </TextDefault>
-            </View>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[
-                  styles.modalButton,
-                  { backgroundColor: currentColors.textLight },
-                ]}
-                onPress={() => setShowPicker(false)}
-              >
-                <TextDefault
-                  style={[
-                    styles.cancelButtonText,
-                    { color: currentColors.text },
-                  ]}
-                >
-                  Hủy
-                </TextDefault>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.modalButton,
-                  { backgroundColor: currentColors.primary },
-                ]}
-                onPress={confirmDate}
-              >
-                <TextDefault
-                  style={[
-                    styles.confirmButtonText,
-                    { color: currentColors.backgroundCard },
-                  ]}
-                >
-                  Chọn
-                </TextDefault>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.pickerContainer}>
+            <NumberPicker
+              data={years}
+              selected={selectedYear}
+              onSelect={setSelectedYear}
+              label="Year"
+            />
+            <NumberPicker
+              data={months}
+              selected={months.find((m) => m.value === selectedMonth)!}
+              onSelect={(m) => setSelectedMonth(m.value)}
+              label="Month"
+              renderItem={(m) => m.label}
+            />
+            <NumberPicker
+              data={days}
+              selected={selectedDay}
+              onSelect={setSelectedDay}
+              label="Day"
+            />
           </View>
-        </View>
-      </Modal>
-    </View>
+
+          <ButtonPrimary
+            title="Confirm"
+            onPress={confirmDate}
+            minWidth={"100%"}
+          />
+        </BottomSheetView>
+      </BottomSheetModal>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  inputWrapper: {
+    borderWidth: 1,
     borderRadius: scale(8),
-    padding: scale(12),
-    marginVertical: scale(8),
-  },
-  dateButton: {
-    padding: scale(15),
-    borderRadius: scale(8),
-    alignItems: "center",
-  },
-  dateButtonText: {
-    fontSize: scale(16),
-    fontWeight: "600",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContent: {
-    borderRadius: scale(15),
-    padding: scale(20),
-    width: "90%",
-    maxHeight: "80%",
+    paddingVertical: scale(12),
+    paddingHorizontal: scale(14),
   },
   modalTitle: {
     fontSize: scale(18),
@@ -255,7 +219,7 @@ const styles = StyleSheet.create({
   pickerContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    height: scale(200),
+    marginBottom: scale(20),
   },
   pickerColumn: {
     flex: 1,
@@ -267,44 +231,19 @@ const styles = StyleSheet.create({
     marginBottom: scale(10),
   },
   pickerScroll: {
-    flex: 1,
+    maxHeight: scale(150),
     width: "100%",
   },
   pickerItem: {
     padding: scale(10),
     alignItems: "center",
-    borderRadius: scale(5),
+    borderRadius: scale(6),
     marginVertical: scale(2),
   },
-  pickerItemText: {
-    fontSize: scale(16),
-  },
-  previewContainer: {
+  confirmButton: {
     padding: scale(15),
-    borderRadius: scale(8),
-    marginVertical: scale(15),
+    borderRadius: scale(10),
     alignItems: "center",
-  },
-  previewText: {
-    fontSize: scale(16),
-    fontWeight: "600",
-  },
-  modalButtons: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-  },
-  modalButton: {
-    flex: 1,
-    padding: scale(15),
-    borderRadius: scale(8),
-    alignItems: "center",
-    marginHorizontal: scale(5),
-  },
-  cancelButtonText: {
-    fontWeight: "600",
-  },
-  confirmButtonText: {
-    fontWeight: "600",
   },
 });
 

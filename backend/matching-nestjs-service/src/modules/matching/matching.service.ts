@@ -5,24 +5,47 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Client, ClientGrpc, Transport } from '@nestjs/microservices';
+import { join } from 'path';
+import { lastValueFrom } from 'rxjs';
 import {
   FriendRequestEntity,
   FriendRequestStatus,
   SwipeAction,
   SwipeEntity,
 } from 'src/entities';
+import { UserProfileServiceGrpc } from 'src/grpc';
+import { toDict } from 'src/helpers';
 import {
   FriendRequestRepository,
   SwipeRepository,
 } from 'src/repositories/index.repository';
 import { FriendRequest } from './dto/create-swipe.dto';
-
-// Để kiểm tra tồn tại của user, bạn cần giao tiếp với Auth Service
-// import { ClientProxy } from '@nestjs/microservices';
-// import { AUTH_SERVICE } from '../constants'; // Hoặc import từ auth.proto
+import { FriendRequestResponseDto } from './dto/fr-request-response.dto';
 
 @Injectable()
 export class MatchingService {
+  @Client({
+    transport: Transport.GRPC,
+    options: {
+      url: '0.0.0.0:50052',
+      package: 'auth',
+      protoPath: join(__dirname, '../../../../proto/auth.proto'),
+    },
+  })
+  private readonly client: ClientGrpc;
+
+  private userService: UserProfileServiceGrpc;
+
+  onModuleInit() {
+    this.userService =
+      this.client.getService<UserProfileServiceGrpc>('UserProfileService');
+
+    console.log(
+      '[Mapped GRPC] userService methods:',
+      Object.keys(this.userService),
+    );
+  }
   constructor(
     private readonly swipeRepository: SwipeRepository,
     private readonly friendRequestRepository: FriendRequestRepository,
@@ -168,5 +191,35 @@ export class MatchingService {
     request.status = FriendRequestStatus.REJECTED;
     // TODO: Gửi thông báo đã từ chối kết bạn đến người gửi
     return this.friendRequestRepository.save(request);
+  }
+
+  /** get my friends request list */
+  async getFriendRequests(data: {
+    userId: string;
+    status: any;
+  }): Promise<FriendRequestResponseDto> {
+    const result: any = await this.friendRequestRepository.find({
+      where: { receiverId: data.userId, status: data.status },
+    });
+
+    const userIds = result.map((request) => request.senderId);
+
+    const users = await lastValueFrom(
+      this.userService.getListUsersByIds({
+        userIds: userIds,
+      }),
+    ).then((res) => {
+      return res.users;
+    });
+
+    const dictUserById = toDict(users || [], 'id');
+
+    for (const request of result) {
+      request.sendRequestPerson = dictUserById[request.senderId];
+    }
+
+    return {
+      requests: result || [],
+    };
   }
 }

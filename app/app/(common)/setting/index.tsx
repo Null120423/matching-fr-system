@@ -1,11 +1,10 @@
-import Row from "@/components/@core/row";
-import Separator from "@/components/@core/separator";
+import { ButtonPrimary } from "@/components/@core/button";
 import TextDefault from "@/components/@core/text-default"; // Sử dụng TextDefault
 import { Colors } from "@/constants/Colors"; // Import Colors
+import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
 import { scale } from "@/helper/helpers";
 import { Picker } from "@react-native-picker/picker";
-import { router } from "expo-router";
 import {
   Bell,
   ChevronRight,
@@ -14,6 +13,7 @@ import {
   HelpCircle,
   LogOut,
   MapPin,
+  SunDimIcon,
 } from "lucide-react-native";
 import React, { useState } from "react";
 import {
@@ -39,43 +39,6 @@ const getShadowStyle = (currentColors: any) =>
       elevation: 2,
     },
   });
-
-// -----------------------------------------------------
-// Component con: SettingsHeader
-// -----------------------------------------------------
-interface SettingsHeaderProps {
-  currentColors: any;
-  onBackPress: () => void;
-}
-
-function SettingsHeader({ currentColors, onBackPress }: SettingsHeaderProps) {
-  return (
-    <>
-      <Row between full style={{ paddingHorizontal: scale(16) }}>
-        <TouchableOpacity onPress={onBackPress}>
-          <TextDefault style={{ color: currentColors.text }}>
-            Quay lại
-          </TextDefault>
-        </TouchableOpacity>
-      </Row>
-      <View style={settingStyles.header}>
-        <TextDefault
-          style={[settingStyles.headerTitle, { color: currentColors.text }]}
-        >
-          Cài đặt ứng dụng
-        </TextDefault>
-        <TextDefault
-          style={[
-            settingStyles.headerSubtitle,
-            { color: currentColors.textSecondary },
-          ]}
-        >
-          Quản lý các tùy chọn và quyền riêng tư của bạn
-        </TextDefault>
-      </View>
-    </>
-  );
-}
 
 // -----------------------------------------------------
 // Component con: SettingSectionCard (Reusable)
@@ -258,7 +221,8 @@ function LinkSettingItem({
 // Main Component: SettingScreen
 // -----------------------------------------------------
 export default function SettingScreen() {
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
+  const { onSignOut } = useAuth();
   const currentColors = Colors[theme || "light"];
   const shadowStyle = getShadowStyle(currentColors);
 
@@ -267,9 +231,9 @@ export default function SettingScreen() {
   const [selectedLanguage, setSelectedLanguage] = useState("vi");
 
   const handleLogout = () => {
-    Alert.alert("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất không?", [
-      { text: "Hủy", style: "cancel" },
-      { text: "Đăng xuất", onPress: () => console.log("User logged out") }, // Implement logout logic here
+    Alert.alert("Log Out", "Are you sure you want to log out?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Confirm", onPress: () => onSignOut() }, // Implement logout logic here
     ]);
   };
 
@@ -299,23 +263,23 @@ export default function SettingScreen() {
         { backgroundColor: currentColors.background },
       ]}
     >
-      <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
-      <SettingsHeader
-        onBackPress={() => router.back()}
-        currentColors={currentColors}
-      />
-
       <ScrollView style={settingStyles.scrollView}>
         <View style={settingStyles.content}>
-          {/* Notification Settings */}
           <SettingSectionCard
-            title="Cài đặt thông báo"
+            title="Theme & Notifications"
             currentColors={currentColors}
             shadowStyle={shadowStyle}
           >
             <ToggleSettingItem
+              icon={<SunDimIcon size={scale(20)} />}
+              label="Toggle Theme"
+              isEnabled={theme === "dark"}
+              onToggle={toggleTheme}
+              currentColors={currentColors}
+            />
+            <ToggleSettingItem
               icon={<Bell size={scale(20)} />}
-              label="Bật thông báo"
+              label="Enable notifications"
               isEnabled={notificationsEnabled}
               onToggle={setNotificationsEnabled}
               currentColors={currentColors}
@@ -380,31 +344,12 @@ export default function SettingScreen() {
           </SettingSectionCard>
 
           {/* Logout */}
-          <TouchableOpacity
-            style={[
-              settingStyles.logoutButton,
-              shadowStyle,
-              {
-                backgroundColor: currentColors.backgroundCard,
-                borderColor: currentColors.danger,
-              },
-            ]}
+          <ButtonPrimary
+            iconLeft={<LogOut size={scale(24)} color={"white"} />}
+            minWidth={"100%"}
+            title="Log Out"
             onPress={handleLogout}
-          >
-            <LogOut
-              size={scale(20)}
-              color={currentColors.iconDanger}
-              style={settingStyles.buttonIcon}
-            />
-            <TextDefault
-              style={[
-                settingStyles.logoutButtonText,
-                { color: currentColors.iconDanger },
-              ]}
-            >
-              Đăng xuất
-            </TextDefault>
-          </TouchableOpacity>
+          />
         </View>
       </ScrollView>
     </View>
@@ -461,6 +406,7 @@ const settingStyles = StyleSheet.create({
   },
   settingLabel: {
     fontSize: scale(16),
+    marginLeft: scale(8),
   },
   pickerContainer: {
     borderWidth: 1,

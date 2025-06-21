@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "google/protobuf/timestamp.proto";
 
 package matchingupload;
 
@@ -12,6 +13,14 @@ service MatchingService {
   rpc RecordSwipe (RecordSwipeRequest) returns (RecordSwipeResponse);
   rpc SendFriendRequest (SendFriendRequestRequest) returns (SendFriendRequestResponse);
   rpc UpdateFriendRequestStatus (UpdateFriendRequestStatusRequest) returns (FriendRequest); 
+  rpc GetFriendRequests(GetFriendRequestsRequest) returns (MyFriendRequestListResponse);
+}
+message GetFriendRequestsRequest {
+  string userId = 1; // ID của user cần lấy request
+  string status = 2;
+}
+message MyFriendRequestListResponse {
+  repeated FriendRequest requests = 1;
 }
 
 // Messages
@@ -63,4 +72,29 @@ message FriendRequest {
   string statusName = 7;
   string statusColor = 8;
   string statusCode = 9;
+  User sendRequestPerson = 10;
+}
+
+
+message User {
+  string id = 1;
+  string email = 2;
+  string emailVerificationCode = 3;
+  bool isEmailVerified = 4;
+  string resetPasswordCode = 5; 
+  string firstName = 6;
+  string lastName = 7;
+  google.protobuf.Timestamp dateOfBirth = 8;
+  string gender = 9;
+  string location = 10;
+  string bio = 11;
+  string avatarUrl = 12;
+  repeated string interests = 13;
+  int32 minAgePreference = 14;
+  int32 maxAgePreference = 15;
+  string preferredGender = 16;
+  repeated string activities = 17;
+  google.protobuf.Timestamp createdAt = 18;
+  google.protobuf.Timestamp updatedAt = 19;
+  string username = 20;
 }
