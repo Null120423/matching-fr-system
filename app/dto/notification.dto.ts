@@ -5,5 +5,8 @@ export interface NotificationDTO extends BaseDTO {
   userId: string;
   type: string;
   content: string;
+  title: string;
+  createdAt: Date;
   isRead: boolean;
+  body: string;
 }

@@ -162,7 +162,7 @@ const TimePicker = ({
 
             <View style={styles.previewContainer}>
               <Text style={styles.previewText}>
-                Selected Time:{" "}
+                Selected Time:
                 {formatTime(selectedHour, selectedMinute, selectedSecond)}
               </Text>
             </View>

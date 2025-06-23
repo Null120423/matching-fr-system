@@ -14,7 +14,18 @@ service MatchingService {
   rpc SendFriendRequest (SendFriendRequestRequest) returns (SendFriendRequestResponse);
   rpc UpdateFriendRequestStatus (UpdateFriendRequestStatusRequest) returns (FriendRequest); 
   rpc GetFriendRequests(GetFriendRequestsRequest) returns (MyFriendRequestListResponse);
+  rpc GetCurrentFriends(GetCurrentFriendRequest) returns (GetCurrentFriendsResponse);
 }
+
+message GetCurrentFriendRequest {
+   string userId = 1;
+}
+
+message GetCurrentFriendsResponse {
+	repeated User friends = 1;
+	int32 total = 2; 
+}
+
 message GetFriendRequestsRequest {
   string userId = 1; // ID của user cần lấy request
   string status = 2;

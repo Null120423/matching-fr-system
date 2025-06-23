@@ -3,6 +3,7 @@ import { BaseResponseDTO, UserDTO } from "@/dto";
 export interface SignInRequest {
   username: string;
   password: string;
+  expoToken?: string;
 }
 export interface SignInResponse extends BaseResponseDTO {
   accessToken: string;

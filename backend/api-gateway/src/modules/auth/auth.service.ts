@@ -14,6 +14,7 @@ interface AuthServiceImpl {
   SignIn(data: LoginRequestDTO): Observable<LoginReplyDTO>;
   SignUp(data: SignUpRequestDTO): Observable<SignUpReplyDTO>;
   RefreshToken(data: RefreshTokenRequestDTO): Observable<RefreshTokenReplyDTO>;
+  SignOut(data: { userId: string }): Observable<{ message: string }>;
 }
 
 @Injectable()
@@ -48,5 +49,10 @@ export class AuthService implements OnModuleInit {
   ): Promise<RefreshTokenReplyDTO> {
     const response = lastValueFrom(this.authService.RefreshToken(data));
     return response;
+  }
+
+  // sign out
+  async signOut(data: { userId: string }): Promise<{ message: string }> {
+    return lastValueFrom(this.authService.SignOut(data));
   }
 }

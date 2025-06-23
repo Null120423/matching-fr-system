@@ -32,6 +32,7 @@ message Empty {}
 message SignInRequest {
   string username = 1;
   string password = 2;
+  string expoToken = 3;
 }
 
 message SignInResponse {
@@ -83,7 +84,7 @@ message ResetPasswordResponse {
 }
 
 message SignOutRequest {
-  string accessToken = 1;
+ string userId = 1;
 }
 
 message SignOutResponse {
@@ -116,6 +117,7 @@ message User {
   google.protobuf.Timestamp createdAt = 18;
   google.protobuf.Timestamp updatedAt = 19;
   string username = 20;
+  string expoToken = 21;
 }
 
 message GetMyProfileRequest {
@@ -125,18 +127,22 @@ message GetMyProfileRequest {
 // Use wrappers for optional fields (recommended in proto3)
 message UpdateUserProfileRequest {
   string userId = 1;
-  google.protobuf.StringValue firstName = 2;
-  google.protobuf.StringValue lastName = 3;
-  google.protobuf.StringValue dateOfBirth = 4;
-  google.protobuf.StringValue gender = 5;
-  google.protobuf.StringValue location = 6;
-  google.protobuf.StringValue bio = 7;
-  google.protobuf.StringValue avatarUrl = 8;
+  string firstName = 2;
+  string lastName = 3;
+  string dateOfBirth = 4;
+  string gender = 5;
+  string location = 6;
+  string bio = 7;
+  string avatarUrl = 8;
   repeated string interests = 9;
-  google.protobuf.Int32Value minAgePreference = 10;
-  google.protobuf.Int32Value maxAgePreference = 11;
-  google.protobuf.StringValue preferredGender = 12;
+  string minAgePreference = 10;
+  string maxAgePreference = 11;
+  string preferredGender = 12;
   repeated string activities = 13;
+  repeated string specificTimes = 14; 
+  repeated string freeTimes = 15; 
+  repeated string relationshipGoals = 16;
+  repeated string lifestyle = 17;  
 }
 
 message GetUserByIdRequest {

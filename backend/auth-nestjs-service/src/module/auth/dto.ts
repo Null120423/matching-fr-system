@@ -1,6 +1,13 @@
+import { Optional } from '@nestjs/common';
+
 export class LoginRequestDTO {
   username: string;
   password: string;
+  @Optional()
+  expoToken?: string;
+}
+export class SignOutRequestDTO {
+  userId: string;
 }
 export class LoginReplyDTO {
   accessToken: string;
@@ -13,11 +20,25 @@ export class LoginReplyDTO {
 }
 
 export class UserDTO {
-  id: string;
   username: string;
-  favoriteActivities: string[];
-  availableTimeSlots: string[];
+  email: string;
+  password: string;
+  emailVerificationCode: string;
+  isEmailVerified: boolean;
+  resetPasswordCode: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: Date;
+  gender: string;
   location: string;
+  bio: string;
+  avatarUrl: string;
+  interests: string[];
+  minAgePreference: number;
+  maxAgePreference: number;
+  preferredGender: string;
+  activities: string[];
+  expoToken: string;
 }
 
 export class RefreshTokenRequestDTO {

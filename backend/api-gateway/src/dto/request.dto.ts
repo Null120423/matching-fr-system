@@ -1,5 +1,5 @@
-import { UserDTO } from 'src/modules/auth/dto';
+import { UserDto } from './user.dto';
 
 export type RequestWithUser = Request & {
-  user: UserDTO;
+  user: UserDto;
 };

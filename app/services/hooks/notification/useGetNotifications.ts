@@ -4,7 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { GetNotificationsResponse } from "./dto";
 
 const useGetNotifications = () => {
-  const { data, isLoading, error } = useQuery<GetNotificationsResponse, Error>({
+  const { data, isLoading, error, refetch } = useQuery<
+    GetNotificationsResponse,
+    Error
+  >({
     queryKey: [ENDPOINTS.NOTIFICATION.GET_NOTIFICATIONS],
     queryFn: () =>
       rootApi.get<null, GetNotificationsResponse>(
@@ -13,9 +16,10 @@ const useGetNotifications = () => {
   });
 
   return {
-    data: data ?? null,
+    data: data ?? [],
     isLoading: isLoading,
     error,
+    refetch,
   };
 };
 

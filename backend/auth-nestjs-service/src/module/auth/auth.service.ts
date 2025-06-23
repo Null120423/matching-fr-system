@@ -11,6 +11,7 @@ import { UserEntity } from 'src/entities';
 import {
   LoginRequestDTO,
   RefreshTokenRequestDTO,
+  SignOutRequestDTO,
   SignUpRequestDTO,
 } from './dto';
 
@@ -25,7 +26,6 @@ export class AuthService {
   JWT_SECRET = 'JWT_SECRET';
 
   async signIn(signInDto: LoginRequestDTO) {
-    console.log(signInDto);
     const user: any = await this.repo.findOne({
       where: { username: signInDto.username, isDeleted: false },
     });
@@ -41,6 +41,14 @@ export class AuthService {
 
     const generateTokens = this.generateTokens(user);
 
+    // update token
+    if (signInDto.expoToken) {
+      await this.repo.update(user.id, {
+        expoToken: signInDto.expoToken,
+        updatedAt: new Date(),
+        updatedBy: user.id,
+      });
+    }
     return {
       ...generateTokens,
       user: { ...user },
@@ -108,5 +116,18 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
     return { accessToken, refreshToken };
+  }
+
+  async signOut(data: SignOutRequestDTO) {
+    const user = await this.repo.findOneBy({ id: data.userId });
+    if (!user) {
+      throw new NotFoundException('User not found!');
+    }
+    // clear expo token or any other session-related data
+    await this.repo.update(user.id, {
+      expoToken: '',
+      updatedAt: new Date(),
+      updatedBy: user.id,
+    });
   }
 }

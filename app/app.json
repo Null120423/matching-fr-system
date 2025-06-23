@@ -1,23 +1,13 @@
 {
   "expo": {
-    "name": "demo-expo",
-    "slug": "demo-expo",
+    "name": "Matching fr app",
+    "slug": "matching-friends",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "matching.fr.app",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.huutaidev.demo-expo"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
+    "owner": "huutaidev",
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -35,10 +25,49 @@
         }
       ],
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#ffffff",
+          "defaultChannel": "default",
+          "enableBackgroundRemoteNotifications": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "ios": {
+      "newArchEnabled": true,
+      "supportsTablet": true,
+      "bundleIdentifier": "com.huutaidev.matching-fr-app",
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"]
+      }
+    },
+    "android": {
+      "newArchEnabled": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.huutaidev.matching_fr_app"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "23457d61-3e99-4650-b9ff-4cee42f1c372"
+      },
+      "router": {
+        "origin": false
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/your-eas-project-id"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }

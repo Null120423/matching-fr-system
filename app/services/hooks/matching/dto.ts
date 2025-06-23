@@ -1,4 +1,4 @@
-import { BaseResponseDTO, FriendRequestDTO } from "@/dto";
+import { BaseResponseDTO, FriendRequestDTO, UserDTO } from "@/dto";
 export interface UseSwipeRequest {
   userId: string;
   action: "LIKE" | "PASS";
@@ -29,4 +29,8 @@ export interface UpdateFriendResponse
 
 export interface GetFriendRequestResponse {
   requests: FriendRequestDTO[];
+}
+export interface CurrentFriendsResponse {
+  friends: UserDTO[];
+  total: number;
 }

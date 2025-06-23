@@ -1,0 +1,49 @@
+syntax = "proto3";
+package notification;
+
+option java_multiple_files = true;
+option java_package = "notification";
+option java_outer_classname = "NotificationProto";
+
+service NotificationService {
+  rpc GetNotifications(UserRequest) returns (NotificationListResponse);
+  rpc GetNotificationById(NotificationIdRequest) returns (Notification);
+  rpc MarkAsRead(NotificationIdRequest) returns (Notification);
+  rpc GetUnreadCount(UserRequest) returns (UnreadCountResponse);
+  rpc CreateNotification(CreateNotificationRequest) returns (Notification); // API mới
+}
+
+message UserRequest {
+  string userId = 1;
+}
+
+message NotificationIdRequest {
+  string userId = 1;
+  string notificationId = 2;
+}
+
+message Notification {
+  string id = 1;
+  string userId = 2;
+  string type = 3;
+  string title = 4;
+  string body = 5; 
+  bool isRead = 6;
+  string createdAt = 7; 
+  string updatedAt = 8; 
+}
+
+message NotificationListResponse {
+  repeated Notification notifications = 1;
+}
+
+message UnreadCountResponse {
+  int32 count = 1;
+}
+message CreateNotificationRequest {
+  string userId = 1;
+  string type = 2;
+  string content = 3;
+  string title = 4;
+  string expoToken = 5;
+}

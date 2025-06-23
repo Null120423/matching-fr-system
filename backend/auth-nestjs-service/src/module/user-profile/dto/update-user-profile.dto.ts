@@ -47,4 +47,24 @@ export class UpdateUserProfileDto {
   @IsArray()
   @IsString({ each: true })
   activities?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  specificTimes?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  freeTimes?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  relationshipGoals?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  lifestyle?: string[];
 }

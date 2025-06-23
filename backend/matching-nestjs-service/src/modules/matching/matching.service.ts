@@ -8,6 +8,7 @@ import {
 import { Client, ClientGrpc, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { lastValueFrom } from 'rxjs';
+import { UserDto } from 'src/dto';
 import {
   FriendRequestEntity,
   FriendRequestStatus,
@@ -22,6 +23,10 @@ import {
 } from 'src/repositories/index.repository';
 import { FriendRequest } from './dto/create-swipe.dto';
 import { FriendRequestResponseDto } from './dto/fr-request-response.dto';
+import {
+  NotificationCreate,
+  NotificationServiceGrpc,
+} from './dto/notification.dto';
 
 @Injectable()
 export class MatchingService {
@@ -35,21 +40,39 @@ export class MatchingService {
   })
   private readonly client: ClientGrpc;
 
+  @Client({
+    transport: Transport.GRPC,
+    options: {
+      url: '0.0.0.0:50051',
+      package: 'notification',
+      protoPath: join(__dirname, '../../../../proto/notification.proto'),
+    },
+  })
+  private readonly clientNotification: ClientGrpc;
+
   private userService: UserProfileServiceGrpc;
+  private notificationService: NotificationServiceGrpc;
 
   onModuleInit() {
     this.userService =
       this.client.getService<UserProfileServiceGrpc>('UserProfileService');
+    this.notificationService =
+      this.clientNotification.getService<NotificationServiceGrpc>(
+        'NotificationService',
+      );
 
     console.log(
       '[Mapped GRPC] userService methods:',
       Object.keys(this.userService),
     );
+    console.log(
+      '[Mapped GRPC] notificationService methods:',
+      Object.keys(this.notificationService),
+    );
   }
   constructor(
     private readonly swipeRepository: SwipeRepository,
     private readonly friendRequestRepository: FriendRequestRepository,
-    // @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy, // Nếu cần gọi auth service
   ) {}
 
   async recordSwipe(
@@ -60,11 +83,19 @@ export class MatchingService {
     if (swiperId === swipedId) {
       throw new BadRequestException('Cannot swipe on yourself.');
     }
-
     // Kiểm tra xem đã tồn tại swipe từ swiperId đến swipedId chưa
     const existingSwipe = await this.swipeRepository.findOne({
       where: { swiperId: swiperId, swipedId },
     });
+
+    // get user info
+    const user = await lastValueFrom(
+      this.userService.getUserById({ userId: swipedId }),
+    ).then((res) => res);
+
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
 
     if (existingSwipe) {
       // Nếu đã swipe, cập nhật hành động
@@ -93,8 +124,25 @@ export class MatchingService {
       if (reverseSwipe) {
         match = true;
         // TODO: Gửi thông báo match đến cả hai người dùng (thông qua Notification Service)
+        const notificationBody: NotificationCreate = {
+          title: 'New Match!',
+          content: `You have a new match with ${user.username}!`,
+          type: 'MATCH',
+          userId: swipedId,
+          expoToken: user.expoToken,
+        };
+        await this.createNotification(notificationBody);
         // TODO: Tạo một cuộc trò chuyện mới (Chat Service)
         console.log(`🎉 MATCH! ${swiperId} and ${swipedId}`);
+      } else {
+        const notificationBody: NotificationCreate = {
+          title: 'New Swipe',
+          content: `${user.username} has swiped right on you!`,
+          type: 'SWIPE',
+          userId: swipedId,
+          expoToken: user.expoToken,
+        };
+        await this.createNotification(notificationBody);
       }
     }
     return { match };
@@ -134,6 +182,23 @@ export class MatchingService {
       }
     }
 
+    const user = await lastValueFrom(
+      this.userService.getUserById({ userId: receiverId }),
+    ).then((res) => res);
+    if (!user) {
+      throw new NotFoundException('Receiver user not found.');
+    }
+
+    // notification
+    const notificationBody: NotificationCreate = {
+      title: 'Friend Request',
+      content: `${user.username} has sent you a friend request.`,
+      type: 'FRIEND_REQUEST',
+      userId: receiverId,
+      expoToken: user.expoToken,
+    };
+    await this.createNotification(notificationBody);
+
     const friendRequest = this.friendRequestRepository.create({
       senderId,
       receiverId,
@@ -141,6 +206,21 @@ export class MatchingService {
     });
 
     // TODO: Gửi thông báo yêu cầu kết bạn đến người nhận (thông qua Notification Service)
+    console.log(`Friend request sent from ${senderId} to ${receiverId}`);
+    const senderUser = await lastValueFrom(
+      this.userService.getUserById({ userId: senderId }),
+    ).then((res) => res);
+    if (!senderUser) {
+      throw new NotFoundException('Sender user not found.');
+    }
+    const notificationBodySender: NotificationCreate = {
+      title: 'Friend Request Sent',
+      content: `You have sent a friend request to ${senderUser.username}.`,
+      type: 'FRIEND_REQUEST_SENT',
+      userId: senderId,
+      expoToken: senderUser.expoToken,
+    };
+    await this.createNotification(notificationBodySender);
     return this.friendRequestRepository.save(friendRequest);
   }
 
@@ -165,7 +245,21 @@ export class MatchingService {
     }
 
     request.status = FriendRequestStatus.ACCEPTED;
+    const senderUser = await lastValueFrom(
+      this.userService.getUserById({ userId: request.senderId }),
+    ).then((res) => res);
+    if (!senderUser) {
+      throw new NotFoundException('Sender user not found.');
+    }
     // TODO: Gửi thông báo đã chấp nhận kết bạn đến người gửi
+    const notificationBody: NotificationCreate = {
+      title: 'Friend Request Accepted',
+      content: `${senderUser.username} has accepted your friend request.`,
+      type: 'FRIEND_REQUEST_ACCEPTED',
+      userId: request.senderId,
+      expoToken: senderUser.expoToken,
+    };
+    await this.createNotification(notificationBody);
     return this.friendRequestRepository.save(request);
   }
 
@@ -189,7 +283,21 @@ export class MatchingService {
     }
 
     request.status = FriendRequestStatus.REJECTED;
+    const senderUser = await lastValueFrom(
+      this.userService.getUserById({ userId: request.senderId }),
+    ).then((res) => res);
+    if (!senderUser) {
+      throw new NotFoundException('Sender user not found.');
+    }
     // TODO: Gửi thông báo đã từ chối kết bạn đến người gửi
+    const notificationBody: NotificationCreate = {
+      title: 'Friend Request Rejected',
+      content: `${senderUser.username} has rejected your friend request.`,
+      type: 'FRIEND_REQUEST_REJECTED',
+      userId: request.senderId,
+      expoToken: senderUser.expoToken,
+    };
+    await this.createNotification(notificationBody);
     return this.friendRequestRepository.save(request);
   }
 
@@ -220,6 +328,48 @@ export class MatchingService {
 
     return {
       requests: result || [],
+    };
+  }
+
+  /** create notification */
+  private async createNotification(body: NotificationCreate): Promise<void> {
+    if (!body.userId) {
+      throw new BadRequestException('User ID is required for notification.');
+    }
+    const notification = await lastValueFrom(
+      this.notificationService.createNotification(body),
+    );
+    if (!notification) {
+      throw new ConflictException('Failed to create notification.');
+    }
+  }
+  /** load list current friend of user  */
+  async getCurrentFriends(payload: { userId: string }): Promise<{
+    friends: UserDto[];
+    total: number;
+  }> {
+    const userId = payload.userId;
+    if (!userId) {
+      throw new BadRequestException('User ID is required.');
+    }
+    const friendRequests = await this.friendRequestRepository.find({
+      where: [
+        { senderId: userId, status: FriendRequestStatus.ACCEPTED },
+        { receiverId: userId, status: FriendRequestStatus.ACCEPTED },
+      ],
+    });
+
+    const friendIds = friendRequests.map((request) =>
+      request.senderId === userId ? request.receiverId : request.senderId,
+    );
+
+    const friends = await lastValueFrom(
+      this.userService.getListUsersByIds({ userIds: friendIds }),
+    ).then((res) => res.users);
+
+    return {
+      friends: friends || [],
+      total: friends.length,
     };
   }
 }

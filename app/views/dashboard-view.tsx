@@ -24,6 +24,7 @@ import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/contexts/ThemeContext";
 
 // Additional icons for enhanced UI
+import useCurrentFriends from "@/services/hooks/matching/useCurrentFriends";
 import {
   Activity,
   Bell,
@@ -74,6 +75,9 @@ function StatsCard({
   index,
 }: StatsCardProps) {
   const Icon = stat.icon;
+
+  const { data } = useCurrentFriends();
+  console.log("Current Friends Data:", data);
 
   return (
     <TouchableOpacity

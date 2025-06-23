@@ -1,5 +1,3 @@
-"use client";
-
 import { ButtonOutlined, ButtonPrimary } from "@/components/@core/button";
 import Loading from "@/components/@core/loading";
 import DatePicker from "@/components/@core/Picker/DatePicker";
@@ -27,8 +25,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-// Type definitions
 interface EditableUserData {
   email: string;
   firstName: string;
@@ -863,7 +859,7 @@ export default function EditProfileView() {
           currentColors={currentColors}
           isLoading={isLoadingUpdate}
         />
-        <Separator height={normalize(50)} />
+        <Separator height={normalize(120)} />
       </ScrollView>
     </View>
   );

@@ -12,6 +12,7 @@ import com.example.notification_service.exception.UnauthorizedNotificationAccess
 import com.example.notification_service.model.NotificationModel;
 import com.example.notification_service.repository.NotificationRepository;
 import com.example.notification_service.service.NotificationService;
+
 @Service
 public class NotificationServiceImpl implements NotificationService {
 

@@ -1,5 +1,4 @@
 syntax = "proto3";
-
 package notification;
 
 option java_multiple_files = true;
@@ -27,10 +26,11 @@ message Notification {
   string id = 1;
   string userId = 2;
   string type = 3;
-  string content = 4;
-  bool isRead = 5;
-  string createdAt = 6;
-  string updatedAt = 7;
+  string title = 4;
+  string body = 5; 
+  bool isRead = 6;
+  string createdAt = 7; 
+  string updatedAt = 8; 
 }
 
 message NotificationListResponse {
@@ -45,4 +45,5 @@ message CreateNotificationRequest {
   string type = 2;
   string content = 3;
   string title = 4;
+  string expoToken = 5;
 }

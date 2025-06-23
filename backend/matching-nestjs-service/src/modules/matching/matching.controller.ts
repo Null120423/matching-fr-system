@@ -1,5 +1,6 @@
 import { BadRequestException, Controller } from '@nestjs/common';
 import { GrpcLog, GrpcMethod } from 'src/decorators';
+import { UserDto } from 'src/dto';
 import { SwipeAction } from 'src/entities';
 import { CreateSwipeDto, FriendRequest } from './dto/create-swipe.dto';
 import { FriendRequestResponseDto } from './dto/fr-request-response.dto';
@@ -69,5 +70,12 @@ export class MatchingController {
     status: any;
   }): Promise<FriendRequestResponseDto> {
     return await this.matchingService.getFriendRequests(payload);
+  }
+  @GrpcMethod('MatchingService', 'GetCurrentFriends')
+  async getCurrentFriends(payload: { userId: string }): Promise<{
+    friends: UserDto[];
+    total: number;
+  }> {
+    return await this.matchingService.getCurrentFriends(payload);
   }
 }

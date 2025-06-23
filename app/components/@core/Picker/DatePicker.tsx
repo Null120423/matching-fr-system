@@ -45,8 +45,7 @@ const NumberPicker = <T,>({
   return (
     <View style={styles.pickerColumn}>
       <TextDefault style={[styles.pickerLabel, { color: currentColors.text }]}>
-        {" "}
-        {label}{" "}
+        {label}
       </TextDefault>
       <ScrollView
         style={styles.pickerScroll}
@@ -166,8 +165,7 @@ const DatePicker = ({
           <TextDefault
             style={[styles.modalTitle, { color: currentColors.text }]}
           >
-            {" "}
-            {title}{" "}
+            {title}
           </TextDefault>
 
           <View style={styles.pickerContainer}>

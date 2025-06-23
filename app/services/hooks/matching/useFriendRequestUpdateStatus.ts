@@ -1,10 +1,11 @@
+import { showToastSuccess } from "@/contexts/ToastEventEmitter";
 import { ENDPOINTS } from "@/services/endpoints";
 import { rootApi } from "@/services/rootApi";
-import { useMutation } from "@tanstack/react-query";
-import { Alert } from "react-native";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UpdateFriendRequest, UpdateFriendResponse } from "./dto";
 
 const useFriendRequestUpdateStatus = () => {
+  const queryClient = useQueryClient();
   const { isPending, isError, data, error, mutateAsync } = useMutation({
     mutationFn: (variables: UpdateFriendRequest) => {
       return rootApi.put<UpdateFriendRequest, UpdateFriendResponse>(
@@ -12,14 +13,15 @@ const useFriendRequestUpdateStatus = () => {
         variables
       );
     },
-    onError: (e: any) => {
-      Alert.alert(
-        "Login failed",
-        e?.response?.data?.message || "Đã có lỗi xảy ra"
-      );
-    },
     onSuccess: async (data: UpdateFriendResponse) => {
-      Alert.alert(data?.message || "", "!");
+      queryClient.invalidateQueries({
+        queryKey: [
+          ENDPOINTS.MATCHING.GET_FRIEND_REQUEST({
+            status: "pending",
+          }),
+        ],
+      });
+      showToastSuccess(data?.message || "Friend request updated successfully!");
     },
   });
   return {

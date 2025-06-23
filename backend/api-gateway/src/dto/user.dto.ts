@@ -18,4 +18,5 @@ export class UserDto extends BaseDto {
   maxAgePreference: number;
   preferredGender: string;
   activities: string[];
+  expoToken: string;
 }

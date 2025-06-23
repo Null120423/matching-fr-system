@@ -45,6 +45,9 @@ export class UserEntity extends BaseEntityCustom {
   @Column({ nullable: true })
   avatarUrl: string;
 
+  @Column({ nullable: true })
+  expoToken: string;
+
   @Column({ type: 'simple-array', nullable: true }) // Mảng các sở thích
   interests: string[];
 
@@ -63,6 +66,14 @@ export class UserEntity extends BaseEntityCustom {
 
   @Column({ type: 'simple-array', nullable: true })
   availableTimeSlots: string[];
+  @Column({ type: 'simple-array', nullable: true })
+  specificTimes: string[];
+  @Column({ type: 'simple-array', nullable: true })
+  freeTimes: string[];
+  @Column({ type: 'simple-array', nullable: true })
+  relationshipGoals: string[];
+  @Column({ type: 'simple-array', nullable: true })
+  lifestyle: string[];
 
   @BeforeInsert()
   @BeforeUpdate()

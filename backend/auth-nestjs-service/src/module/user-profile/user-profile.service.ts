@@ -21,14 +21,29 @@ export class UserProfileService {
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found.`);
     }
-    Object.assign(user, {
-      ...updateData,
-      ...(updateData.dateOfBirth
-        ? { dateOfBirth: new Date(updateData.dateOfBirth) }
-        : {}),
-    });
 
-    return this.repo.save(user);
+    return this.repo
+      .update(user.id, {
+        interests: updateData.interests,
+        activities: updateData.activities,
+        specificTimes: updateData.specificTimes,
+        freeTimes: updateData.freeTimes,
+        firstName: updateData.firstName,
+        lastName: updateData.lastName,
+        dateOfBirth: updateData.dateOfBirth,
+        avatarUrl: updateData.avatarUrl,
+        gender: updateData.gender,
+        location: updateData.location,
+        bio: updateData.bio,
+        minAgePreference: updateData.minAgePreference,
+        maxAgePreference: updateData.maxAgePreference,
+        preferredGender: updateData.preferredGender,
+        updatedAt: new Date(),
+        updatedBy: user.id,
+      })
+      .then(() => {
+        return this.repo.findOneOrFail({ where: { id: userId } });
+      });
   }
 
   async getUserById(userId: string): Promise<UserEntity> {
@@ -41,6 +56,7 @@ export class UserProfileService {
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found.`);
     }
+    // Optionally, you canc
     return user;
   }
 
@@ -49,16 +65,32 @@ export class UserProfileService {
   ): Promise<{
     users: UserEntity[];
   }> {
-    const whereCon: FindOptionsWhere<UserEntity> = {
-      isDeleted: false,
-      isEmailVerified: true,
-    };
-    if (payload.currentUserId) {
-      whereCon.id = Not(In([payload.currentUserId]));
+    // Get current user profile
+    const currentUser = await this.repo.findOne({
+      where: { id: payload.currentUserId },
+    });
+    if (!currentUser) {
+      throw new NotFoundException('Current user not found.');
     }
+
+    // Build base query
+    const whereCon: FindOptionsWhere<UserEntity> = {
+      id: Not(In([payload.currentUserId])),
+      isDeleted: false,
+    };
+
+    // Optionally filter by activity, gender, etc.
     if (payload.activity) {
       whereCon.activities = ILike(`%${payload.activity}%`);
     }
+    if (payload.gender) {
+      whereCon.gender = payload.gender;
+    }
+    if (payload.query) {
+      whereCon.firstName = ILike(`%${payload.query}%`);
+    }
+
+    // Age filter
     if (payload.minAge) {
       const today = new Date();
       const minBirthDate = new Date(
@@ -77,18 +109,104 @@ export class UserProfileService {
       );
       whereCon.dateOfBirth = LessThanOrEqual(maxBirthDate);
     }
-    if (payload.gender) {
-      whereCon.gender = payload.gender;
+
+    // Find all candidates
+    const candidates = await this.repo.find({ where: whereCon });
+
+    // Calculate match percentage with more detail
+    function getMatchPercent(user: UserEntity, current: UserEntity): number {
+      let score = 0;
+      let total = 0;
+
+      // Helper to count overlap
+      const overlap = (a?: string[], b?: string[]) =>
+        Array.isArray(a) && Array.isArray(b)
+          ? a.filter((v) => b.includes(v)).length
+          : 0;
+
+      // Interests
+      if (Array.isArray(user.interests) && Array.isArray(current.interests)) {
+        total += current.interests.length;
+        score += overlap(user.interests, current.interests);
+      }
+
+      // Activities
+      if (Array.isArray(user.activities) && Array.isArray(current.activities)) {
+        total += current.activities.length;
+        score += overlap(user.activities, current.activities);
+      }
+
+      // Specific Times
+      if (
+        Array.isArray(user.specificTimes) &&
+        Array.isArray(current.specificTimes)
+      ) {
+        total += current.specificTimes.length;
+        score += overlap(user.specificTimes, current.specificTimes);
+      }
+
+      // Free Times
+      if (Array.isArray(user.freeTimes) && Array.isArray(current.freeTimes)) {
+        total += current.freeTimes.length;
+        score += overlap(user.freeTimes, current.freeTimes);
+      }
+
+      // Relationship Goals
+      if (
+        Array.isArray(user.relationshipGoals) &&
+        Array.isArray(current.relationshipGoals)
+      ) {
+        total += current.relationshipGoals.length;
+        score += overlap(user.relationshipGoals, current.relationshipGoals);
+      }
+
+      // Lifestyle
+      if (Array.isArray(user.lifestyle) && Array.isArray(current.lifestyle)) {
+        total += current.lifestyle.length;
+        score += overlap(user.lifestyle, current.lifestyle);
+      }
+
+      // Gender preference
+      if (
+        current.preferredGender &&
+        (current.preferredGender === 'any' ||
+          user.gender === current.preferredGender)
+      ) {
+        score += 1;
+        total += 1;
+      } else if (current.preferredGender) {
+        total += 1;
+      }
+
+      // Age preference
+      if (
+        user.dateOfBirth &&
+        current.minAgePreference &&
+        current.maxAgePreference
+      ) {
+        const today = new Date();
+        const age =
+          today.getFullYear() - new Date(user.dateOfBirth).getFullYear();
+        if (
+          age >= current.minAgePreference &&
+          age <= current.maxAgePreference
+        ) {
+          score += 1;
+        }
+        total += 1;
+      }
+
+      if (total === 0) return 0;
+      return (score / total) * 100;
     }
-    if (payload.query) {
-      whereCon.firstName = ILike(`%${payload.query}%`);
-    }
-    const res = await this.repo.find({
-      where: whereCon,
-    });
+
+    // Filter users with >= 40% match
+    const matchedUsers = candidates.filter(
+      (user) => getMatchPercent(user, currentUser) >= 40,
+    );
 
     return {
-      users: res,
+      users: matchedUsers,
     };
   }
 

@@ -1,6 +1,6 @@
 import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Platform,
   ScrollView,
@@ -28,15 +28,11 @@ import TextDefault from "@/components/@core/text-default"; // Assuming TextDefau
 import { scale } from "@/helper/helpers";
 
 // Mock API service
-import {
-  getNotificationById,
-  markNotificationAsRead,
-  Notification,
-} from "@/services/notifications";
 
 // Theme Context
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/contexts/ThemeContext";
+import useGetNotificationById from "@/services/hooks/notification/useGetNotificationById";
 
 const shadowStyle = Platform.select({
   ios: {
@@ -57,31 +53,8 @@ export default function NotificationDetailsScreen() {
   const params = useRoute()?.params as { id: string };
   const notificationId = params?.id;
 
-  const [notification, setNotification] = useState<Notification | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const loadNotification = async () => {
-      if (!notificationId) {
-        setIsLoading(false);
-        return;
-      }
-      setIsLoading(true);
-      try {
-        const fetchedNotif = await getNotificationById(notificationId);
-        if (fetchedNotif) {
-          setNotification(fetchedNotif);
-          // Automatically mark as read when details are viewed
-          await markNotificationAsRead(notificationId);
-        }
-      } catch (error) {
-        console.error("Failed to load notification details:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadNotification();
-  }, [notificationId]);
+  const { data: notification, isLoading } =
+    useGetNotificationById(notificationId);
 
   const getNotificationIcon = (type: string) => {
     switch (type) {

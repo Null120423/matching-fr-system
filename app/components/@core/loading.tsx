@@ -1,8 +1,12 @@
+import { Colors } from "@/constants/Colors";
+import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
 import { ActivityIndicator, View } from "react-native";
 import { styleGlobal } from "./styles";
 
 function LoadingView() {
+  const { theme } = useTheme();
+  const currentColors = Colors[theme || "light"];
   return (
     <View
       style={{
@@ -13,6 +17,7 @@ function LoadingView() {
         bottom: 0,
         justifyContent: "center",
         alignItems: "center",
+        backgroundColor: currentColors.background,
       }}
     >
       <ActivityIndicator

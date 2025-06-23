@@ -86,6 +86,11 @@ export interface MatchingServiceGrpc {
   }): Observable<{
     requests: FriendRequest[];
   }>;
+
+  getCurrentFriends(data: { userId: string }): Observable<{
+    friends: UserDto[];
+    total: number;
+  }>;
 }
 
 export interface UploadServiceGrpc {

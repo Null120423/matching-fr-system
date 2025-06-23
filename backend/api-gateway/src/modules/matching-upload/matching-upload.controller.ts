@@ -27,6 +27,7 @@ import {
 } from '@nestjs/swagger';
 import { join } from 'path';
 import { lastValueFrom } from 'rxjs';
+import { UserDto } from 'src/dto';
 import { RequestWithUser } from 'src/dto/request.dto';
 import {
   FriendRequest,
@@ -71,6 +72,20 @@ export class MatchingUploadController {
       Object.keys(this.matchingServiceGrpc),
     );
   }
+  @ApiOperation({ summary: 'Send friend request between users' })
+  @ApiBody({ type: SendFriendRequestRequest })
+  @ApiResponse({ status: 200, description: 'Friend request sent' })
+  @Post(':userId/friend-requests')
+  @HttpCode(HttpStatus.OK)
+  async sendFriendRequest(
+    @Param('userId') receiverId: string,
+    @Req() req: RequestWithUser,
+  ): Promise<{ success: boolean; message: string }> {
+    const senderId = req.user.id;
+    return lastValueFrom(
+      this.matchingServiceGrpc.sendFriendRequest({ senderId, receiverId }),
+    );
+  }
   @ApiOperation({ summary: 'Record swipe between two users' })
   @ApiResponse({ status: 200, description: 'Swipe recorded successfully' })
   @Post(':userId/swipe')
@@ -93,20 +108,6 @@ export class MatchingUploadController {
     );
   }
 
-  @ApiOperation({ summary: 'Send friend request between users' })
-  @ApiBody({ type: SendFriendRequestRequest })
-  @ApiResponse({ status: 200, description: 'Friend request sent' })
-  @Post(':userId/friend-request')
-  @HttpCode(HttpStatus.OK)
-  async sendFriendRequest(
-    @Param('userId') receiverId: string,
-    @Req() req: RequestWithUser,
-  ): Promise<{ success: boolean; message: string }> {
-    const senderId = req.user.id;
-    return lastValueFrom(
-      this.matchingServiceGrpc.sendFriendRequest({ senderId, receiverId }),
-    );
-  }
   @ApiOperation({ summary: 'Upload avatar for user' })
   @ApiBody({
     schema: {
@@ -176,5 +177,16 @@ export class MatchingUploadController {
       this.matchingServiceGrpc.getFriendRequests({ userId, status }),
     );
     return res;
+  }
+
+  @Get('users/friends')
+  @HttpCode(HttpStatus.OK)
+  async getCurrentFriends(
+    @Req() req: RequestWithUser,
+  ): Promise<{ friends: UserDto[]; total: number }> {
+    const userId = req.user.id;
+    return await lastValueFrom(
+      this.matchingServiceGrpc.getCurrentFriends({ userId }),
+    );
   }
 }

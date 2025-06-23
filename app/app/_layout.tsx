@@ -15,6 +15,7 @@ import { Colors } from "@/constants/Colors"; // Import your centralized Colors
 import { AuthContextProvider } from "@/contexts/AuthContext";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext"; // Import your ThemeProvider and useTheme hook
 import { ToastProvider } from "@/contexts/ToastContext";
+import NotificationHandler from "@/notification-handler";
 import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-expo";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -40,6 +41,7 @@ function RootLayoutContent() {
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
+      // schedulePushNotification();
     }
   }, [loaded]);
 
@@ -170,7 +172,16 @@ function InitialLayout() {
           // headerBackTitle: "Back",
         }}
       />
-      <Stack.Screen name="+not-found" options={{ animation: "fade" }} />{" "}
+      <Stack.Screen
+        name="(common)/current-friends/index"
+        options={{
+          headerTitle: "Your Friends",
+          headerShown: true,
+          animation: "slide_from_right",
+          // headerBackTitle: "Back",
+        }}
+      />
+      <Stack.Screen name="+not-found" options={{ animation: "fade" }} />
     </Stack>
   );
 }
@@ -183,7 +194,9 @@ export default function RootLayout() {
           <ToastProvider>
             <QueryClientProvider client={queryClient}>
               <AuthContextProvider>
-                <RootLayoutContent />
+                <NotificationHandler>
+                  <RootLayoutContent />
+                </NotificationHandler>
               </AuthContextProvider>
             </QueryClientProvider>
           </ToastProvider>

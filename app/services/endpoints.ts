@@ -21,24 +21,25 @@ export const ENDPOINTS = {
     REFRESH_TOKEN: `${prefix}/auth/refresh-token`,
   },
   NOTIFICATION: {
-    GET_NOTIFICATIONS: `${prefix}/notification`,
-    CREATE_NOTIFICATIONS: `${prefix}/notification`,
-    UNREAD_COUNT: `${prefix}/notification/unread-count`,
-    DETAIL: (id: string) => `${prefix}/notification/${id}`,
-    MARK_AS_READ: (id: string) => `${prefix}/notification/${id}/read`,
+    GET_NOTIFICATIONS: `${prefix}/notifications`,
+    CREATE_NOTIFICATIONS: `${prefix}/notifications`,
+    UNREAD_COUNT: `${prefix}/notifications/unread-count`,
+    DETAIL: (id: string) => `${prefix}/notifications/${id}`,
+    MARK_AS_READ: (id: string) => `${prefix}/notifications/${id}/read`,
   },
   MATCHING: {
     SWIPE: (userId: string, params?: Record<string, any>) =>
       buildUrlWithParams(`${prefix}/matching-upload/${userId}/swipe`, params),
     FRIEND_REQUEST: (userId: string) =>
-      `${prefix}/matching-upload/${userId}/friend-request`,
-    UPDATE_STATUS_FRIEND_REQUEST: (userId: string) =>
-      `${prefix}/matching-upload/friend-request/${userId}/status`,
+      `${prefix}/matching-upload/${userId}/friend-requests`,
+    UPDATE_STATUS_FRIEND_REQUEST: (id: string) =>
+      `${prefix}/matching-upload/users/friend-requests/${id}/status`,
     GET_FRIEND_REQUEST: (param: Record<string, any>) =>
       buildUrlWithParams(
         `${prefix}/matching-upload/users/friend-requests`,
         param
       ),
+    CURRENT_FRIENDS: `${prefix}/matching-upload/users/friends`,
   },
   UPLOAD: {
     UPLOAD_AVATAR: `${prefix}/matching-upload/uploads/avatar`,

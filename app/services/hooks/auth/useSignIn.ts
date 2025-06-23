@@ -5,12 +5,13 @@ import { useMutation } from "@tanstack/react-query";
 import { SignInRequest, SignInResponse } from "./dto";
 
 const useLogin = () => {
+  const { expoToken } = useAuth();
   const { onSignIn } = useAuth();
   const { isPending, isError, data, error, mutateAsync } = useMutation({
     mutationFn: (variables: SignInRequest) => {
       return rootApi.post<SignInRequest, SignInResponse>(
         ENDPOINTS.AUTH.SIGNIN,
-        variables
+        { ...variables, expoToken }
       );
     },
     onSuccess: async (data: SignInResponse) => {

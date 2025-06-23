@@ -1,8 +1,8 @@
-// backend/notification-spring-boot-service/src/main/java/com/example/notification_service/model/Notification.java
+// backend/notification-spring-boot-service/src/main/java/com/example/notification_service/model/NotificationModel.java
 package com.example.notification_service.model;
 
 import java.time.LocalDateTime;
-import java.util.UUID; // Import java.util.UUID
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,6 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 @Entity
 @Table(name = "notifications")
 @Data
@@ -26,18 +27,18 @@ import lombok.Setter;
 public class NotificationModel {
 
     @Id
-    @Column(columnDefinition = "UUID") // Giữ nguyên columnDefinition này để khớp với DB
-    private UUID id; // THAY ĐỔI: Sử dụng kiểu java.util.UUID
+    @Column(columnDefinition = "UUID")
+    private UUID id;
 
     @Column(nullable = false)
-    private String userId; // Người nhận thông báo (vẫn là String)
+    private String userId;
 
     @Column(nullable = false)
-    private String type; // Ví dụ: "appointment_request", "new_match", "friend_request"
+    private String type;
     @Column(nullable = false)
     private String title;
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String content; // Nội dung thông báo
+    private String content;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isRead;
@@ -48,11 +49,8 @@ public class NotificationModel {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // Getters
-    public UUID getId() { // THAY ĐỔI: Kiểu trả về là UUID
-        return id;
-    }
-
+    // Getters and Setters (Lombok handles most, but explicit ones are fine if needed)
+    public UUID getId() { return id; }
     public String getUserId() { return userId; }
     public String getType() { return type; }
     public String getTitle() { return title; }
@@ -60,27 +58,24 @@ public class NotificationModel {
     public boolean isRead() { return isRead; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public boolean getIsRead() { return isRead; } // Giữ lại nếu Lombok cần hoặc để tương thích
+    public boolean getIsRead() { return isRead; } // Keep if Lombok isn't generating or for specific use
 
-    // Setters
-    public void setId(UUID id) { // THAY ĐỔI: Kiểu tham số là UUID
-        this.id = id;
-    }
 
+    public void setId(UUID id) { this.id = id; }
     public void setUserId(String userId) { this.userId = userId; }
     public void setType(String type) { this.type = type; }
     public void setTitle(String title) { this.title = title; }
     public void setContent(String content) { this.content = content; }
     public void setIsRead(boolean isRead) { this.isRead = isRead; }
-    public void setRead(boolean read) { this.isRead = read; } // Có thể trùng lặp với setIsRead, xem xét loại bỏ 1 cái
+    public void setRead(boolean read) { this.isRead = read; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
 
     @PrePersist
     protected void onCreate() {
-        if (id == null) { // Tạo UUID nếu ID chưa được thiết lập
-            id = UUID.randomUUID(); // THAY ĐỔI: Tạo đối tượng UUID, không gọi .toString()
+        if (id == null) {
+            id = UUID.randomUUID();
         }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();

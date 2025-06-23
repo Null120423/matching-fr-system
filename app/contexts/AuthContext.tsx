@@ -22,6 +22,8 @@ interface AuthContextType {
   }) => Promise<void>;
   setAuthAccessToken: (token: string | null) => Promise<void>;
   onSignOut: () => Promise<void>;
+  onSetExpoToken: (token: string | null) => void;
+  expoToken: string | null;
 }
 
 // Tạo Context với giá trị mặc định ban đầu
@@ -43,6 +45,7 @@ interface AuthContextProviderProps {
 }
 
 export function AuthContextProvider({ children }: AuthContextProviderProps) {
+  const [expoToken, setExpoToken] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<UserDTO | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
@@ -57,6 +60,9 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     router.navigate("/(auth)/sign-in");
   };
 
+  const onSetExpoToken = useCallback((token: string | null) => {
+    setExpoToken(token);
+  }, []);
   // Hàm hydrate để khôi phục trạng thái từ SecureStore
   const hydrate = useCallback(async () => {
     try {
@@ -138,6 +144,8 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     onSignIn,
     setAuthAccessToken,
     onSignOut,
+    onSetExpoToken,
+    expoToken,
   };
 
   return (

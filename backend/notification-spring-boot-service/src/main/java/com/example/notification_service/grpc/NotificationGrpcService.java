@@ -6,7 +6,8 @@ import com.example.notification_service.exception.NotificationNotFoundException;
 import com.example.notification_service.exception.UnauthorizedNotificationAccessException;
 import com.example.notification_service.model.NotificationModel;
 import com.example.notification_service.service.NotificationService;
-
+import com.example.notification_service.service.ExpoNotificationService;
+import com.google.protobuf.Timestamp;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -17,14 +18,22 @@ import notification.NotificationListResponse;
 import notification.NotificationServiceGrpc;
 import notification.UnreadCountResponse;
 import notification.UserRequest;
-
+import java.util.Map;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Collections;
+import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper; 
+import java.time.ZoneOffset;
 @GrpcService
 public class NotificationGrpcService extends NotificationServiceGrpc.NotificationServiceImplBase {
-
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     private final NotificationService notificationService;
+    private final ExpoNotificationService expoNotificationService;
 
-    public NotificationGrpcService(NotificationService notificationService) {
+    public NotificationGrpcService(NotificationService notificationService, ExpoNotificationService expoNotificationService) {
         this.notificationService = notificationService;
+        this.expoNotificationService = expoNotificationService;
     }
 
     @Override
@@ -94,6 +103,26 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
                     request.getContent(),
                     request.getTitle()
             );
+
+            Map<String, String> pushData = new HashMap<>(); 
+            pushData.put("type", request.getType());
+            pushData.put("content", request.getContent());
+            pushData.put("title", request.getTitle()); 
+            pushData.put("userId", request.getUserId());
+            pushData.put("expoToken", request.getExpoToken()); 
+            System.err.println(request.getExpoToken());
+
+            List<String> expoTokens = Collections.singletonList(request.getExpoToken());
+            
+            if (!expoTokens.isEmpty()) {
+                expoNotificationService.sendPushNotification(
+                    request.getExpoToken(), 
+                    request.getTitle(),
+                    request.getContent(),
+                    pushData 
+                );
+            }
+
             responseObserver.onNext(toProto(newNotification));
             responseObserver.onCompleted();
         } catch (Exception e) {
@@ -102,24 +131,17 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
     }
     
     private notification.Notification toProto(NotificationModel n) {
-        // Khai báo một biến String để giữ ID trước khi gán cho builder
         String protoNotificationId = "";
         if (n.getId() != null) {
-            protoNotificationId = n.getId().toString(); // Chuyển UUID sang String
+            protoNotificationId = n.getId().toString();
         }
-
-        return notification.Notification.newBuilder()
-                .setId(protoNotificationId) // Gán biến String
+        notification.Notification.Builder builder = notification.Notification.newBuilder()
+                .setId(protoNotificationId)
                 .setUserId(n.getUserId())
                 .setType(n.getType())
-                // .setContent(n.getContent()) // Content (từ proto) và Title (từ model)
-                // Nếu proto Notification có trường "title" riêng, hãy thêm vào đây:
-                // .setTitle(n.getTitle())
-                // Nếu proto Notification chỉ có trường "content" và bạn muốn gộp title vào content:
-                .setContent(n.getTitle() + ": " + n.getContent()) // Ví dụ gộp title và content
-                .setIsRead(n.isRead())
-                .setCreatedAt(n.getCreatedAt().toString())
-                .setUpdatedAt( n.getUpdatedAt().toString())
-                .build();
+                .setTitle(n.getTitle()) 
+                .setBody(n.getContent()) 
+                .setIsRead(n.isRead());
+        return builder.build();
     }
 }

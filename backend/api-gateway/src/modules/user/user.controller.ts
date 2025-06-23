@@ -16,19 +16,19 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserDTO } from '../auth/dto';
+import { UserDto } from 'src/dto';
 
 interface UserProfileServiceGrpc {
-  getMyProfile(data: { userId: string }): Observable<UserDTO>;
+  getMyProfile(data: { userId: string }): Observable<UserDto>;
   updateUserProfile(
     data: UpdateUserProfileDto & {
       userId: string;
     },
-  ): Observable<UserDTO>;
-  getUserById(data: { userId: string }): Observable<UserDTO>;
+  ): Observable<UserDto>;
+  getUserById(data: { userId: string }): Observable<UserDto>;
   discoverUsers(
     data: GetUsersDiscoverDto & { currentUserId: string },
-  ): Observable<{ users: UserDTO[] }>;
+  ): Observable<{ users: UserDto[] }>;
 }
 
 @ApiTags('Users')
@@ -60,9 +60,9 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'User profile returned',
-    type: UserDTO,
+    type: UserDto,
   })
-  async getMyProfile(@Req() req: RequestWithUser): Promise<UserDTO> {
+  async getMyProfile(@Req() req: RequestWithUser): Promise<UserDto> {
     const userId = req.user.id;
     return lastValueFrom(this.userProfileServiceGrpc.getMyProfile({ userId }));
   }
@@ -74,14 +74,15 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Updated user profile',
-    type: UserDTO,
+    type: UserDto,
   })
   async updateProfile(
     @Body() updateUserProfileDto: UpdateUserProfileDto,
     @Req() req: RequestWithUser,
-  ): Promise<UserDTO> {
+  ): Promise<UserDto> {
     const currentUserId = req.user.id;
 
+    console.log(updateUserProfileDto);
     return lastValueFrom(
       this.userProfileServiceGrpc.updateUserProfile({
         userId: currentUserId,
@@ -99,12 +100,12 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'List of matched users',
-    type: [UserDTO],
+    type: [UserDto],
   })
   async discoverUsers(
     @Query() filters: GetUsersDiscoverDto,
     @Req() req: RequestWithUser,
-  ): Promise<UserDTO[]> {
+  ): Promise<UserDto[]> {
     const currentUserId = req?.user?.id;
     return lastValueFrom(
       this.userProfileServiceGrpc.discoverUsers({
@@ -126,11 +127,11 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'User profile found',
-    type: UserDTO,
+    type: UserDto,
   })
   async getUserById(
     @Param('userId') userId: string,
-  ): Promise<UserDTO | undefined> {
+  ): Promise<UserDto | undefined> {
     return lastValueFrom(this.userProfileServiceGrpc.getUserById({ userId }));
   }
 }

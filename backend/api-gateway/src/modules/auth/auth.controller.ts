@@ -1,5 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Req } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { RequestWithUser } from 'src/dto/request.dto';
 import { AuthService } from './auth.service';
 import {
   LoginReplyDTO,
@@ -15,6 +16,14 @@ import {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Post('sign-out')
+  @ApiOperation({ summary: 'Sign  Out user and generate tokens' })
+  @ApiBody({ type: LoginRequestDTO })
+  async signOut(@Req() req: RequestWithUser): Promise<any> {
+    return await this.authService.signOut({
+      userId: req.user.id,
+    });
+  }
   @Post('sign-in')
   @ApiOperation({ summary: 'Login user and generate tokens' })
   @ApiBody({ type: LoginRequestDTO })

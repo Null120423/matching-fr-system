@@ -1,4 +1,6 @@
+import { Optional } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserDto } from 'src/dto';
 
 export class LoginRequestDTO {
   @ApiProperty({
@@ -12,99 +14,9 @@ export class LoginRequestDTO {
     example: 'password123',
   })
   password: string;
-}
 
-export class UserDTO {
-  @ApiProperty({ description: 'ID của người dùng', example: '1' })
-  id: string;
-
-  @ApiProperty({ description: 'Tên đăng nhập', example: 'user123' })
-  username: string;
-
-  @ApiProperty({
-    description: 'Email của người dùng',
-    example: 'user@example.com',
-  })
-  email: string;
-
-  @ApiProperty({ description: 'Họ', example: 'Nguyen', required: false })
-  firstName?: string;
-
-  @ApiProperty({ description: 'Tên', example: 'An', required: false })
-  lastName?: string;
-
-  @ApiProperty({
-    description: 'Ngày sinh',
-    example: '1990-01-01',
-    required: false,
-  })
-  dateOfBirth?: Date;
-
-  @ApiProperty({ description: 'Giới tính', example: 'male', required: false })
-  gender?: string;
-
-  @ApiProperty({
-    description: 'Vị trí địa lý của người dùng',
-    example: 'Hà Nội, Việt Nam',
-    required: false,
-  })
-  location?: string;
-
-  @ApiProperty({
-    description: 'Tiểu sử người dùng',
-    example: 'Tôi thích du lịch và đọc sách.',
-    required: false,
-  })
-  bio?: string;
-
-  @ApiProperty({
-    description: 'URL ảnh đại diện',
-    example: 'https://example.com/avatar.jpg',
-    required: false,
-  })
-  avatarUrl?: string;
-
-  @ApiProperty({
-    description: 'Danh sách sở thích (interests)',
-    example: ['du lịch', 'âm nhạc'],
-    required: false,
-    type: [String],
-  })
-  interests?: string[];
-
-  @ApiProperty({
-    description: 'Danh sách hoạt động yêu thích (activities)',
-    example: ['bơi', 'chạy bộ'],
-    required: false,
-    type: [String],
-  })
-  activities?: string[];
-
-  @ApiProperty({
-    description: 'Giới tính mong muốn của đối tượng tương tác',
-    example: 'female',
-    required: false,
-  })
-  preferredGender?: string;
-
-  @ApiProperty({
-    description: 'Độ tuổi tối thiểu của người muốn kết nối',
-    example: 18,
-    required: false,
-  })
-  minAgePreference?: number;
-
-  @ApiProperty({
-    description: 'Độ tuổi tối đa của người muốn kết nối',
-    example: 30,
-    required: false,
-  })
-  maxAgePreference?: number;
-
-  // Nếu muốn mapping luôn thành tên đầy đủ
-  get fullName(): string {
-    return `${this.firstName ?? ''} ${this.lastName ?? ''}`.trim();
-  }
+  @Optional()
+  expoToken?: string;
 }
 
 export class LoginReplyDTO {
@@ -128,9 +40,9 @@ export class LoginReplyDTO {
 
   @ApiProperty({
     description: 'User information object.',
-    type: UserDTO,
+    type: UserDto,
   })
-  user: UserDTO;
+  user: UserDto;
 }
 export class RefreshTokenRequestDTO {
   @ApiProperty({

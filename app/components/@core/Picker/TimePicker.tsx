@@ -184,7 +184,7 @@ const TimePicker = ({
               <TextDefault
                 style={[styles.previewText, { color: currentColors.primary }]}
               >
-                Thời gian:{" "}
+                Thời gian:
                 {formatTime(selectedHour, selectedMinute, selectedSecond)}
               </TextDefault>
             </View>

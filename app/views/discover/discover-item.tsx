@@ -83,8 +83,7 @@ function DiscoverItem({
               <TextDefault
                 style={[styles.userNameAge, { color: currentColors.text }]}
               >
-                {" "}
-                {data.username}{" "}
+                {data.username}
               </TextDefault>
               <TextDefault
                 style={[
@@ -92,13 +91,12 @@ function DiscoverItem({
                   { color: currentColors.textSecondary },
                 ]}
               >
-                {" "}
                 <Ionicons
                   name="location-outline"
                   size={scale(16)}
                   color={currentColors.textSecondary}
-                />{" "}
-                {data.location}{" "}
+                />
+                {data.location}
               </TextDefault>
             </View>
           </View>
@@ -108,14 +106,12 @@ function DiscoverItem({
               numberOfLines={1}
               style={[styles.bioText, { color: currentColors.textSecondary }]}
             >
-              {" "}
-              {data.bio}{" "}
+              {data.bio}
             </TextDefault>
             <View style={styles.flexWrapGap}>
               {data.activities?.map((interest: string, index: number) => (
                 <Badge key={index} variant="default">
-                  {" "}
-                  {interest}{" "}
+                  {interest}
                 </Badge>
               ))}
             </View>

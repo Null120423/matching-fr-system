@@ -5,12 +5,21 @@ import { AuthService } from './auth.service';
 import {
   LoginRequestDTO,
   RefreshTokenRequestDTO,
+  SignOutRequestDTO,
   SignUpRequestDTO,
 } from './dto';
 GrpcLog();
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @GrpcMethod('AuthService', 'SignOut')
+  async signOut(data: SignOutRequestDTO) {
+    await this.authService.signOut(data);
+    return {
+      message: 'Sign Out successful',
+    };
+  }
 
   @GrpcMethod('AuthService', 'SignIn')
   async signIn(data: LoginRequestDTO) {

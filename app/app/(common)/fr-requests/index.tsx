@@ -34,6 +34,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { FriendRequestDTO } from "@/dto";
 import { scale } from "@/helper/helpers";
 import useFriendRequestList from "@/services/hooks/matching/useFriendRequestList";
+import useFriendRequestUpdateStatus from "@/services/hooks/matching/useFriendRequestUpdateStatus";
 
 interface FriendRequestsResponse {
   requests: FriendRequestDTO[];
@@ -190,21 +191,16 @@ function FriendRequestCard({
                 >
                   {sendRequestPerson.location}
                 </TextDefault>
-                {getAge() && (
-                  <>
-                    <View
-                      style={[
-                        styles.ageDot,
-                        { backgroundColor: currentColors.textLight },
-                      ]}
-                    />
-                    <TextDefault
-                      style={[styles.age, { color: currentColors.textLight }]}
-                    >
-                      {getAge()} years
-                    </TextDefault>
-                  </>
-                )}
+                <TextDefault
+                  style={[styles.age, { color: currentColors.textLight }]}
+                >
+                  {getAge()}
+                  <TextDefault
+                    style={[styles.age, { color: currentColors.textLight }]}
+                  >
+                    years
+                  </TextDefault>
+                </TextDefault>
               </View>
 
               <View style={styles.timeRow}>
@@ -407,7 +403,8 @@ export default function Index() {
   const { theme } = useTheme();
   const currentColors = Colors[theme || "light"];
   const shadowStyle = getShadowStyle(currentColors);
-
+  const { onUpdate, isLoading: isLoadingUpdate } =
+    useFriendRequestUpdateStatus();
   const {
     data: requests,
     isLoading,
@@ -419,33 +416,10 @@ export default function Index() {
   );
 
   const handleAccept = useCallback(async (requestId: string) => {
-    setProcessingRequests((prev) => new Set(prev).add(requestId));
-
-    try {
-      // Replace with actual API call
-      // await acceptFriendRequest(requestId);
-
-      Alert.alert("Success! 🎉", "Friend request accepted successfully!", [
-        {
-          text: "OK",
-          onPress: () => {
-            // setRequests((prev) => prev.filter((req) => req.id !== requestId));
-          },
-        },
-      ]);
-    } catch (error) {
-      console.error("Failed to accept friend request:", error);
-      Alert.alert(
-        "Error",
-        "Failed to accept friend request. Please try again."
-      );
-    } finally {
-      setProcessingRequests((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(requestId);
-        return newSet;
-      });
-    }
+    onUpdate({
+      id: requestId,
+      newStatus: "accepted",
+    });
   }, []);
 
   const handleReject = useCallback(async (requestId: string) => {
@@ -458,30 +432,10 @@ export default function Index() {
           text: "Reject",
           style: "destructive",
           onPress: async () => {
-            setProcessingRequests((prev) => new Set(prev).add(requestId));
-
-            try {
-              // Replace with actual API call
-              // await rejectFriendRequest(requestId);
-
-              // setRequests((prev) => prev.filter((req) => req.id !== requestId));
-              Alert.alert(
-                "Request Rejected",
-                "Friend request has been rejected."
-              );
-            } catch (error) {
-              console.error("Failed to reject friend request:", error);
-              Alert.alert(
-                "Error",
-                "Failed to reject friend request. Please try again."
-              );
-            } finally {
-              setProcessingRequests((prev) => {
-                const newSet = new Set(prev);
-                newSet.delete(requestId);
-                return newSet;
-              });
-            }
+            onUpdate({
+              id: requestId,
+              newStatus: "rejected",
+            });
           },
         },
       ]
@@ -500,114 +454,121 @@ export default function Index() {
   }
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: currentColors.background }]}
-    >
-      <Separator height={Platform.OS === "ios" ? scale(55) : scale(30)} />
-
-      {/* Header */}
+    <>
       <View
-        style={[styles.header, { borderBottomColor: currentColors.border }]}
+        style={[
+          styles.container,
+          { backgroundColor: currentColors.background },
+        ]}
       >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          activeOpacity={0.7}
+        <Separator height={Platform.OS === "ios" ? scale(55) : scale(30)} />
+
+        {/* Header */}
+        <View
+          style={[styles.header, { borderBottomColor: currentColors.border }]}
         >
-          <ArrowLeft size={scale(24)} color={currentColors.text} />
-        </TouchableOpacity>
-
-        <View style={styles.headerContent}>
-          <TextDefault
-            style={[styles.headerTitle, { color: currentColors.text }]}
-          >
-            Friend Requests
-          </TextDefault>
-          <TextDefault
-            style={[
-              styles.headerSubtitle,
-              { color: currentColors.textSecondary },
-            ]}
-          >
-            {requests.length} pending request{requests.length !== 1 ? "s" : ""}
-          </TextDefault>
-        </View>
-
-        <View style={styles.headerActions}>
           <TouchableOpacity
-            style={[
-              styles.headerActionButton,
-              { backgroundColor: currentColors.primary + "15" },
-            ]}
-            // onPress={() => router.push("/(common)/friends/sent-requests")}
+            style={styles.backButton}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
           >
-            <UserCheck size={scale(20)} color={currentColors.primary} />
+            <ArrowLeft size={scale(24)} color={currentColors.text} />
           </TouchableOpacity>
-        </View>
-      </View>
 
-      {/* Content */}
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={onRefetch}
-            colors={[currentColors.primary]}
-            tintColor={currentColors.primary}
-          />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {requests.length > 0 ? (
-          <View style={styles.requestsList}>
-            {requests.map((request) => (
-              <FriendRequestCard
-                key={request.id}
-                request={request}
-                currentColors={currentColors}
-                shadowStyle={shadowStyle}
-                onAccept={handleAccept}
-                onReject={handleReject}
-                onViewDetails={handleViewDetails}
-                isProcessing={processingRequests.has(request.id)}
-              />
-            ))}
-          </View>
-        ) : (
-          <View style={styles.emptyState}>
-            <UserX size={scale(64)} color={currentColors.textLight} />
+          <View style={styles.headerContent}>
             <TextDefault
-              style={[styles.emptyStateTitle, { color: currentColors.text }]}
+              style={[styles.headerTitle, { color: currentColors.text }]}
             >
-              No Friend Requests
+              Friend Requests
             </TextDefault>
             <TextDefault
               style={[
-                styles.emptyStateSubtitle,
+                styles.headerSubtitle,
                 { color: currentColors.textSecondary },
               ]}
             >
-              You don't have any pending friend requests at the moment.
+              {requests.length} pending request
+              {requests.length !== 1 ? "s" : ""}
             </TextDefault>
+          </View>
+
+          <View style={styles.headerActions}>
             <TouchableOpacity
               style={[
-                styles.emptyStateButton,
-                { backgroundColor: currentColors.primary },
+                styles.headerActionButton,
+                { backgroundColor: currentColors.primary + "15" },
               ]}
-              onPress={() => router.push("/(home)/discover")}
+              // onPress={() => router.push("/(common)/friends/sent-requests")}
             >
-              <TextDefault style={styles.emptyStateButtonText}>
-                Discover People
-              </TextDefault>
+              <UserCheck size={scale(20)} color={currentColors.primary} />
             </TouchableOpacity>
           </View>
-        )}
+        </View>
 
-        <Separator height={scale(100)} />
-      </ScrollView>
-    </View>
+        {/* Content */}
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={onRefetch}
+              colors={[currentColors.primary]}
+              tintColor={currentColors.primary}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {requests.length > 0 ? (
+            <View style={styles.requestsList}>
+              {requests.map((request) => (
+                <FriendRequestCard
+                  key={request.id}
+                  request={request}
+                  currentColors={currentColors}
+                  shadowStyle={shadowStyle}
+                  onAccept={handleAccept}
+                  onReject={handleReject}
+                  onViewDetails={handleViewDetails}
+                  isProcessing={processingRequests.has(request.id)}
+                />
+              ))}
+            </View>
+          ) : (
+            <View style={styles.emptyState}>
+              <UserX size={scale(64)} color={currentColors.textLight} />
+              <TextDefault
+                style={[styles.emptyStateTitle, { color: currentColors.text }]}
+              >
+                No Friend Requests
+              </TextDefault>
+              <TextDefault
+                style={[
+                  styles.emptyStateSubtitle,
+                  { color: currentColors.textSecondary },
+                ]}
+              >
+                You don't have any pending friend requests at the moment.
+              </TextDefault>
+              <TouchableOpacity
+                style={[
+                  styles.emptyStateButton,
+                  { backgroundColor: currentColors.primary },
+                ]}
+                onPress={() => router.push("/(home)/discover")}
+              >
+                <TextDefault style={styles.emptyStateButtonText}>
+                  Discover People
+                </TextDefault>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <Separator height={scale(100)} />
+        </ScrollView>
+      </View>
+      {isLoadingUpdate && <LoadingView />}
+    </>
   );
 }
 
