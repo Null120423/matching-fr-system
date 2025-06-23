@@ -201,20 +201,22 @@ function ProfileInfoSection({ user, currentColors }: ProfileInfoSectionProps) {
         </TextDefault>
       </View>
 
-      <View style={styles.actionButtonsContainer}>
-        <ButtonPrimary
-          minWidth={"90%"}
-          onPress={() => onSend(user.id)}
-          title="Send Request Friend"
-          styleTitle={{
-            fontSize: scale(12),
-          }}
-          isLoading={isLoading}
-          iconLeft={
-            <Ionicons name="person-add" size={scale(24)} color={"white"} />
-          }
-        />
-      </View>
+      {!user?.isFriend && (
+        <View style={styles.actionButtonsContainer}>
+          <ButtonPrimary
+            minWidth={"90%"}
+            onPress={() => onSend(user.id)}
+            title="Send Request Friend"
+            styleTitle={{
+              fontSize: scale(12),
+            }}
+            isLoading={isLoading}
+            iconLeft={
+              <Ionicons name="person-add" size={scale(24)} color={"white"} />
+            }
+          />
+        </View>
+      )}
     </View>
   );
 }

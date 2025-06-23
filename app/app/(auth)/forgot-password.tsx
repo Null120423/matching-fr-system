@@ -46,7 +46,6 @@ const PwReset = () => {
         code,
         password,
       });
-      console.log(result);
       setLoading(false);
       showToastSuccess("Password reset successfully");
 

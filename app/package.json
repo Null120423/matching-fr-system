@@ -8,7 +8,7 @@
     "local:ios": "npx expo run:ios ",
     "local:android": "npx expo run:android",
     "distribution:ios": "eas build --profile dev --platform ios",
-    "distribution:android": " npx eas build --profile dev --platform android",
+    "distribution:android": " npx eas build  --platform android",
     "ota:dev": "eas update --branch dev",
     "prebuild:dev:ios": "expo prebuild --platform ios",
     "prebuild:dev:android": "npx expo prebuild --platform android",

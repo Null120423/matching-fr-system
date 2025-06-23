@@ -15,8 +15,16 @@ service MatchingService {
   rpc UpdateFriendRequestStatus (UpdateFriendRequestStatusRequest) returns (FriendRequest); 
   rpc GetFriendRequests(GetFriendRequestsRequest) returns (MyFriendRequestListResponse);
   rpc GetCurrentFriends(GetCurrentFriendRequest) returns (GetCurrentFriendsResponse);
+  rpc IsFriend(IsFriendRequest) returns (IsFriendResponse);
 }
+message IsFriendRequest{
+  string userId = 1;
+  string friendId = 2; 
+} 
 
+message IsFriendResponse {
+ bool isFriend = 1;
+}
 message GetCurrentFriendRequest {
    string userId = 1;
 }

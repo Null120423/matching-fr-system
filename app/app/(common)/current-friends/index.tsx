@@ -15,13 +15,11 @@ import {
 
 // Icons
 import {
-  Activity,
-  Heart,
+  Calendar,
   MapPin,
   MessageCircle,
   MoreHorizontal,
   Search,
-  Users,
 } from "lucide-react-native";
 
 // Core components
@@ -30,9 +28,14 @@ import TextDefault from "@/components/@core/text-default";
 import { scale } from "@/helper/helpers";
 
 // Theme Context
+import { styleGlobal } from "@/components/@core/styles";
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/contexts/ThemeContext";
+import { showToastInfo } from "@/contexts/ToastEventEmitter";
+import DefaultLayout from "@/layouts/default-layout";
+import useCurrentFriends from "@/services/hooks/matching/useCurrentFriends";
 import React from "react";
+import AppointmentModal from "./appointments/appointment-modal";
 
 const { width } = Dimensions.get("window");
 
@@ -113,27 +116,40 @@ const friendsData = [
 export default function FriendsListScreen() {
   const { theme } = useTheme();
   const currentColors = Colors[theme || "light"];
-  const [refreshing, setRefreshing] = useState(false);
+  const [appointmentModalVisible, setAppointmentModalVisible] = useState(false);
+  const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [searchVisible, setSearchVisible] = useState(false);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    // Simulate API call
-    setTimeout(() => setRefreshing(false), 1000);
-  };
+  const {
+    data: friends,
+    total,
+    isLoading,
+    onRefetch,
+    isRefetching,
+  } = useCurrentFriends();
 
   const handleFriendPress = (friendId: string) => {
     router.push({
       pathname: "/(common)/user-profile",
-      params: { id: friendId },
+      params: { userId: friendId },
     });
   };
 
   const handleMessagePress = (friendId: string) => {
+    showToastInfo("This feature is coming soon!");
     // router.push({
     //   pathname: "/(common)/chat/conversation",
     //   params: { friendId },
     // });
+  };
+
+  const handleAppointmentCreated = (friendId: string) => {
+    const friend = friendsData.find((f) => f.id === friendId);
+    if (!friend) {
+      showToastInfo("Friend not found");
+      return;
+    }
+    setSelectedFriend(friend);
+    setAppointmentModalVisible(true);
   };
 
   const renderInterestTag = (interest: string, index: number) => (
@@ -175,50 +191,51 @@ export default function FriendsListScreen() {
   };
 
   return (
-    <View
-      style={[styles.safeArea, { backgroundColor: currentColors.background }]}
-    >
-      <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
+    <DefaultLayout isLoading={isLoading}>
+      <View
+        style={[styles.safeArea, { backgroundColor: currentColors.background }]}
+      >
+        <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <TextDefault
-            style={[styles.headerTitle, { color: currentColors.text }]}
-          >
-            Bạn bè
-          </TextDefault>
-          <TextDefault
-            style={[
-              styles.headerSubtitle,
-              { color: currentColors.textSecondary },
-            ]}
-          >
-            {friendsData.length} người bạn
-          </TextDefault>
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <TextDefault
+              style={[styles.headerTitle, { color: currentColors.text }]}
+            >
+              Friends
+            </TextDefault>
+            <TextDefault
+              style={[
+                styles.headerSubtitle,
+                { color: currentColors.textSecondary },
+              ]}
+            >
+              {total} Friends
+            </TextDefault>
+          </View>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={[
+                styles.headerAction,
+                { backgroundColor: currentColors.backgroundCard },
+              ]}
+              onPress={() => setSearchVisible(!searchVisible)}
+            >
+              <Search size={20} color={currentColors.textSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.headerAction,
+                { backgroundColor: currentColors.backgroundCard },
+              ]}
+            >
+              <MoreHorizontal size={20} color={currentColors.textSecondary} />
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={[
-              styles.headerAction,
-              { backgroundColor: currentColors.backgroundCard },
-            ]}
-            onPress={() => setSearchVisible(!searchVisible)}
-          >
-            <Search size={20} color={currentColors.textSecondary} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.headerAction,
-              { backgroundColor: currentColors.backgroundCard },
-            ]}
-          >
-            <MoreHorizontal size={20} color={currentColors.textSecondary} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Stats Bar */}
+        {/* Stats Bar */}
+        {/* 
       <View
         style={[
           styles.statsBar,
@@ -238,199 +255,229 @@ export default function FriendsListScreen() {
           </TextDefault>
         </View>
       </View>
-
-      <ScrollView
-        style={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.content}>
-          {friendsData.map((friend, index) => (
-            <TouchableOpacity
-              key={friend.id}
-              style={[
-                styles.friendCard,
-                shadowStyle,
-                {
-                  backgroundColor: currentColors.backgroundCard,
-                  borderColor: currentColors.border,
-                  marginBottom: index === friendsData.length - 1 ? 20 : 16,
-                },
-              ]}
-              onPress={() => handleFriendPress(friend.id)}
-              activeOpacity={0.8}
-            >
-              {/* Profile Section */}
-              <View style={styles.profileSection}>
-                <View style={styles.avatarContainer}>
-                  <Image
-                    source={{ uri: friend.avatarUrl }}
-                    style={styles.avatar}
-                  />
-                  {friend.isEmailVerified && (
-                    <View
-                      style={[
-                        styles.verifiedBadge,
-                        { backgroundColor: currentColors.success },
-                      ]}
-                    >
-                      <TextDefault style={styles.verifiedText}>✓</TextDefault>
-                    </View>
-                  )}
-                </View>
-
-                <View style={styles.profileInfo}>
-                  <View style={styles.nameRow}>
-                    <TextDefault
-                      style={[styles.friendName, { color: currentColors.text }]}
-                    >
-                      {friend.firstName} {friend.lastName}
-                    </TextDefault>
-                    <TextDefault
-                      style={[
-                        styles.username,
-                        { color: currentColors.textSecondary },
-                      ]}
-                    >
-                      @{friend.username}
-                    </TextDefault>
-                  </View>
-
-                  {friend.location && (
-                    <View style={styles.locationRow}>
-                      <MapPin size={14} color={currentColors.textSecondary} />
-                      <TextDefault
-                        style={[
-                          styles.locationText,
-                          { color: currentColors.textSecondary },
-                        ]}
-                      >
-                        {friend.location}
-                      </TextDefault>
-                    </View>
-                  )}
-
-                  {friend.bio && (
-                    <TextDefault
-                      style={[
-                        styles.bioText,
-                        { color: currentColors.textSecondary },
-                      ]}
-                      numberOfLines={2}
-                    >
-                      {friend.bio}
-                    </TextDefault>
-                  )}
-                </View>
-              </View>
-
-              {/* Activities Section */}
-              {friend.activities && friend.activities.length > 0 && (
-                <View style={styles.activitiesSection}>
-                  <TextDefault
-                    style={[styles.sectionTitle, { color: currentColors.text }]}
-                  >
-                    Hoạt động
-                  </TextDefault>
-                  <View style={styles.activitiesContainer}>
-                    {friend.activities.map((activity, idx) => (
-                      <View
-                        key={idx}
-                        style={[
-                          styles.activityTag,
-                          {
-                            backgroundColor: currentColors.backgroundLightGray,
-                          },
-                        ]}
-                      >
-                        <TextDefault style={styles.activityEmoji}>
-                          {renderActivityIcon(activity)}
-                        </TextDefault>
-                        <TextDefault
-                          style={[
-                            styles.activityText,
-                            { color: currentColors.textSecondary },
-                          ]}
-                        >
-                          {activity}
-                        </TextDefault>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              )}
-
-              {/* Interests Section */}
-              {friend.interests && friend.interests.length > 0 && (
-                <View style={styles.interestsSection}>
-                  <TextDefault
-                    style={[styles.sectionTitle, { color: currentColors.text }]}
-                  >
-                    Sở thích
-                  </TextDefault>
-                  <View style={styles.interestsContainer}>
-                    {friend.interests
-                      .slice(0, 3)
-                      .map((interest, idx) => renderInterestTag(interest, idx))}
-                    {friend.interests.length > 3 && (
+      */}
+        <ScrollView
+          style={styles.scrollView}
+          refreshControl={
+            <RefreshControl refreshing={isRefetching} onRefresh={onRefetch} />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.content}>
+            {friends.map((friend, index) => (
+              <TouchableOpacity
+                key={friend.id}
+                style={[
+                  styles.friendCard,
+                  shadowStyle,
+                  {
+                    backgroundColor: currentColors.backgroundCard,
+                    borderColor: currentColors.border,
+                    marginBottom: index === friendsData.length - 1 ? 20 : 16,
+                  },
+                ]}
+                onPress={() => handleFriendPress(friend.id)}
+                activeOpacity={0.8}
+              >
+                {/* Profile Section */}
+                <View style={styles.profileSection}>
+                  <View style={styles.avatarContainer}>
+                    <Image
+                      source={{ uri: friend.avatarUrl }}
+                      style={styles.avatar}
+                    />
+                    {friend.isEmailVerified && (
                       <View
                         style={[
-                          styles.moreTag,
-                          {
-                            backgroundColor: currentColors.backgroundLightGray,
-                          },
+                          styles.verifiedBadge,
+                          { backgroundColor: currentColors.success },
                         ]}
                       >
-                        <TextDefault
-                          style={[
-                            styles.moreText,
-                            { color: currentColors.textSecondary },
-                          ]}
-                        >
-                          +{friend.interests.length - 3}
-                        </TextDefault>
+                        <TextDefault style={styles.verifiedText}>✓</TextDefault>
                       </View>
                     )}
                   </View>
-                </View>
-              )}
 
-              {/* Action Buttons */}
-              <View style={styles.actionButtons}>
+                  <View style={styles.profileInfo}>
+                    <View style={styles.nameRow}>
+                      <TextDefault
+                        style={[
+                          styles.friendName,
+                          { color: currentColors.text },
+                        ]}
+                      >
+                        {friend.firstName} {friend.lastName}
+                      </TextDefault>
+                      <TextDefault
+                        style={[
+                          styles.username,
+                          { color: currentColors.textSecondary },
+                        ]}
+                      >
+                        @{friend.username}
+                      </TextDefault>
+                    </View>
+
+                    {friend.location && (
+                      <View style={styles.locationRow}>
+                        <MapPin size={14} color={currentColors.textSecondary} />
+                        <TextDefault
+                          style={[
+                            styles.locationText,
+                            { color: currentColors.textSecondary },
+                          ]}
+                        >
+                          {friend.location}
+                        </TextDefault>
+                      </View>
+                    )}
+
+                    {friend.bio && (
+                      <TextDefault
+                        style={[
+                          styles.bioText,
+                          { color: currentColors.textSecondary },
+                        ]}
+                        numberOfLines={2}
+                      >
+                        {friend.bio}
+                      </TextDefault>
+                    )}
+                  </View>
+                </View>
+
+                {/* Activities Section */}
+                {friend.activities && friend.activities.length > 0 && (
+                  <View style={styles.activitiesSection}>
+                    <TextDefault
+                      style={[
+                        styles.sectionTitle,
+                        { color: currentColors.text },
+                      ]}
+                    >
+                      Hoạt động
+                    </TextDefault>
+                    <View style={styles.activitiesContainer}>
+                      {friend.activities.map((activity, idx) => (
+                        <View
+                          key={idx}
+                          style={[
+                            styles.activityTag,
+                            {
+                              backgroundColor:
+                                currentColors.backgroundLightGray,
+                            },
+                          ]}
+                        >
+                          <TextDefault style={styles.activityEmoji}>
+                            {renderActivityIcon(activity)}
+                          </TextDefault>
+                          <TextDefault
+                            style={[
+                              styles.activityText,
+                              { color: currentColors.textSecondary },
+                            ]}
+                          >
+                            {activity}
+                          </TextDefault>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+                {/* Interests Section */}
+                {friend.interests && friend.interests.length > 0 && (
+                  <View style={styles.interestsSection}>
+                    <TextDefault
+                      style={[
+                        styles.sectionTitle,
+                        { color: currentColors.text },
+                      ]}
+                    >
+                      Sở thích
+                    </TextDefault>
+                    <View style={styles.interestsContainer}>
+                      {friend.interests
+                        .slice(0, 3)
+                        .map((interest, idx) =>
+                          renderInterestTag(interest, idx)
+                        )}
+                      {friend.interests.length > 3 && (
+                        <View
+                          style={[
+                            styles.moreTag,
+                            {
+                              backgroundColor:
+                                currentColors.backgroundLightGray,
+                            },
+                          ]}
+                        >
+                          <TextDefault
+                            style={[
+                              styles.moreText,
+                              { color: currentColors.textSecondary },
+                            ]}
+                          >
+                            +{friend.interests.length - 3}
+                          </TextDefault>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                )}
+
+                {/* Action Buttons */}
                 <TouchableOpacity
                   style={[
                     styles.actionButton,
-                    styles.messageButton,
-                    { backgroundColor: currentColors.primary },
+                    styleGlobal.shadow,
+                    styles.appointmentButton,
+                    { backgroundColor: currentColors.success },
                   ]}
-                  onPress={() => handleMessagePress(friend.id)}
+                  onPress={() => handleAppointmentCreated(friend.id)}
                 >
-                  <MessageCircle size={18} color="white" />
-                  <TextDefault style={styles.messageButtonText}>
-                    Nhắn tin
+                  <Calendar size={18} color="white" />
+                  <TextDefault style={styles.appointmentButtonText}>
+                    Hẹn gặp
                   </TextDefault>
                 </TouchableOpacity>
+                <Separator height={scale(12)} />
+                <View style={styles.actionButtons}>
+                  <TouchableOpacity
+                    style={[
+                      styles.actionButton,
+                      styleGlobal.shadow,
+                      styles.messageButton,
+                      { backgroundColor: currentColors.primary },
+                    ]}
+                    onPress={() => handleMessagePress(friend.id)}
+                  >
+                    <MessageCircle size={18} color="white" />
+                    <TextDefault style={styles.messageButtonText}>
+                      Nhắn tin
+                    </TextDefault>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-                <TouchableOpacity
-                  style={[
-                    styles.actionButton,
-                    styles.likeButton,
-                    {
-                      backgroundColor: currentColors.backgroundLightGray,
-                      borderColor: currentColors.border,
-                    },
-                  ]}
-                >
-                  <Heart size={18} color={currentColors.textSecondary} />
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-    </View>
+          <Separator height={scale(100)} />
+        </ScrollView>
+      </View>
+      {selectedFriend && (
+        <AppointmentModal
+          visible={appointmentModalVisible}
+          onClose={() => {
+            setAppointmentModalVisible(false);
+            setSelectedFriend(null);
+          }}
+          friend={selectedFriend}
+          onCreateAppointment={() => {}}
+        />
+      )}
+    </DefaultLayout>
   );
 }
 
@@ -632,5 +679,13 @@ const styles = StyleSheet.create({
   likeButton: {
     width: 48,
     borderWidth: 1,
+  },
+  appointmentButton: {
+    flex: 1,
+  },
+  appointmentButtonText: {
+    color: "white",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });

@@ -1,6 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { GrpcLog, GrpcMethod } from 'src/decorators';
 import { UserEntity } from 'src/entities';
+import { UserDTO } from '../auth/dto';
 import {
   GetUsersByIdsDto,
   GetUsersByIdsResponseDto,
@@ -15,8 +16,10 @@ export class UserProfileController {
   constructor(private readonly userProfileService: UserProfileService) {}
 
   @GrpcMethod('UserProfileService', 'GetMyProfile')
-  async getMyProfile(payload: { userId: string }): Promise<UserEntity> {
-    return await this.userProfileService.getUserById(payload.userId);
+  async getMyProfile(payload: { userId: string }): Promise<UserDTO> {
+    return await this.userProfileService.getUserById({
+      userId: payload.userId,
+    });
   }
 
   @GrpcMethod('UserProfileService', 'UpdateUserProfile')
@@ -40,8 +43,11 @@ export class UserProfileController {
   }
 
   @GrpcMethod('UserProfileService', 'GetUserById')
-  async getUserById(payload: { userId: string }): Promise<UserEntity> {
-    return this.userProfileService.getUserById(payload.userId);
+  async getUserById(payload: {
+    userId: string;
+    friendId: string;
+  }): Promise<UserDTO> {
+    return this.userProfileService.getUserById(payload);
   }
 
   @GrpcMethod('UserProfileService', 'GetListUsersByIds')

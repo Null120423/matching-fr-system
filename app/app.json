@@ -66,8 +66,9 @@
     "updates": {
       "url": "https://u.expo.dev/your-eas-project-id"
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
+    "expo": {
+      "policy": "appVersion",
+      "runtimeVersion": "1.0.0"
     }
   }
 }

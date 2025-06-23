@@ -50,6 +50,7 @@ const tintColorDark = "#fff";
 
 export const Colors = {
   light: {
+    error: "#EF4444",
     switchTrackFalse: "#767577",
     switchTrackTrue: "#81b0ff", // Hoặc màu primary của bạn
     switchThumb: "#333333",
@@ -119,6 +120,7 @@ export const Colors = {
     emptyStateText: tints.textLight,
   },
   dark: {
+    error: "#EF4444",
     switchTrackFalse: "#555555",
     switchTrackTrue: "#4240A2", // Màu primary tối hơn cho dark mode
     switchThumb: "#333333",

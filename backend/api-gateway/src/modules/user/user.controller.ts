@@ -25,7 +25,7 @@ interface UserProfileServiceGrpc {
       userId: string;
     },
   ): Observable<UserDto>;
-  getUserById(data: { userId: string }): Observable<UserDto>;
+  getUserById(data: { userId: string; friendId: string }): Observable<UserDto>;
   discoverUsers(
     data: GetUsersDiscoverDto & { currentUserId: string },
   ): Observable<{ users: UserDto[] }>;
@@ -131,7 +131,13 @@ export class UserController {
   })
   async getUserById(
     @Param('userId') userId: string,
+    @Req() req: RequestWithUser,
   ): Promise<UserDto | undefined> {
-    return lastValueFrom(this.userProfileServiceGrpc.getUserById({ userId }));
+    return lastValueFrom(
+      this.userProfileServiceGrpc.getUserById({
+        userId,
+        friendId: req.user.id,
+      }),
+    );
   }
 }

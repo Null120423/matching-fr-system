@@ -19,6 +19,7 @@ export interface UserDTO extends BaseDTO {
   availableTimeSlots?: string[];
   location?: string;
   bio?: string;
+  isFriend?: boolean;
 }
 
 export const GENDER_CONST = {

@@ -39,6 +39,7 @@ export class UserDTO {
   preferredGender: string;
   activities: string[];
   expoToken: string;
+  isFriend?: boolean;
 }
 
 export class RefreshTokenRequestDTO {

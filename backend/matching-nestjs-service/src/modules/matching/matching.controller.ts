@@ -78,4 +78,11 @@ export class MatchingController {
   }> {
     return await this.matchingService.getCurrentFriends(payload);
   }
+
+  @GrpcMethod('MatchingService', 'IsFriend')
+  async isFriend(payload: { userId: string; friendId: string }): Promise<{
+    isFriend: boolean;
+  }> {
+    return await this.matchingService.isFriend(payload);
+  }
 }

@@ -1,4 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Client, ClientGrpc, Transport } from '@nestjs/microservices';
+import { join } from 'path';
+import { lastValueFrom } from 'rxjs';
 import { UserEntity } from 'src/entities';
 import { UserRepository } from 'src/repositories';
 import { FindOptionsWhere, ILike, In, LessThanOrEqual, Not } from 'typeorm';
@@ -7,12 +10,32 @@ import {
   GetUsersByIdsDto,
   GetUsersByIdsResponseDto,
   GetUsersDiscoverDto,
+  MatchingServiceGrpc,
 } from './dto';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 @Injectable()
 export class UserProfileService {
   constructor(private readonly repo: UserRepository) {}
+  @Client({
+    transport: Transport.GRPC,
+    options: {
+      url: '0.0.0.0:50054',
+      package: 'matchingupload',
+      protoPath: join(__dirname, '../../../../proto/matchingupload.proto'),
+    },
+  })
+  private readonly client: ClientGrpc;
 
+  private matchingServiceGrpc: MatchingServiceGrpc;
+
+  onModuleInit() {
+    this.matchingServiceGrpc =
+      this.client.getService<MatchingServiceGrpc>('MatchingService');
+    console.log(
+      '[Mapped GRPC] MatchingService methods:',
+      Object.keys(this.matchingServiceGrpc),
+    );
+  }
   async updateUserProfile(
     userId: string,
     updateData: UpdateUserProfileDto,
@@ -46,7 +69,11 @@ export class UserProfileService {
       });
   }
 
-  async getUserById(userId: string): Promise<UserEntity> {
+  async getUserById(payload: {
+    userId: string;
+    friendId?: string;
+  }): Promise<UserDTO> {
+    const { userId, friendId } = payload;
     if (!userId) {
       throw new NotFoundException('User ID is required.');
     }
@@ -56,8 +83,19 @@ export class UserProfileService {
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found.`);
     }
+    /// check is friend
+    if (!friendId) {
+      return { ...user };
+    }
+    const isFriend = await lastValueFrom(
+      this.matchingServiceGrpc.isFriend({
+        userId: friendId,
+        friendId: userId,
+      }),
+    );
+
     // Optionally, you canc
-    return user;
+    return { ...user, isFriend: isFriend?.isFriend };
   }
 
   async discoverUsers(

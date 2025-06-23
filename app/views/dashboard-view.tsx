@@ -77,7 +77,6 @@ function StatsCard({
   const Icon = stat.icon;
 
   const { data } = useCurrentFriends();
-  console.log("Current Friends Data:", data);
 
   return (
     <TouchableOpacity
@@ -333,6 +332,16 @@ export default function DashboardScreen() {
 
   // Enhanced quick actions
   const quickActions = [
+    {
+      title: "Your Friends",
+      subtitle: "Manage your connections",
+      icon: Users,
+      color: currentColors.secondary,
+      backgroundColor: currentColors.secondary + "10",
+      onPress: () => {
+        router.push("/(common)/current-friends");
+      },
+    },
     {
       title: "Find Friends",
       subtitle: "Discover new connections",

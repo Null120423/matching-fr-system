@@ -118,6 +118,7 @@ message User {
   google.protobuf.Timestamp updatedAt = 19;
   string username = 20;
   string expoToken = 21;
+  bool isFriend = 22;
 }
 
 message GetMyProfileRequest {
@@ -143,10 +144,12 @@ message UpdateUserProfileRequest {
   repeated string freeTimes = 15; 
   repeated string relationshipGoals = 16;
   repeated string lifestyle = 17;  
+
 }
 
 message GetUserByIdRequest {
   string userId = 1;
+  string friendId = 2;
 }
 
 message DiscoverUsersRequest {

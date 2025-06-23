@@ -372,4 +372,35 @@ export class MatchingService {
       total: friends.length,
     };
   }
+
+  /** check two user is friend   */
+  async isFriend(payload: { userId: string; friendId: string }): Promise<{
+    isFriend: boolean;
+  }> {
+    const { userId, friendId } = payload;
+    if (!userId || !friendId) {
+      throw new BadRequestException('User ID and Friend ID are required.');
+    }
+
+    const request = await this.friendRequestRepository.findOne({
+      where: [
+        {
+          senderId: userId,
+          receiverId: friendId,
+          status: FriendRequestStatus.ACCEPTED,
+        },
+        {
+          senderId: friendId,
+          receiverId: userId,
+          status: FriendRequestStatus.ACCEPTED,
+        },
+      ],
+    });
+
+    console.log(request);
+
+    return {
+      isFriend: !!request,
+    };
+  }
 }
