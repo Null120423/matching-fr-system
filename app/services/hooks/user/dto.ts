@@ -29,3 +29,14 @@ export interface DiscoverUsersResponse extends Array<UserDTO> {}
 export interface UserProfileResponse extends UserDTO {
   dateOfBirth: string | number | Date;
 }
+
+export interface DashboardMatrixResponse {
+  totalFriends: number;
+  totalAppointments: number;
+  totalAppointmentToday: number;
+  totalSwipe: number;
+  totalSwipeToday: number;
+  totalNewFriendRequestsToday: number;
+  totalMatchesToday: number;
+  totalMatches: number;
+}

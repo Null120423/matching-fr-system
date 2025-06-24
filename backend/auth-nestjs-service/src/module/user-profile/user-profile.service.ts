@@ -7,6 +7,8 @@ import { UserRepository } from 'src/repositories';
 import { FindOptionsWhere, ILike, In, LessThanOrEqual, Not } from 'typeorm';
 import { UserDTO } from '../auth/dto';
 import {
+  AppointmentServiceGrpc,
+  GetDashboardMetricsRequest,
   GetUsersByIdsDto,
   GetUsersByIdsResponseDto,
   GetUsersDiscoverDto,
@@ -16,6 +18,19 @@ import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 @Injectable()
 export class UserProfileService {
   constructor(private readonly repo: UserRepository) {}
+
+  @Client({
+    transport: Transport.GRPC,
+    options: {
+      url: '0.0.0.0:50053',
+      package: 'appointment',
+      protoPath: join(__dirname, '../../../../proto/appointment.proto'),
+    },
+  })
+  private readonly clientAppointment: ClientGrpc;
+
+  private appointmentServiceGrpc: AppointmentServiceGrpc;
+
   @Client({
     transport: Transport.GRPC,
     options: {
@@ -31,6 +46,15 @@ export class UserProfileService {
   onModuleInit() {
     this.matchingServiceGrpc =
       this.client.getService<MatchingServiceGrpc>('MatchingService');
+    this.appointmentServiceGrpc =
+      this.clientAppointment.getService<AppointmentServiceGrpc>(
+        'AppointmentService',
+      );
+    console.log(
+      '[Mapped GRPC] MatchingService methods:',
+      Object.keys(this.matchingServiceGrpc),
+    );
+
     console.log(
       '[Mapped GRPC] MatchingService methods:',
       Object.keys(this.matchingServiceGrpc),
@@ -383,4 +407,33 @@ export class UserProfileService {
   //     throw new Error(`Failed to insert users: ${error.message}`);
   //   }
   // }
+
+  /** get dashboard data  */
+  async getDashboardMetrics(payload: GetDashboardMetricsRequest) {
+    const { requestUserId } = payload;
+    const user = await this.repo.findOne({
+      where: { id: requestUserId, isDeleted: false },
+    });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${requestUserId} not found.`);
+    }
+    const [dashboardMatrixAppointments, dashboardMatrixMatching] =
+      await Promise.all([
+        lastValueFrom(
+          this.appointmentServiceGrpc.getDashboardMetrics({
+            requestUserId: requestUserId,
+          }),
+        ),
+        lastValueFrom(
+          this.matchingServiceGrpc.getDashboardMetrics({
+            requestUserId: requestUserId,
+          }),
+        ),
+      ]);
+
+    return {
+      ...dashboardMatrixAppointments,
+      ...dashboardMatrixMatching,
+    };
+  }
 }

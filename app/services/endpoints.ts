@@ -58,5 +58,6 @@ export const ENDPOINTS = {
     UPDATE_PROFILE: `${prefix}/users/me`,
     DISCOVER: (params?: Record<string, any>) =>
       buildUrlWithParams(`${prefix}/users/discover`, params),
+    DASHBOARD_MATRIX: `${prefix}/users/dashboard/metrics`,
   },
 };

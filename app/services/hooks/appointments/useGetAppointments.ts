@@ -4,7 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { GetAppointmentsRequest, GetAppointmentsResponse } from "./dto";
 
 const useGetAppointments = (variables: GetAppointmentsRequest) => {
-  const { data, isLoading, error } = useQuery<GetAppointmentsResponse, Error>({
+  const { data, isLoading, error, refetch, isRefetching } = useQuery<
+    GetAppointmentsResponse,
+    Error
+  >({
     queryKey: [ENDPOINTS.APPOINTMENT.GET_APPOINTMENTS(variables)],
     queryFn: () =>
       rootApi.get<null, GetAppointmentsResponse>(
@@ -13,9 +16,11 @@ const useGetAppointments = (variables: GetAppointmentsRequest) => {
   });
 
   return {
-    data: data ?? null,
+    data: data ?? [],
     isLoading: isLoading,
     error,
+    refetch,
+    isRefetching,
   };
 };
 

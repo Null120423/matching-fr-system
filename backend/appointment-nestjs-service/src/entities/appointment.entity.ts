@@ -22,17 +22,32 @@ export class AppointmentEntity extends BaseEntityCustom {
   @Column()
   activity: string;
 
-  @Column({ type: 'timestamp with time zone' })
-  time: Date;
+  @Column({ nullable: true })
+  activityType: string;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  date: Date; // Original datetime (e.g., 2025-06-24T12:54:19.774Z)
 
   @Column()
-  location: string;
+  time: string; // Separate time (e.g., "13:00")
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  datetime: Date;
+
+  @Column({ type: 'int', nullable: true })
+  duration: number; // Duration in minutes
 
   @Column()
-  fromUserId: string; // Người gửi lời mời hẹn
+  fromUserId: string;
 
   @Column()
-  toUserId: string; // Người nhận lời mời hẹn (hoặc ID của 1 trong các participants nếu là group)
+  toUserId: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  friendId: string;
+
+  @Column({ nullable: true })
+  notes: string;
 
   @Column({
     type: 'enum',
@@ -40,4 +55,14 @@ export class AppointmentEntity extends BaseEntityCustom {
     default: AppointmentStatus.PENDING,
   })
   status: AppointmentStatus;
+
+  @Column({ type: 'jsonb', nullable: true })
+  location: {
+    address: string;
+    name: string;
+    coordinates: {
+      lat: number;
+      lng: number;
+    };
+  };
 }

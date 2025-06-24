@@ -181,6 +181,15 @@ function InitialLayout() {
           // headerBackTitle: "Back",
         }}
       />
+      <Stack.Screen
+        name="(common)/current-friends/appointments/index"
+        options={{
+          headerTitle: "Your Appointments",
+          headerShown: true,
+          animation: "slide_from_right",
+          // headerBackTitle: "Back",
+        }}
+      />
       <Stack.Screen name="+not-found" options={{ animation: "fade" }} />
     </Stack>
   );

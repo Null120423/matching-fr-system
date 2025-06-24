@@ -12,12 +12,12 @@ interface DurationPickerProps {
 }
 
 const durations = [
-  { value: 30, label: "30 phút", description: "Nhanh gọn" },
-  { value: 60, label: "1 giờ", description: "Vừa phải" },
-  { value: 90, label: "1.5 giờ", description: "Thoải mái" },
-  { value: 120, label: "2 giờ", description: "Dài hạn" },
-  { value: 180, label: "3 giờ", description: "Cả buổi" },
-  { value: 240, label: "4 giờ", description: "Nửa ngày" },
+  { value: 30, label: "30 min", description: "Quick" },
+  { value: 60, label: "1 hour", description: "Moderate" },
+  { value: 90, label: "1.5 hours", description: "Comfortable" },
+  { value: 120, label: "2 hours", description: "Long" },
+  { value: 180, label: "3 hours", description: "Half day" },
+  { value: 240, label: "4 hours", description: "Half a day" },
 ];
 
 export default function DurationPicker({
@@ -32,14 +32,14 @@ export default function DurationPicker({
       <View style={styles.header}>
         <Clock size={20} color={currentColors.primary} />
         <TextDefault style={[styles.title, { color: currentColors.text }]}>
-          Thời lượng cuộc hẹn
+          Appointment Duration
         </TextDefault>
       </View>
 
       <TextDefault
         style={[styles.subtitle, { color: currentColors.textSecondary }]}
       >
-        Chọn thời gian bạn muốn dành cho cuộc hẹn này
+        Choose how much time you want to spend for this appointment
       </TextDefault>
 
       <View style={styles.durationList}>
@@ -104,7 +104,7 @@ export default function DurationPicker({
         style={[styles.tip, { backgroundColor: `${currentColors.info}15` }]}
       >
         <TextDefault style={[styles.tipText, { color: currentColors.info }]}>
-          💡 Bạn có thể thay đổi thời lượng sau khi tạo cuộc hẹn
+          💡 You can change the duration after creating the appointment
         </TextDefault>
       </View>
     </View>

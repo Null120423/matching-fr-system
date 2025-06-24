@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Platform,
   RefreshControl,
@@ -9,36 +9,29 @@ import {
   View,
 } from "react-native";
 
-// Imports for icons, separator, scale, TextDefault
+// Core components
 import Separator from "@/components/@core/separator";
 import TextDefault from "@/components/@core/text-default";
 import { scale } from "@/helper/helpers";
 
-// Import mock API services
-import { fetchAppointments } from "@/services/appointments";
-import { getUnreadNotificationsCount } from "@/services/notifications";
-import { fetchMyProfile } from "@/services/users";
-
-// Import theme and colors
+// Theme and colors
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/contexts/ThemeContext";
 
-// Additional icons for enhanced UI
-import useCurrentFriends from "@/services/hooks/matching/useCurrentFriends";
+// Icons
 import {
   Activity,
   Bell,
   Calendar,
   ChevronRight,
-  Clock,
-  Coffee,
   Heart,
-  MapPin,
   Plus,
-  Star,
+  TrendingUp,
   UserPlus,
   Users,
+  Zap,
 } from "lucide-react-native";
+import React from "react";
 
 const getShadowStyle = (currentColors: any) =>
   Platform.select({
@@ -53,11 +46,24 @@ const getShadowStyle = (currentColors: any) =>
     },
   });
 
+// Dashboard data structure
+interface DashboardData {
+  totalFriends: number;
+  totalAppointments: number;
+  totalAppointmentToday: number;
+  totalSwipe: number;
+  totalSwipeToday: number;
+  totalNewFriendRequestsToday: number;
+  totalMatchesToday: number;
+  totalMatches: number;
+}
+
 // Enhanced Stats Card Component
 interface StatsCardProps {
   stat: {
     label: string;
     value: string;
+    todayValue?: string;
     icon: any;
     color: string;
     trend?: string;
@@ -75,8 +81,6 @@ function StatsCard({
   index,
 }: StatsCardProps) {
   const Icon = stat.icon;
-
-  const { data } = useCurrentFriends();
 
   return (
     <TouchableOpacity
@@ -103,11 +107,35 @@ function StatsCard({
         <TextDefault style={[styles.statValue, { color: currentColors.text }]}>
           {stat.value}
         </TextDefault>
-        {/* <TextDefault
+        <TextDefault
           style={[styles.statLabel, { color: currentColors.textSecondary }]}
         >
           {stat.label}
-        </TextDefault> */}
+        </TextDefault>
+        {stat.todayValue && (
+          <View
+            style={[styles.todayBadge, { backgroundColor: stat.color + "15" }]}
+          >
+            <TextDefault style={[styles.todayText, { color: stat.color }]}>
+              Today: {stat.todayValue}
+            </TextDefault>
+          </View>
+        )}
+        {stat.trend && (
+          <View
+            style={[
+              styles.trendContainer,
+              { backgroundColor: currentColors.success + "15" },
+            ]}
+          >
+            <TrendingUp size={scale(12)} color={currentColors.success} />
+            <TextDefault
+              style={[styles.trendText, { color: currentColors.success }]}
+            >
+              {stat.trend}
+            </TextDefault>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -122,6 +150,7 @@ interface QuickActionProps {
   backgroundColor: string;
   onPress: () => void;
   currentColors: any;
+  badge?: string;
 }
 
 function QuickActionButton({
@@ -132,6 +161,7 @@ function QuickActionButton({
   backgroundColor,
   onPress,
   currentColors,
+  badge,
 }: QuickActionProps) {
   return (
     <TouchableOpacity
@@ -149,6 +179,16 @@ function QuickActionButton({
         ]}
       >
         <Icon size={scale(24)} color={color} />
+        {badge && (
+          <View
+            style={[
+              styles.actionBadge,
+              { backgroundColor: currentColors.danger },
+            ]}
+          >
+            <TextDefault style={styles.actionBadgeText}>{badge}</TextDefault>
+          </View>
+        )}
       </View>
       <View style={styles.quickActionContent}>
         <TextDefault style={[styles.quickActionTitle, { color }]}>
@@ -168,92 +208,46 @@ function QuickActionButton({
   );
 }
 
-// Enhanced Activity Item
-interface ActivityItemProps {
-  activity: {
-    title: string;
-    time: string;
-    location: string;
-    type?: string;
-  };
+// Today's Highlights Component
+interface TodayHighlightProps {
+  title: string;
+  value: string;
+  icon: any;
+  color: string;
   currentColors: any;
-  index: number;
 }
 
-function ActivityItem({ activity, currentColors, index }: ActivityItemProps) {
-  const getActivityIcon = (type?: string) => {
-    switch (type) {
-      case "meeting":
-        return Users;
-      case "coffee":
-        return Coffee;
-      case "event":
-        return Star;
-      default:
-        return Activity;
-    }
-  };
-
-  const Icon = getActivityIcon(activity.type);
-
+function TodayHighlight({
+  title,
+  value,
+  icon: Icon,
+  color,
+  currentColors,
+}: TodayHighlightProps) {
   return (
-    <TouchableOpacity
+    <View
       style={[
-        styles.activityItem,
-        { backgroundColor: currentColors.backgroundLightGray },
+        styles.highlightCard,
+        { backgroundColor: color + "10", borderColor: color + "30" },
       ]}
-      activeOpacity={0.7}
     >
-      <View
-        style={[
-          styles.activityIconContainer,
-          { backgroundColor: currentColors.primary + "20" },
-        ]}
-      >
-        <Icon size={scale(20)} color={currentColors.primary} />
+      <View style={[styles.highlightIcon, { backgroundColor: color + "20" }]}>
+        <Icon size={scale(18)} color={color} />
       </View>
-      <View style={styles.activityDetails}>
-        <TextDefault
-          style={[styles.activityTitle, { color: currentColors.text }]}
-        >
-          {activity.title}
+      <View style={styles.highlightContent}>
+        <TextDefault style={[styles.highlightValue, { color }]}>
+          {value}
         </TextDefault>
-        <View style={styles.activityMeta}>
-          <Clock size={scale(14)} color={currentColors.textSecondary} />
-          <TextDefault
-            style={[
-              styles.activityTime,
-              { color: currentColors.textSecondary },
-            ]}
-          >
-            {activity.time}
-          </TextDefault>
-        </View>
-        <View style={styles.activityMeta}>
-          <MapPin size={scale(14)} color={currentColors.textLight} />
-          <TextDefault
-            style={[
-              styles.activityLocation,
-              { color: currentColors.textLight },
-            ]}
-          >
-            {activity.location}
-          </TextDefault>
-        </View>
-      </View>
-      <View
-        style={[
-          styles.activityStatus,
-          { backgroundColor: currentColors.success + "20" },
-        ]}
-      >
         <TextDefault
-          style={[styles.activityStatusText, { color: currentColors.success }]}
+          style={[
+            styles.highlightTitle,
+            { color: currentColors.textSecondary },
+          ]}
         >
-          Upcoming
+          {title}
         </TextDefault>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -262,35 +256,33 @@ export default function DashboardScreen() {
   const currentColors = Colors[theme || "light"];
   const shadowStyle = getShadowStyle(currentColors);
 
-  const [myProfile, setMyProfile] = useState<any>(null);
-  const [upcomingAppointments, setUpcomingAppointments] = useState<any[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [friendRequestsCount, setFriendRequestsCount] = useState(3); // Mock data
-  const [isLoading, setIsLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<DashboardData>({
+    totalFriends: 1,
+    totalAppointments: 1,
+    totalAppointmentToday: 0,
+    totalSwipe: 1,
+    totalSwipeToday: 0,
+    totalNewFriendRequestsToday: 0,
+    totalMatchesToday: 0,
+    totalMatches: 2,
+  });
+  const [unreadCount, setUnreadCount] = useState(3);
+  const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadDashboardData = async () => {
     try {
-      const profile = await fetchMyProfile();
-      setMyProfile(profile);
-
-      const upcoming = await fetchAppointments("upcoming");
-      setUpcomingAppointments(upcoming);
-
-      const count = await getUnreadNotificationsCount();
-      setUnreadCount(count);
+      // Simulate API call - replace with actual API
+      // const data = await fetchDashboardStats()
+      // setDashboardData(data)
+      console.log("Loading dashboard data...");
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
     }
   };
 
   useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      await loadDashboardData();
-      setIsLoading(false);
-    };
-    loadData();
+    loadDashboardData();
   }, []);
 
   const onRefresh = async () => {
@@ -299,98 +291,116 @@ export default function DashboardScreen() {
     setRefreshing(false);
   };
 
-  // Enhanced stats with navigation
-  const stats = [
+  // Main stats with your data structure
+  const mainStats = [
     {
-      label: "Friend Requests",
-      value: friendRequestsCount.toString(),
-      icon: UserPlus,
+      label: "Friends",
+      value: dashboardData.totalFriends.toString(),
+      icon: Users,
       color: currentColors.primary,
-      trend: "+2",
-      onPress: () => {
-        // router.push("/(common)/friends/requests");
-      },
+      onPress: () => router.push("/(common)/current-friends"),
     },
     {
       label: "Appointments",
-      value: upcomingAppointments.length.toString(),
+      value: dashboardData.totalAppointments.toString(),
+      todayValue: dashboardData.totalAppointmentToday.toString(),
       icon: Calendar,
       color: currentColors.success,
-      trend: "+1",
-      onPress: () => router.push("/(common)/appointments"),
+      onPress: () => router.push("/(common)/current-friends/appointments"),
     },
     {
-      label: "Activities",
-      value: myProfile?.activitiesCount?.toString() || "0",
-      icon: Activity,
-      color: currentColors.warning,
+      label: "Matches",
+      value: dashboardData.totalMatches.toString(),
+      todayValue: dashboardData.totalMatchesToday.toString(),
+      icon: Heart,
+      color: currentColors.secondary,
+      trend:
+        dashboardData.totalMatchesToday > 0
+          ? `+${dashboardData.totalMatchesToday}`
+          : undefined,
       onPress: () => {
-        // router.push("/(common)/activities");
+        // router.push("/(common)/matches"),
       },
+    },
+    {
+      label: "Swipes",
+      value: dashboardData.totalSwipe.toString(),
+      todayValue: dashboardData.totalSwipeToday.toString(),
+      icon: Zap,
+      color: currentColors.warning,
+      onPress: () => router.push("/(home)/discover"),
     },
   ];
 
-  // Enhanced quick actions
+  // Today's highlights
+  const todayHighlights = [
+    {
+      title: "New Friend Requests",
+      value: dashboardData.totalNewFriendRequestsToday.toString(),
+      icon: UserPlus,
+      color: currentColors.info,
+    },
+    {
+      title: "Today's Appointments",
+      value: dashboardData.totalAppointmentToday.toString(),
+      icon: Calendar,
+      color: currentColors.success,
+    },
+    {
+      title: "Today's Matches",
+      value: dashboardData.totalMatchesToday.toString(),
+      icon: Heart,
+      color: currentColors.secondary,
+    },
+    {
+      title: "Today's Swipes",
+      value: dashboardData.totalSwipeToday.toString(),
+      icon: Activity,
+      color: currentColors.warning,
+    },
+  ];
+
+  // Quick actions with badges
   const quickActions = [
     {
-      title: "Your Friends",
-      subtitle: "Manage your connections",
+      title: "Find New Friends",
+      subtitle: "Discover interesting people",
       icon: Users,
+      color: currentColors.primary,
+      backgroundColor: currentColors.primary + "10",
+      onPress: () => router.push("/(home)/discover"),
+    },
+    {
+      title: "Friend Requests",
+      subtitle: `${dashboardData.totalNewFriendRequestsToday} new requests`,
+      icon: UserPlus,
+      color: currentColors.info,
+      backgroundColor: currentColors.info + "10",
+      badge:
+        dashboardData.totalNewFriendRequestsToday > 0
+          ? dashboardData.totalNewFriendRequestsToday.toString()
+          : undefined,
+      onPress: () => router.push("/(common)/fr-requests"),
+    },
+    {
+      title: "Create Appointment",
+      subtitle: "Plan to meet up",
+      icon: Plus,
+      color: currentColors.success,
+      backgroundColor: currentColors.success + "10",
+      onPress: () => router.push("/(common)/current-friends"),
+    },
+    {
+      title: "My Friends",
+      subtitle: `${dashboardData.totalFriends} friends`,
+      icon: Heart,
       color: currentColors.secondary,
       backgroundColor: currentColors.secondary + "10",
       onPress: () => {
         router.push("/(common)/current-friends");
       },
     },
-    {
-      title: "Find Friends",
-      subtitle: "Discover new connections",
-      icon: Users,
-      color: currentColors.primary,
-      backgroundColor: currentColors.primary + "10",
-      onPress: () => {
-        router.push("/(home)/discover");
-      },
-    },
-    {
-      title: "Create Event",
-      subtitle: "Plan something fun",
-      icon: Plus,
-      color: currentColors.success,
-      backgroundColor: currentColors.success + "10",
-      onPress: () => {
-        // router.push("/(common)/events/create");
-      },
-    },
-    {
-      title: "Friend Requests",
-      subtitle: `${friendRequestsCount} pending requests`,
-      icon: Heart,
-      color: currentColors.danger,
-      backgroundColor: currentColors.danger + "10",
-      onPress: () => {
-        router.push("/(common)/fr-requests");
-      },
-    },
-    {
-      title: "My Schedule",
-      subtitle: "View your calendar",
-      icon: Calendar,
-      color: currentColors.info,
-      backgroundColor: currentColors.info + "10",
-      onPress: () => {
-        // router.push("/(common)/schedule");
-      },
-    },
   ];
-
-  // Enhanced recent activities with more details
-  const recentActivities = upcomingAppointments.map((app, index) => ({
-    title: app.activity || `Activity ${index + 1}`,
-    time: app.time || "Today, 2:00 PM",
-    location: app.location || "Coffee Shop Downtown",
-    type: index % 3 === 0 ? "coffee" : index % 3 === 1 ? "meeting" : "event",
-  }));
 
   if (isLoading) {
     return (
@@ -404,7 +414,7 @@ export default function DashboardScreen() {
         <TextDefault
           style={[styles.loadingText, { color: currentColors.text }]}
         >
-          Loading your dashboard...
+          Loading dashboard...
         </TextDefault>
       </View>
     );
@@ -428,7 +438,7 @@ export default function DashboardScreen() {
       >
         <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
 
-        {/* Enhanced Header */}
+        {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <View>
@@ -451,9 +461,7 @@ export default function DashboardScreen() {
                 styles.notificationButton,
                 { backgroundColor: currentColors.backgroundCard },
               ]}
-              onPress={() => {
-                router.navigate("/(home)/notification");
-              }}
+              onPress={() => router.navigate("/(home)/notification")}
             >
               <Bell size={scale(24)} color={currentColors.text} />
               {unreadCount > 0 && (
@@ -473,7 +481,31 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.content}>
-          {/* Enhanced Stats Grid */}
+          {/* Today's Highlights */}
+          <View style={styles.highlightsSection}>
+            <TextDefault
+              style={[styles.sectionTitle, { color: currentColors.text }]}
+            >
+              Today's Activity
+            </TextDefault>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.highlightsScroll}
+            >
+              <View style={styles.highlightsContainer}>
+                {todayHighlights.map((highlight, index) => (
+                  <TodayHighlight
+                    key={index}
+                    {...highlight}
+                    currentColors={currentColors}
+                  />
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+
+          {/* Main Stats Grid */}
           <View style={styles.statsSection}>
             <TextDefault
               style={[styles.sectionTitle, { color: currentColors.text }]}
@@ -481,7 +513,7 @@ export default function DashboardScreen() {
               Your Overview
             </TextDefault>
             <View style={styles.statsGrid}>
-              {stats.map((stat, index) => (
+              {mainStats.map((stat, index) => (
                 <StatsCard
                   key={index}
                   stat={stat}
@@ -493,7 +525,7 @@ export default function DashboardScreen() {
             </View>
           </View>
 
-          {/* Enhanced Quick Actions */}
+          {/* Quick Actions */}
           <View style={styles.quickActionsSection}>
             <View style={styles.sectionHeader}>
               <TextDefault
@@ -513,78 +545,81 @@ export default function DashboardScreen() {
             </View>
           </View>
 
-          {/* Enhanced Recent Activities */}
-          <View style={styles.recentActivitiesSection}>
-            <View style={styles.sectionHeader}>
-              <TextDefault
-                style={[styles.sectionTitle, { color: currentColors.text }]}
-              >
-                Upcoming Activities
-              </TextDefault>
-              <TouchableOpacity
-                onPress={() => {
-                  // router.push("/(common)/activities");
-                }}
-              >
-                <TextDefault
-                  style={[styles.seeAllText, { color: currentColors.primary }]}
-                >
-                  View All
-                </TextDefault>
-              </TouchableOpacity>
-            </View>
+          {/* Activity Summary */}
+          <View style={styles.summarySection}>
             <View
               style={[
-                styles.activitiesCard,
+                styles.summaryCard,
                 shadowStyle,
                 { backgroundColor: currentColors.backgroundCard },
               ]}
             >
-              {recentActivities.length > 0 ? (
-                recentActivities
-                  .slice(0, 3)
-                  .map((activity, index) => (
-                    <ActivityItem
-                      key={index}
-                      activity={activity}
-                      currentColors={currentColors}
-                      index={index}
-                    />
-                  ))
-              ) : (
-                <View style={styles.emptyState}>
-                  <Calendar size={scale(48)} color={currentColors.textLight} />
+              <TextDefault
+                style={[styles.summaryTitle, { color: currentColors.text }]}
+              >
+                Activity Summary
+              </TextDefault>
+              <View style={styles.summaryGrid}>
+                <View style={styles.summaryItem}>
                   <TextDefault
                     style={[
-                      styles.emptyStateTitle,
-                      { color: currentColors.text },
+                      styles.summaryValue,
+                      { color: currentColors.primary },
                     ]}
                   >
-                    No upcoming activities
+                    {(
+                      (dashboardData.totalMatches /
+                        Math.max(dashboardData.totalSwipe, 1)) *
+                      100
+                    ).toFixed(1)}
+                    %
                   </TextDefault>
                   <TextDefault
                     style={[
-                      styles.emptyStateSubtitle,
+                      styles.summaryLabel,
                       { color: currentColors.textSecondary },
                     ]}
                   >
-                    Create your first event or join others!
+                    Match Rate
                   </TextDefault>
-                  <TouchableOpacity
-                    style={[
-                      styles.emptyStateButton,
-                      { backgroundColor: currentColors.primary },
-                    ]}
-                    onPress={() => {
-                      // router.push("/(common)/discover");
-                    }}
-                  >
-                    <TextDefault style={styles.emptyStateButtonText}>
-                      Explore Activities
-                    </TextDefault>
-                  </TouchableOpacity>
                 </View>
-              )}
+                <View style={styles.summaryItem}>
+                  <TextDefault
+                    style={[
+                      styles.summaryValue,
+                      { color: currentColors.success },
+                    ]}
+                  >
+                    {dashboardData.totalAppointments}
+                  </TextDefault>
+                  <TextDefault
+                    style={[
+                      styles.summaryLabel,
+                      { color: currentColors.textSecondary },
+                    ]}
+                  >
+                    Total Appointments
+                  </TextDefault>
+                </View>
+                <View style={styles.summaryItem}>
+                  <TextDefault
+                    style={[
+                      styles.summaryValue,
+                      { color: currentColors.secondary },
+                    ]}
+                  >
+                    {dashboardData.totalFriends}
+                  </TextDefault>
+                  <TextDefault
+                    style={[
+                      styles.summaryLabel,
+                      { color: currentColors.textSecondary },
+                    ]}
+                  >
+                    Friends
+                  </TextDefault>
+                </View>
+              </View>
             </View>
           </View>
         </View>
@@ -656,6 +691,48 @@ const styles = StyleSheet.create({
     gap: scale(32),
   },
 
+  // Highlights Section
+  highlightsSection: {
+    gap: scale(16),
+  },
+  highlightsScroll: {
+    marginHorizontal: scale(-20),
+    paddingHorizontal: scale(20),
+  },
+  highlightsContainer: {
+    flexDirection: "row",
+    gap: scale(12),
+    paddingRight: scale(20),
+  },
+  highlightCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: scale(16),
+    borderRadius: scale(12),
+    borderWidth: 1,
+    minWidth: scale(140),
+  },
+  highlightIcon: {
+    width: scale(36),
+    height: scale(36),
+    borderRadius: scale(8),
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: scale(12),
+  },
+  highlightContent: {
+    flex: 1,
+  },
+  highlightValue: {
+    fontSize: scale(20),
+    fontWeight: "bold",
+    marginBottom: scale(2),
+  },
+  highlightTitle: {
+    fontSize: scale(12),
+    fontWeight: "500",
+  },
+
   // Stats Section
   statsSection: {
     gap: scale(16),
@@ -669,31 +746,47 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  seeAllText: {
-    fontSize: scale(14),
-    fontWeight: "600",
-  },
   statsGrid: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: scale(12),
   },
   statCard: {
     flex: 1,
+    minWidth: scale(150),
     borderRadius: scale(16),
-    padding: scale(10),
+    padding: scale(16),
     borderWidth: 1,
   },
   statCardHeader: {
-    flexDirection: "column",
-    justifyContent: "center",
     alignItems: "center",
+    gap: scale(8),
   },
   statIconContainer: {
-    width: scale(40),
-    height: scale(40),
+    width: scale(48),
+    height: scale(48),
     borderRadius: scale(12),
     alignItems: "center",
     justifyContent: "center",
+  },
+  statValue: {
+    fontSize: scale(24),
+    fontWeight: "bold",
+  },
+  statLabel: {
+    fontSize: scale(14),
+    fontWeight: "500",
+    textAlign: "center",
+  },
+  todayBadge: {
+    paddingHorizontal: scale(8),
+    paddingVertical: scale(4),
+    borderRadius: scale(8),
+    marginTop: scale(4),
+  },
+  todayText: {
+    fontSize: scale(11),
+    fontWeight: "600",
   },
   trendContainer: {
     flexDirection: "row",
@@ -706,15 +799,6 @@ const styles = StyleSheet.create({
   trendText: {
     fontSize: scale(12),
     fontWeight: "600",
-  },
-  statValue: {
-    fontSize: scale(24),
-    fontWeight: "bold",
-    marginBottom: scale(4),
-  },
-  statLabel: {
-    fontSize: scale(10),
-    fontWeight: "500",
   },
 
   // Quick Actions Section
@@ -732,12 +816,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   quickActionIconContainer: {
+    position: "relative",
     width: scale(48),
     height: scale(48),
     borderRadius: scale(12),
     alignItems: "center",
     justifyContent: "center",
     marginRight: scale(16),
+  },
+  actionBadge: {
+    position: "absolute",
+    top: scale(-4),
+    right: scale(-4),
+    minWidth: scale(18),
+    height: scale(18),
+    borderRadius: scale(9),
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actionBadgeText: {
+    fontSize: scale(10),
+    fontWeight: "bold",
+    color: "white",
   },
   quickActionContent: {
     flex: 1,
@@ -751,81 +851,34 @@ const styles = StyleSheet.create({
     fontSize: scale(14),
   },
 
-  // Activities Section
-  recentActivitiesSection: {
+  // Summary Section
+  summarySection: {
     gap: scale(16),
   },
-  activitiesCard: {
+  summaryCard: {
     borderRadius: scale(16),
     padding: scale(20),
-    gap: scale(16),
   },
-  activityItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: scale(16),
-    borderRadius: scale(12),
-    gap: scale(12),
-  },
-  activityIconContainer: {
-    width: scale(48),
-    height: scale(48),
-    borderRadius: scale(12),
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  activityDetails: {
-    flex: 1,
-    gap: scale(4),
-  },
-  activityTitle: {
-    fontSize: scale(16),
-    fontWeight: "600",
-  },
-  activityMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: scale(6),
-  },
-  activityTime: {
-    fontSize: scale(14),
-  },
-  activityLocation: {
-    fontSize: scale(14),
-  },
-  activityStatus: {
-    paddingHorizontal: scale(8),
-    paddingVertical: scale(4),
-    borderRadius: scale(8),
-  },
-  activityStatusText: {
-    fontSize: scale(12),
-    fontWeight: "600",
-  },
-
-  // Empty State
-  emptyState: {
-    alignItems: "center",
-    paddingVertical: scale(40),
-    gap: scale(12),
-  },
-  emptyStateTitle: {
+  summaryTitle: {
     fontSize: scale(18),
-    fontWeight: "600",
+    fontWeight: "bold",
+    marginBottom: scale(16),
   },
-  emptyStateSubtitle: {
-    fontSize: scale(14),
+  summaryGrid: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  summaryItem: {
+    alignItems: "center",
+  },
+  summaryValue: {
+    fontSize: scale(24),
+    fontWeight: "bold",
+    marginBottom: scale(4),
+  },
+  summaryLabel: {
+    fontSize: scale(12),
+    fontWeight: "500",
     textAlign: "center",
-  },
-  emptyStateButton: {
-    paddingHorizontal: scale(24),
-    paddingVertical: scale(12),
-    borderRadius: scale(8),
-    marginTop: scale(8),
-  },
-  emptyStateButtonText: {
-    color: "white",
-    fontSize: scale(14),
-    fontWeight: "600",
   },
 });

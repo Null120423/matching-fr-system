@@ -1,7 +1,8 @@
 import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
-import React from "react";
+import { useState } from "react";
 import {
+  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -11,32 +12,33 @@ import {
 
 // Icons
 import {
+  AlarmClock,
   Bell,
   Calendar,
   CheckCircle,
   Clock,
   Heart,
   MapPin,
+  MessageCircle,
+  Navigation,
   Package,
   User,
-  XCircle,
 } from "lucide-react-native";
 
 // Core components
-import Separator from "@/components/@core/separator";
-import TextDefault from "@/components/@core/text-default"; // Assuming TextDefault uses theme colors internally
-import { scale } from "@/helper/helpers";
-
-// Mock API service
+import TextDefault from "@/components/@core/text-default";
 
 // Theme Context
 import { Colors } from "@/constants/Colors";
+import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import useGetNotificationById from "@/services/hooks/notification/useGetNotificationById";
+import moment from "moment";
+import React from "react";
 
 const shadowStyle = Platform.select({
   ios: {
-    shadowColor: "#000", // Will be themed
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -46,18 +48,35 @@ const shadowStyle = Platform.select({
   },
 });
 
+// Mock user data for the appointment due notification
+const mockUsers = {
+  "4813c767-0af0-4a39-8845-db1181e1fcf6": {
+    firstName: "John",
+    lastName: "Doe",
+    avatarUrl:
+      "https://hoseiki.vn/wp-content/uploads/2025/03/gai-xinh-tu-suong-28.jpg",
+    username: "user123",
+  },
+};
+
 export default function NotificationDetailsScreen() {
   const { theme } = useTheme();
   const currentColors = Colors[theme || "light"];
+  const [isSnoozing, setIsSnoozing] = useState(false);
 
   const params = useRoute()?.params as { id: string };
   const notificationId = params?.id;
-
+  const { currentUser } = useAuth();
   const { data: notification, isLoading } =
     useGetNotificationById(notificationId);
 
+  const friendId = "4813c767-0af0-4a39-8845-db1181e1fcf6";
+  const friend = mockUsers[friendId];
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
+      case "APPOINTMENT_DUE":
+        return <Clock size={24} color={currentColors.warning} />;
       case "appointment_invite":
         return <Calendar size={24} color={currentColors.info} />;
       case "system_update":
@@ -71,118 +90,76 @@ export default function NotificationDetailsScreen() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <View
-        style={[
-          detailsStyles.safeArea,
-          {
-            backgroundColor: currentColors.background,
-            justifyContent: "center",
-            alignItems: "center",
-          },
-        ]}
-      >
-        <TextDefault style={{ color: currentColors.text }}>
-          Đang tải chi tiết thông báo...
-        </TextDefault>
-      </View>
-    );
-  }
-
-  if (!notification) {
-    return (
-      <View
-        style={[
-          detailsStyles.emptyContainer,
-          {
-            backgroundColor: currentColors.backgroundCard,
-            borderColor: currentColors.border,
-            shadowColor: currentColors.text,
-          },
-        ]}
-      >
-        <Bell size={64} color={currentColors.border} />
-        <TextDefault
-          style={[
-            detailsStyles.emptyText,
-            { color: currentColors.textSecondary },
-          ]}
-        >
-          Không tìm thấy chi tiết thông báo.
-        </TextDefault>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={[
-            detailsStyles.emptyButton,
-            { backgroundColor: currentColors.primary },
-          ]}
-        >
-          <TextDefault style={detailsStyles.emptyButtonText}>
-            Quay lại
-          </TextDefault>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  // Handle specific actions for notification types (e.g., accept/decline invite)
-  const handleAcceptInvite = () => {
-    // Call appointments service to accept
-    console.log("Accepting invite from notification:", notification.id);
-    // You'd typically call an API here: updateAppointmentStatus(notification.details.appointmentId, 'accepted');
-    alert("Lời mời đã được chấp nhận (Mock)");
-    router.back();
+  const handleViewAppointment = () => {
+    // router.push({ pathname: "/(common)/appointment/detail", params: { id: detail.id } })
+    Alert.alert("Navigate", "Go to appointment details");
   };
 
-  const handleDeclineInvite = () => {
-    // Call appointments service to decline
-    console.log("Declining invite from notification:", notification.id);
-    // You'd typically call an API here: updateAppointmentStatus(notification.details.appointmentId, 'declined');
-    alert("Lời mời đã được từ chối (Mock)");
-    router.back();
+  const handleMessageFriend = () => {
+    console.log("Opening chat with friend:", friendId);
+    // router.push({ pathname: "/(common)/chat/conversation", params: { friendId } })
+    Alert.alert("Message", `Open conversation with ${friend.firstName}`);
   };
 
-  const handleViewProfile = (userId: string) => {
-    console.log("Navigating to user profile:", userId);
-    // router.push({ pathname: "/(home)/discover/user-profile", params: { id: userId } });
-    alert(`Điều hướng đến hồ sơ của ${userId} (Mock)`);
+  const handleGetDirections = () => {};
+
+  const handleSnoozeReminder = () => {
+    setIsSnoozing(true);
+    Alert.alert("Snooze", "Choose snooze time:", [
+      { text: "5 minutes", onPress: () => snoozeFor(5) },
+      { text: "15 minutes", onPress: () => snoozeFor(15) },
+      { text: "30 minutes", onPress: () => snoozeFor(30) },
+      { text: "Cancel", style: "cancel", onPress: () => setIsSnoozing(false) },
+    ]);
+  };
+
+  const snoozeFor = (minutes: number) => {
+    console.log(`Snoozing appointment reminder for ${minutes} minutes`);
+    Alert.alert("Snoozed", `Will remind again in ${minutes} minutes`);
+    setIsSnoozing(false);
+    // Here you would typically call an API to schedule the reminder
+  };
+
+  const handleMarkAsDone = () => {
+    Alert.alert("Confirm", "Mark this appointment as completed?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Complete",
+        onPress: () => {
+          console.log("Marking appointment as completed");
+          Alert.alert("Success", "Appointment marked as completed");
+          router.back();
+        },
+      },
+    ]);
+  };
+
+  const formatTime = (timeString: string) => {
+    return timeString;
+  };
+
+  const formatDuration = (minutes: number) => {
+    if (minutes < 60) {
+      return `${minutes} minutes`;
+    } else {
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = minutes % 60;
+      return remainingMinutes > 0
+        ? `${hours} hours ${remainingMinutes} minutes`
+        : `${hours} hours`;
+    }
   };
 
   return (
     <View
-      style={[
-        detailsStyles.safeArea,
-        { backgroundColor: currentColors.background },
-      ]}
+      style={[styles.safeArea, { backgroundColor: currentColors.background }]}
     >
-      <ScrollView style={detailsStyles.scrollView}>
-        <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
-        <TouchableOpacity onPress={() => router.back()} style={{ padding: 16 }}>
-          <TextDefault style={{ color: currentColors.textSecondary }}>
-            Back
-          </TextDefault>
-        </TouchableOpacity>
-        <View style={detailsStyles.header}>
-          <TextDefault
-            style={[detailsStyles.headerTitle, { color: currentColors.text }]}
-          >
-            Chi tiết thông báo
-          </TextDefault>
-          <TextDefault
-            style={[
-              detailsStyles.headerSubtitle,
-              { color: currentColors.textSecondary },
-            ]}
-          >
-            {notification.title}
-          </TextDefault>
-        </View>
-
-        <View style={detailsStyles.content}>
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.content}>
+          {/* Main Notification Card */}
           <View
             style={[
-              detailsStyles.card,
+              styles.card,
               shadowStyle,
               {
                 backgroundColor: currentColors.backgroundCard,
@@ -191,336 +168,291 @@ export default function NotificationDetailsScreen() {
               },
             ]}
           >
+            {/* Urgent Status Bar */}
             <View
               style={[
-                detailsStyles.cardHeader,
+                styles.urgentBar,
+                { backgroundColor: currentColors.warning },
+              ]}
+            />
+
+            <View
+              style={[
+                styles.cardHeader,
                 { borderBottomColor: currentColors.border },
               ]}
             >
               <View
                 style={[
-                  detailsStyles.iconBackground,
-                  { backgroundColor: currentColors.backgroundLightBlue },
+                  styles.iconBackground,
+                  { backgroundColor: `${currentColors.warning}20` },
                 ]}
               >
-                {getNotificationIcon(notification.type)}
+                {getNotificationIcon(notification?.type ?? "")}
               </View>
-              <View style={detailsStyles.headerText}>
+              <View style={styles.headerText}>
                 <TextDefault
-                  style={[
-                    detailsStyles.cardTitle,
-                    { color: currentColors.text },
-                  ]}
+                  style={[styles.cardTitle, { color: currentColors.text }]}
                 >
-                  {notification.title}
+                  {notification?.title}
                 </TextDefault>
                 <TextDefault
                   style={[
-                    detailsStyles.cardTime,
+                    styles.cardTime,
                     { color: currentColors.textSecondary },
                   ]}
                 >
-                  {notification.time}
+                  {moment(notification?.createdAt).format("HH:mm, DD/MM/YYYY")}
                 </TextDefault>
               </View>
             </View>
 
-            <View style={detailsStyles.cardBody}>
+            <View style={styles.cardBody}>
               <TextDefault
                 style={[
-                  detailsStyles.cardMessage,
+                  styles.cardMessage,
                   { color: currentColors.textSecondary },
                 ]}
               >
-                {notification.message}
+                {notification?.body}
               </TextDefault>
 
-              {/* Render specific details based on notification type */}
-              {notification.type === "appointment_invite" &&
-                notification.details && (
-                  <View
-                    style={[
-                      detailsStyles.detailsSection,
-                      { borderTopColor: currentColors.border },
-                    ]}
-                  >
-                    <TextDefault
-                      style={[
-                        detailsStyles.detailsTitle,
-                        { color: currentColors.text },
-                      ]}
-                    >
-                      Thông tin lời mời:
-                    </TextDefault>
-                    <View style={detailsStyles.detailRow}>
-                      <User
-                        size={16}
-                        color={currentColors.textSecondary}
-                        style={detailsStyles.detailIcon}
-                      />
-                      <TextDefault
-                        style={[
-                          detailsStyles.detailText,
-                          { color: currentColors.textSecondary },
-                        ]}
-                      >
-                        Người gửi: {notification.details.from}
-                      </TextDefault>
-                    </View>
-                    <View style={detailsStyles.detailRow}>
-                      <Calendar
-                        size={16}
-                        color={currentColors.textSecondary}
-                        style={detailsStyles.detailIcon}
-                      />
-                      <TextDefault
-                        style={[
-                          detailsStyles.detailText,
-                          { color: currentColors.textSecondary },
-                        ]}
-                      >
-                        Hoạt động: {notification.details.activity}
-                      </TextDefault>
-                    </View>
-                    <View style={detailsStyles.detailRow}>
-                      <Clock
-                        size={16}
-                        color={currentColors.textSecondary}
-                        style={detailsStyles.detailIcon}
-                      />
-                      <TextDefault
-                        style={[
-                          detailsStyles.detailText,
-                          { color: currentColors.textSecondary },
-                        ]}
-                      >
-                        Thời gian: {notification.details.time}
-                      </TextDefault>
-                    </View>
-                    <View style={detailsStyles.detailRow}>
-                      <MapPin
-                        size={16}
-                        color={currentColors.textSecondary}
-                        style={detailsStyles.detailIcon}
-                      />
-                      <TextDefault
-                        style={[
-                          detailsStyles.detailText,
-                          { color: currentColors.textSecondary },
-                        ]}
-                      >
-                        Địa điểm: {notification.details.location}
-                      </TextDefault>
-                    </View>
-                    <View
-                      style={[
-                        detailsStyles.actionButtonsContainer,
-                        { borderTopColor: currentColors.border },
-                      ]}
-                    >
-                      <TouchableOpacity
-                        style={[
-                          detailsStyles.actionButton,
-                          detailsStyles.acceptButton,
-                          { backgroundColor: currentColors.success },
-                        ]}
-                        onPress={handleAcceptInvite}
-                      >
-                        <CheckCircle
-                          size={16}
-                          color="white"
-                          style={detailsStyles.buttonIcon}
-                        />
-                        <TextDefault style={detailsStyles.buttonText}>
-                          Chấp nhận
-                        </TextDefault>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[
-                          detailsStyles.actionButton,
-                          detailsStyles.declineButton,
-                          {
-                            backgroundColor: currentColors.backgroundCard,
-                            borderColor: currentColors.border,
-                          },
-                        ]}
-                        onPress={handleDeclineInvite}
-                      >
-                        <XCircle
-                          size={16}
-                          color={currentColors.text}
-                          style={detailsStyles.buttonIcon}
-                        />
-                        <TextDefault style={detailsStyles.buttonTextSecondary}>
-                          Từ chối
-                        </TextDefault>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                )}
-
-              {notification.type === "system_update" &&
-                notification.details && (
-                  <View
-                    style={[
-                      detailsStyles.detailsSection,
-                      { borderTopColor: currentColors.border },
-                    ]}
-                  >
-                    <TextDefault
-                      style={[
-                        detailsStyles.detailsTitle,
-                        { color: currentColors.text },
-                      ]}
-                    >
-                      Chi tiết cập nhật:
-                    </TextDefault>
-                    <TextDefault
-                      style={[
-                        detailsStyles.detailText,
-                        { color: currentColors.textSecondary },
-                      ]}
-                    >
-                      Phiên bản: {notification.details.version}
-                    </TextDefault>
-                    <TextDefault
-                      style={[
-                        detailsStyles.detailText,
-                        { color: currentColors.textSecondary },
-                      ]}
-                    >
-                      Các tính năng mới:
-                    </TextDefault>
-                    {notification.details.features.map(
-                      (feature: string, index: number) => (
-                        <View key={index} style={detailsStyles.featureItem}>
-                          <TextDefault
-                            style={[
-                              detailsStyles.featureBullet,
-                              { color: currentColors.textSecondary },
-                            ]}
-                          >
-                            •
-                          </TextDefault>
-                          <TextDefault
-                            style={[
-                              detailsStyles.detailText,
-                              { color: currentColors.textSecondary },
-                            ]}
-                          >
-                            {feature}
-                          </TextDefault>
-                        </View>
-                      )
-                    )}
-                  </View>
-                )}
-
-              {notification.type === "like" && notification.details && (
-                <View
-                  style={[
-                    detailsStyles.detailsSection,
-                    { borderTopColor: currentColors.border },
-                  ]}
+              {/* Appointment Details Section */}
+              <View
+                style={[
+                  styles.detailsSection,
+                  { borderTopColor: currentColors.border },
+                ]}
+              >
+                <TextDefault
+                  style={[styles.detailsTitle, { color: currentColors.text }]}
                 >
+                  Appointment details:
+                </TextDefault>
+
+                <View style={styles.detailRow}>
+                  <User
+                    size={16}
+                    color={currentColors.textSecondary}
+                    style={styles.detailIcon}
+                  />
                   <TextDefault
                     style={[
-                      detailsStyles.detailsTitle,
-                      { color: currentColors.text },
+                      styles.detailText,
+                      { color: currentColors.textSecondary },
                     ]}
                   >
-                    Thông tin người thích bạn:
+                    With: {friend.firstName} {friend.lastName}
                   </TextDefault>
-                  <View style={detailsStyles.detailRow}>
-                    <User
+                </View>
+
+                <View style={styles.detailRow}>
+                  <Calendar
+                    size={16}
+                    color={currentColors.textSecondary}
+                    style={styles.detailIcon}
+                  />
+                  <TextDefault
+                    style={[
+                      styles.detailText,
+                      { color: currentColors.textSecondary },
+                    ]}
+                  >
+                    Activity:
+                    {/* {notification?.activity} */}
+                  </TextDefault>
+                </View>
+
+                <View style={styles.detailRow}>
+                  <Clock
+                    size={16}
+                    color={currentColors.textSecondary}
+                    style={styles.detailIcon}
+                  />
+                  <TextDefault
+                    style={[
+                      styles.detailText,
+                      { color: currentColors.textSecondary },
+                    ]}
+                  >
+                    Time:
+                    {/* {formatTime(detail.time)} ({formatDuration(detail.duration)}
+                    ) */}
+                  </TextDefault>
+                </View>
+
+                <View style={styles.detailRow}>
+                  <MapPin
+                    size={16}
+                    color={currentColors.textSecondary}
+                    style={styles.detailIcon}
+                  />
+                  <View style={styles.locationDetails}>
+                    <TextDefault
+                      style={[
+                        styles.detailText,
+                        { color: currentColors.textSecondary },
+                      ]}
+                    >
+                      {/* {detail.location.name} */}
+                    </TextDefault>
+                    <TextDefault
+                      style={[
+                        styles.locationAddress,
+                        { color: currentColors.textLight },
+                      ]}
+                    >
+                      {/* {detail.location.address} */}
+                    </TextDefault>
+                  </View>
+                </View>
+
+                {/* Status Indicator */}
+                <View style={styles.statusContainer}>
+                  <View
+                    style={[
+                      styles.statusDot,
+                      { backgroundColor: currentColors.warning },
+                    ]}
+                  />
+                  <TextDefault
+                    style={[
+                      styles.statusText,
+                      { color: currentColors.warning },
+                    ]}
+                  >
+                    Ongoing
+                  </TextDefault>
+                </View>
+              </View>
+
+              {/* Action Buttons */}
+              <View
+                style={[
+                  styles.actionButtonsContainer,
+                  { borderTopColor: currentColors.border },
+                ]}
+              >
+                {/* Primary Actions */}
+                <View style={styles.primaryActions}>
+                  <TouchableOpacity
+                    style={[
+                      styles.actionButton,
+                      styles.primaryButton,
+                      { backgroundColor: currentColors.primary },
+                    ]}
+                    onPress={handleViewAppointment}
+                  >
+                    <Calendar
                       size={16}
-                      color={currentColors.textSecondary}
-                      style={detailsStyles.detailIcon}
+                      color="white"
+                      style={styles.buttonIcon}
+                    />
+                    <TextDefault style={styles.buttonText}>
+                      View details
+                    </TextDefault>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.actionButton,
+                      styles.primaryButton,
+                      { backgroundColor: currentColors.success },
+                    ]}
+                    onPress={handleMessageFriend}
+                  >
+                    <MessageCircle
+                      size={16}
+                      color="white"
+                      style={styles.buttonIcon}
+                    />
+                    <TextDefault style={styles.buttonText}>Message</TextDefault>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Secondary Actions */}
+                <View style={styles.secondaryActions}>
+                  <TouchableOpacity
+                    style={[
+                      styles.actionButton,
+                      styles.secondaryButton,
+                      {
+                        backgroundColor: currentColors.backgroundCard,
+                        borderColor: currentColors.border,
+                      },
+                    ]}
+                    onPress={handleGetDirections}
+                  >
+                    <Navigation
+                      size={16}
+                      color={currentColors.text}
+                      style={styles.buttonIcon}
                     />
                     <TextDefault
                       style={[
-                        detailsStyles.detailText,
-                        { color: currentColors.textSecondary },
-                      ]}
-                    >
-                      Người thích: {notification.details.user}
-                    </TextDefault>
-                  </View>
-                  <TouchableOpacity
-                    style={[
-                      detailsStyles.viewProfileButton,
-                      { backgroundColor: currentColors.backgroundBlueLite },
-                    ]}
-                    onPress={() => handleViewProfile(notification.details.user)}
-                  >
-                    <TextDefault
-                      style={[
-                        detailsStyles.viewProfileButtonText,
-                        { color: currentColors.info },
-                      ]}
-                    >
-                      Xem hồ sơ
-                    </TextDefault>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              {notification.type === "appointment_accepted" &&
-                notification.details && (
-                  <View
-                    style={[
-                      detailsStyles.detailsSection,
-                      { borderTopColor: currentColors.border },
-                    ]}
-                  >
-                    <TextDefault
-                      style={[
-                        detailsStyles.detailsTitle,
+                        styles.buttonTextSecondary,
                         { color: currentColors.text },
                       ]}
                     >
-                      Thông tin cuộc hẹn:
+                      Directions
                     </TextDefault>
-                    <View style={detailsStyles.detailRow}>
-                      <User
-                        size={16}
-                        color={currentColors.textSecondary}
-                        style={detailsStyles.detailIcon}
-                      />
-                      <TextDefault
-                        style={[
-                          detailsStyles.detailText,
-                          { color: currentColors.textSecondary },
-                        ]}
-                      >
-                        Với: {notification.details.to}
-                      </TextDefault>
-                    </View>
-                    <View style={detailsStyles.detailRow}>
-                      <Calendar
-                        size={16}
-                        color={currentColors.textSecondary}
-                        style={detailsStyles.detailIcon}
-                      />
-                      <TextDefault
-                        style={[
-                          detailsStyles.detailText,
-                          { color: currentColors.textSecondary },
-                        ]}
-                      >
-                        Hoạt động: {notification.details.activity}
-                      </TextDefault>
-                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.actionButton,
+                      styles.secondaryButton,
+                      {
+                        backgroundColor: currentColors.backgroundCard,
+                        borderColor: currentColors.border,
+                      },
+                    ]}
+                    onPress={handleSnoozeReminder}
+                    disabled={isSnoozing}
+                  >
+                    <AlarmClock
+                      size={16}
+                      color={currentColors.text}
+                      style={styles.buttonIcon}
+                    />
                     <TextDefault
                       style={[
-                        detailsStyles.acceptedStatusText,
-                        { color: currentColors.success },
+                        styles.buttonTextSecondary,
+                        { color: currentColors.text },
                       ]}
                     >
-                      Đã được chấp nhận!
+                      {isSnoozing ? "Snoozing..." : "Snooze"}
                     </TextDefault>
-                  </View>
-                )}
+                  </TouchableOpacity>
+                </View>
+
+                {/* Mark as Done */}
+                <TouchableOpacity
+                  style={[
+                    styles.actionButton,
+                    styles.doneButton,
+                    {
+                      backgroundColor: `${currentColors.success}15`,
+                      borderColor: currentColors.success,
+                    },
+                  ]}
+                  onPress={handleMarkAsDone}
+                >
+                  <CheckCircle
+                    size={16}
+                    color={currentColors.success}
+                    style={styles.buttonIcon}
+                  />
+                  <TextDefault
+                    style={[
+                      styles.buttonTextSecondary,
+                      { color: currentColors.success },
+                    ]}
+                  >
+                    Mark as completed
+                  </TextDefault>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
@@ -529,30 +461,38 @@ export default function NotificationDetailsScreen() {
   );
 }
 
-const detailsStyles = StyleSheet.create({
+const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   scrollView: { flex: 1 },
+  backButton: {
+    padding: 16,
+  },
+  backText: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
   header: {
     paddingHorizontal: 16,
-    paddingTop: 16,
     paddingBottom: 16,
   },
-  headerTitle: { fontSize: 20, fontWeight: "bold" },
-  headerSubtitle: { fontSize: 16, marginTop: 4 },
+  headerTitle: { fontSize: 24, fontWeight: "bold", marginBottom: 4 },
+  headerSubtitle: { fontSize: 16 },
   content: {
     paddingHorizontal: 16,
-    paddingVertical: 24,
+    paddingVertical: 8,
   },
   card: {
-    borderRadius: 8,
-    padding: 24,
+    borderRadius: 16,
     borderWidth: 1,
+    overflow: "hidden",
+  },
+  urgentBar: {
+    height: 4,
   },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
-    paddingBottom: 20,
+    padding: 20,
     borderBottomWidth: 1,
   },
   iconBackground: {
@@ -566,77 +506,84 @@ const detailsStyles = StyleSheet.create({
   headerText: { flex: 1 },
   cardTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 4 },
   cardTime: { fontSize: 14 },
-  cardBody: {},
+  cardBody: {
+    padding: 20,
+  },
   cardMessage: {
     fontSize: 16,
     lineHeight: 24,
     marginBottom: 20,
   },
   detailsSection: {
-    marginTop: 16,
-    borderTopWidth: 1,
-    paddingTop: 16,
-  },
-  detailsTitle: { fontSize: 16, fontWeight: "600", marginBottom: 12 },
-  detailRow: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
-  detailIcon: { marginRight: 12 },
-  detailText: { fontSize: 15 },
-  featureItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 4,
-  },
-  featureBullet: { fontSize: 15, marginRight: 8 },
-  actionButtonsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 20,
-    gap: 12,
     borderTopWidth: 1,
     paddingTop: 20,
+    marginBottom: 20,
+  },
+  detailsTitle: { fontSize: 16, fontWeight: "600", marginBottom: 16 },
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+  detailIcon: { marginRight: 12, marginTop: 2 },
+  detailText: { fontSize: 15, flex: 1 },
+  locationDetails: {
+    flex: 1,
+  },
+  locationAddress: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  statusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 16,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: "rgba(245, 158, 11, 0.1)",
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  actionButtonsContainer: {
+    borderTopWidth: 1,
+    paddingTop: 20,
+    gap: 12,
+  },
+  primaryActions: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  secondaryActions: {
+    flexDirection: "row",
+    gap: 12,
   },
   actionButton: {
-    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 8,
+    borderRadius: 12,
     paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  primaryButton: {
+    flex: 1,
+  },
+  secondaryButton: {
+    flex: 1,
+    borderWidth: 1,
+  },
+  doneButton: {
+    borderWidth: 1,
   },
   buttonIcon: { marginRight: 8 },
-  buttonText: { fontSize: 16, fontWeight: "600", color: "white" },
-  buttonTextSecondary: { fontSize: 16, fontWeight: "600" },
-  acceptButton: {}, // Bg handled by theme
-  declineButton: { borderWidth: 1 }, // Border color handled by theme
-  viewProfileButton: {
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    marginTop: 16,
-    alignSelf: "flex-start",
-  },
-  viewProfileButtonText: { fontSize: 15, fontWeight: "600" },
-  acceptedStatusText: {
-    fontSize: 15,
-    fontWeight: "600",
-    marginTop: 12,
-    textAlign: "center",
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-    borderRadius: 8,
-    margin: 24,
-    // Shadow color handled by theme
-  },
-  emptyText: { fontSize: 16, marginTop: 16, textAlign: "center" },
-  emptyButton: {
-    marginTop: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  emptyButtonText: { color: "white", fontSize: 16, fontWeight: "600" },
+  buttonText: { fontSize: 15, fontWeight: "600", color: "white" },
+  buttonTextSecondary: { fontSize: 15, fontWeight: "600" },
 });

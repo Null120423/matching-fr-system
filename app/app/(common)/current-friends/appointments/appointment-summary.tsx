@@ -36,7 +36,7 @@ export default function AppointmentSummary({
   const [notes, setNotes] = useState(appointment.notes || "");
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString("vi-VN", {
+    return date.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -46,13 +46,13 @@ export default function AppointmentSummary({
 
   const formatDuration = (minutes: number) => {
     if (minutes < 60) {
-      return `${minutes} phút`;
+      return `${minutes} minutes`;
     } else {
       const hours = Math.floor(minutes / 60);
       const remainingMinutes = minutes % 60;
       return remainingMinutes > 0
-        ? `${hours} giờ ${remainingMinutes} phút`
-        : `${hours} giờ`;
+        ? `${hours} hours ${remainingMinutes} minutes`
+        : `${hours} hours`;
     }
   };
 
@@ -102,7 +102,7 @@ export default function AppointmentSummary({
         ]}
       >
         <TextDefault style={[styles.cardTitle, { color: currentColors.text }]}>
-          Chi tiết cuộc hẹn
+          Appointment Details
         </TextDefault>
 
         <View style={styles.detailsList}>
@@ -122,7 +122,7 @@ export default function AppointmentSummary({
                   { color: currentColors.textSecondary },
                 ]}
               >
-                Hoạt động
+                Activity
               </TextDefault>
               <TextDefault
                 style={[styles.detailValue, { color: currentColors.text }]}
@@ -148,7 +148,7 @@ export default function AppointmentSummary({
                   { color: currentColors.textSecondary },
                 ]}
               >
-                Ngày
+                Date
               </TextDefault>
               <TextDefault
                 style={[styles.detailValue, { color: currentColors.text }]}
@@ -174,7 +174,7 @@ export default function AppointmentSummary({
                   { color: currentColors.textSecondary },
                 ]}
               >
-                Thời gian
+                Time
               </TextDefault>
               <TextDefault
                 style={[styles.detailValue, { color: currentColors.text }]}
@@ -201,7 +201,7 @@ export default function AppointmentSummary({
                   { color: currentColors.textSecondary },
                 ]}
               >
-                Địa điểm
+                Location
               </TextDefault>
               <TextDefault
                 style={[styles.detailValue, { color: currentColors.text }]}
@@ -236,7 +236,7 @@ export default function AppointmentSummary({
           <TextDefault
             style={[styles.cardTitle, { color: currentColors.text }]}
           >
-            Ghi chú (tùy chọn)
+            Notes (optional)
           </TextDefault>
         </View>
 
@@ -249,7 +249,7 @@ export default function AppointmentSummary({
               borderColor: currentColors.border,
             },
           ]}
-          placeholder="Thêm ghi chú cho cuộc hẹn..."
+          placeholder="Add notes for the appointment..."
           placeholderTextColor={currentColors.textSecondary}
           multiline
           numberOfLines={4}
@@ -269,7 +269,7 @@ export default function AppointmentSummary({
         <TextDefault
           style={[styles.confirmationText, { color: currentColors.success }]}
         >
-          🎉 Cuộc hẹn sẽ được gửi đến {friend.firstName} để xác nhận
+          🎉 The appointment will be sent to {friend.firstName} for confirmation
         </TextDefault>
       </View>
     </View>

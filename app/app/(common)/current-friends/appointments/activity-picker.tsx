@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Camera,
   Heart,
@@ -24,51 +22,45 @@ interface ActivityPickerProps {
 const activities = [
   {
     type: "food",
-    title: "Ăn uống",
+    title: "Food & Drink",
     icon: Utensils,
     color: "#FF6B6B",
-    activities: ["Cà phê", "Ăn tối", "Ăn trưa", "Đồ uống", "Ăn sáng"],
+    activities: ["Coffee", "Dinner", "Lunch", "Drinks", "Breakfast"],
   },
   {
     type: "entertainment",
-    title: "Giải trí",
+    title: "Entertainment",
     icon: Music,
     color: "#4ECDC4",
-    activities: ["Xem phim", "Karaoke", "Bowling", "Game", "Nhạc sống"],
+    activities: ["Movie", "Karaoke", "Bowling", "Game", "Live music"],
   },
   {
     type: "outdoor",
-    title: "Ngoài trời",
+    title: "Outdoor",
     icon: Camera,
     color: "#45B7D1",
-    activities: ["Dạo phố", "Chụp ảnh", "Công viên", "Bãi biển", "Leo núi"],
+    activities: ["Stroll", "Photography", "Park", "Beach", "Hiking"],
   },
   {
     type: "shopping",
-    title: "Mua sắm",
+    title: "Shopping",
     icon: ShoppingBag,
     color: "#96CEB4",
-    activities: [
-      "Trung tâm thương mại",
-      "Chợ",
-      "Outlet",
-      "Thời trang",
-      "Điện tử",
-    ],
+    activities: ["Mall", "Market", "Outlet", "Fashion", "Electronics"],
   },
   {
     type: "sports",
-    title: "Thể thao",
+    title: "Sports",
     icon: Heart,
     color: "#FFEAA7",
-    activities: ["Gym", "Bơi lội", "Tennis", "Cầu lông", "Chạy bộ"],
+    activities: ["Gym", "Swimming", "Tennis", "Badminton", "Jogging"],
   },
   {
     type: "culture",
-    title: "Văn hóa",
+    title: "Culture",
     icon: MapPin,
     color: "#DDA0DD",
-    activities: ["Bảo tàng", "Triển lãm", "Sách", "Nghệ thuật", "Lịch sử"],
+    activities: ["Museum", "Exhibition", "Books", "Art", "History"],
   },
 ];
 

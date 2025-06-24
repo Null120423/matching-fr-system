@@ -10,18 +10,11 @@ import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import TextDefault from "@/components/@core/text-default";
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/contexts/ThemeContext";
+import { AppointmentDTO } from "@/dto";
 import React from "react";
-import { AppointmentData } from "./appointment-modal";
 
 interface AppointmentCardProps {
-  appointment: AppointmentData & {
-    friend: {
-      firstName: string;
-      lastName: string;
-      avatarUrl: string;
-      username: string;
-    };
-  };
+  appointment: AppointmentDTO;
   onPress: () => void;
   onMessage: () => void;
   onMore: () => void;
@@ -52,13 +45,13 @@ export default function AppointmentCard({
   const getStatusText = (status: string) => {
     switch (status) {
       case "confirmed":
-        return "Đã xác nhận";
+        return "Confirmed";
       case "pending":
-        return "Chờ xác nhận";
+        return "Pending";
       case "cancelled":
-        return "Đã hủy";
+        return "Cancelled";
       default:
-        return "Không xác định";
+        return "Unknown";
     }
   };
 
@@ -68,11 +61,11 @@ export default function AppointmentCard({
     tomorrow.setDate(today.getDate() + 1);
 
     if (date.toDateString() === today.toDateString()) {
-      return "Hôm nay";
+      return "Today";
     } else if (date.toDateString() === tomorrow.toDateString()) {
-      return "Ngày mai";
+      return "Tomorrow";
     } else {
-      return date.toLocaleDateString("vi-VN", {
+      return date.toLocaleDateString("en-US", {
         day: "numeric",
         month: "short",
       });
@@ -81,12 +74,12 @@ export default function AppointmentCard({
 
   const formatDuration = (minutes: number) => {
     if (minutes < 60) {
-      return `${minutes}p`;
+      return `${minutes}m`;
     } else {
       const hours = Math.floor(minutes / 60);
       const remainingMinutes = minutes % 60;
       return remainingMinutes > 0
-        ? `${hours}h${remainingMinutes}p`
+        ? `${hours}h${remainingMinutes}m`
         : `${hours}h`;
     }
   };
@@ -123,7 +116,7 @@ export default function AppointmentCard({
               <TextDefault
                 style={[styles.friendName, { color: currentColors.text }]}
               >
-                {appointment.friend.firstName} {appointment.friend.lastName}
+                {appointment.friend.username}
               </TextDefault>
               <View style={styles.statusContainer}>
                 <View
@@ -168,7 +161,15 @@ export default function AppointmentCard({
                 { color: currentColors.textSecondary },
               ]}
             >
-              {formatDate(appointment.date)} • {appointment.time}
+              {formatDate(
+                typeof appointment.date === "string"
+                  ? new Date(appointment.date)
+                  : appointment.date
+              )}{" "}
+              •{" "}
+              {typeof appointment.time === "string"
+                ? appointment.time
+                : appointment.time.toLocaleTimeString()}
             </TextDefault>
           </View>
 
@@ -208,7 +209,7 @@ export default function AppointmentCard({
             onPress={onMessage}
           >
             <MessageCircle size={16} color="white" />
-            <TextDefault style={styles.messageButtonText}>Nhắn tin</TextDefault>
+            <TextDefault style={styles.messageButtonText}>Message</TextDefault>
           </TouchableOpacity>
         </View>
       </View>

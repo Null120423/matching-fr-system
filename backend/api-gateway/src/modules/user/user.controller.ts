@@ -29,6 +29,16 @@ interface UserProfileServiceGrpc {
   discoverUsers(
     data: GetUsersDiscoverDto & { currentUserId: string },
   ): Observable<{ users: UserDto[] }>;
+  getDashboardMetrics(data: { requestUserId: string }): Observable<{
+    totalFriends: number;
+    totalAppointments: number;
+    totalAppointmentToday: number;
+    totalSwipe: number;
+    totalSwipeToday: number;
+    totalNewFriendRequestsToday: number;
+    totalMatchesToday: number;
+    totalMatches: number;
+  }>;
 }
 
 @ApiTags('Users')
@@ -81,8 +91,6 @@ export class UserController {
     @Req() req: RequestWithUser,
   ): Promise<UserDto> {
     const currentUserId = req.user.id;
-
-    console.log(updateUserProfileDto);
     return lastValueFrom(
       this.userProfileServiceGrpc.updateUserProfile({
         userId: currentUserId,
@@ -138,6 +146,28 @@ export class UserController {
         userId,
         friendId: req.user.id,
       }),
+    );
+  }
+
+  @Get('dashboard/metrics')
+  @ApiOperation({ summary: 'Get dashboard metrics for the user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Dashboard metrics returned',
+  })
+  async getDashboardMetrics(@Req() req: RequestWithUser): Promise<{
+    totalFriends: number;
+    totalAppointments: number;
+    totalAppointmentToday: number;
+    totalSwipe: number;
+    totalSwipeToday: number;
+    totalNewFriendRequestsToday: number;
+    totalMatchesToday: number;
+    totalMatches: number;
+  }> {
+    const requestUserId = req.user.id;
+    return lastValueFrom(
+      this.userProfileServiceGrpc.getDashboardMetrics({ requestUserId }),
     );
   }
 }

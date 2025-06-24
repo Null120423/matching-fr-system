@@ -24,6 +24,7 @@ service UserProfileService {
   rpc GetUserById (GetUserByIdRequest) returns (User);
   rpc DiscoverUsers (DiscoverUsersRequest) returns (DiscoverUsersResponse);
   rpc GetListUsersByIds (ListUserIdsRequest) returns (ListUserIdsResponse);
+  rpc GetDashboardMetrics (GetDashboardMetricsRequest) returns (GetDashboardMetricsResponse);
 }
 
 // ====== MESSAGES ======
@@ -172,4 +173,19 @@ message ListUserIdsRequest {
 
 message ListUserIdsResponse {
   repeated User users = 1;
+}
+
+message GetDashboardMetricsRequest {
+  string requestUserId = 1; 
+}
+
+message GetDashboardMetricsResponse {
+  int32 totalFriends = 1;
+  int32 totalAppointments = 2;
+  int32 totalAppointmentToday = 3;
+  int32 totalSwipe = 4;
+  int32 totalSwipeToday = 5;
+  int32 totalNewFriendRequestsToday = 6;
+  int32 totalMatchesToday = 7;
+  int32 totalMatches = 8;
 }

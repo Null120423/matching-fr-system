@@ -3,6 +3,8 @@ import { GrpcLog, GrpcMethod } from 'src/decorators';
 import { UserEntity } from 'src/entities';
 import { UserDTO } from '../auth/dto';
 import {
+  GetDashboardMetricsRequest,
+  GetDashboardMetricsResponse,
   GetUsersByIdsDto,
   GetUsersByIdsResponseDto,
   GetUsersDiscoverDto,
@@ -56,5 +58,12 @@ export class UserProfileController {
   ): Promise<GetUsersByIdsResponseDto> {
     const res = await this.userProfileService.getUsersByIds(payload);
     return res;
+  }
+
+  @GrpcMethod('UserProfileService', 'GetDashboardMetrics')
+  async getDashboardMetrics(
+    payload: GetDashboardMetricsRequest,
+  ): Promise<GetDashboardMetricsResponse> {
+    return this.userProfileService.getDashboardMetrics(payload);
   }
 }

@@ -29,11 +29,17 @@ exports.MapNumberStatusToNumber = {
 };
 let AppointmentEntity = class AppointmentEntity extends base_entity_1.BaseEntityCustom {
     activity;
+    activityType;
+    date;
     time;
-    location;
+    datetime;
+    duration;
     fromUserId;
     toUserId;
+    friendId;
+    notes;
     status;
+    location;
 };
 exports.AppointmentEntity = AppointmentEntity;
 __decorate([
@@ -41,13 +47,25 @@ __decorate([
     __metadata("design:type", String)
 ], AppointmentEntity.prototype, "activity", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp with time zone' }),
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], AppointmentEntity.prototype, "activityType", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp with time zone', nullable: true }),
     __metadata("design:type", Date)
-], AppointmentEntity.prototype, "time", void 0);
+], AppointmentEntity.prototype, "date", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
-], AppointmentEntity.prototype, "location", void 0);
+], AppointmentEntity.prototype, "time", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp with time zone', nullable: true }),
+    __metadata("design:type", Date)
+], AppointmentEntity.prototype, "datetime", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', nullable: true }),
+    __metadata("design:type", Number)
+], AppointmentEntity.prototype, "duration", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
@@ -57,6 +75,14 @@ __decorate([
     __metadata("design:type", String)
 ], AppointmentEntity.prototype, "toUserId", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'uuid', nullable: true }),
+    __metadata("design:type", String)
+], AppointmentEntity.prototype, "friendId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], AppointmentEntity.prototype, "notes", void 0);
+__decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
         enum: AppointmentStatus,
@@ -64,6 +90,10 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], AppointmentEntity.prototype, "status", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    __metadata("design:type", Object)
+], AppointmentEntity.prototype, "location", void 0);
 exports.AppointmentEntity = AppointmentEntity = __decorate([
     (0, typeorm_1.Entity)('appointment')
 ], AppointmentEntity);

@@ -1,13 +1,15 @@
+import { showToastSuccess } from "@/contexts/ToastEventEmitter";
 import { ENDPOINTS } from "@/services/endpoints";
 import { rootApi } from "@/services/rootApi";
 import { useMutation } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { Alert } from "react-native";
 import { CreateAppointmentRequest, CreateAppointmentResponse } from "./dto";
 
 const useCreateAppointment = () => {
   const { isPending, isError, data, error, mutateAsync } = useMutation({
     mutationFn: (variables: CreateAppointmentRequest) => {
-      return rootApi.post<CreateAppointmentRequest, CreateAppointmentResponse>(
+      return rootApi.post<any, CreateAppointmentResponse>(
         ENDPOINTS.APPOINTMENT.CREATE,
         variables
       );
@@ -19,10 +21,8 @@ const useCreateAppointment = () => {
       );
     },
     onSuccess: async (data: CreateAppointmentResponse) => {
-      Alert.alert(
-        data?.message || "NOTI",
-        data?.message || "Appointment created successfully"
-      );
+      showToastSuccess(data?.message || "Appointment created successfully");
+      router.back();
     },
   });
   return {

@@ -3,6 +3,10 @@ import { GrpcLog, GrpcMethod } from 'src/decorators';
 import { UserDto } from 'src/dto';
 import { SwipeAction } from 'src/entities';
 import { CreateSwipeDto, FriendRequest } from './dto/create-swipe.dto';
+import {
+  GetDashboardMetricsRequest,
+  GetDashboardMetricsResponse,
+} from './dto/dashboard.dto';
 import { FriendRequestResponseDto } from './dto/fr-request-response.dto';
 import { MatchingService } from './matching.service';
 GrpcLog();
@@ -84,5 +88,12 @@ export class MatchingController {
     isFriend: boolean;
   }> {
     return await this.matchingService.isFriend(payload);
+  }
+
+  @GrpcMethod('MatchingService', 'GetDashboardMetrics')
+  async getDashboardMetrics(
+    payload: GetDashboardMetricsRequest,
+  ): Promise<GetDashboardMetricsResponse> {
+    return await this.matchingService.getDashboardMetrics(payload);
   }
 }

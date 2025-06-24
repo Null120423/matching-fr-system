@@ -110,46 +110,69 @@ export class GetAppointmentsResponse {
   appointments: Appointment[];
 }
 
-export class CreateAppointmentRequest {
-  @ApiProperty({
-    description: 'ID of the user creating the appointment',
-    example: 'user-id-1',
-  })
-  @IsOptional()
-  @IsString()
-  fromUserId: string;
+import { Type } from 'class-transformer';
+import { IsInt, IsNumber, Min, ValidateNested } from 'class-validator';
 
-  @ApiProperty({
-    description: 'Activity or purpose of the appointment',
-    example: 'Coffee meeting',
-  })
+class CoordinatesDto {
+  @IsNotEmpty()
+  @IsNumber()
+  lat: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  lng: number;
+}
+
+class LocationDto {
+  @IsNotEmpty()
+  @IsString()
+  address: string;
+
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @ValidateNested()
+  @Type(() => CoordinatesDto)
+  coordinates: CoordinatesDto;
+}
+
+export class CreateAppointmentRequest {
   @IsNotEmpty()
   @IsString()
   activity: string;
 
-  @ApiProperty({
-    description: 'Scheduled time of the appointment (ISO 8601 format)',
-    example: '2025-06-18T15:30:00.000Z',
-  })
-  @IsNotEmpty()
-  @IsDateString()
-  time: string;
-
-  @ApiProperty({
-    description: 'Location where the appointment will take place',
-    example: '123 Nguyen Trai, District 1, Ho Chi Minh City',
-  })
   @IsNotEmpty()
   @IsString()
-  location: string;
+  activityType: string;
 
-  @ApiProperty({
-    description: 'ID of the user receiving the appointment request',
-    example: 'e0c8c0e6-4f3a-4eaa-b47d-1d1c8a25b73e',
-  })
+  @IsNotEmpty()
+  @IsDateString()
+  date: string; // ISO 8601 date string like "2025-06-24T12:54:19.774Z"
+
+  @IsNotEmpty()
+  @IsString()
+  time: string; // "13:00"
+
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
+  duration: number; // in minutes
+
+  @ValidateNested()
+  @Type(() => LocationDto)
+  location: LocationDto;
+
+  @IsOptional()
+  notes: string;
+
   @IsNotEmpty()
   @IsUUID()
   toUserId: string;
+
+  @IsOptional()
+  @IsUUID()
+  fromUserId?: string;
 }
 
 export class UpdateAppointmentStatusRequest {

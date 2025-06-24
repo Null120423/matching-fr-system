@@ -1,6 +1,7 @@
 import DashboardView from "@/views/dashboard-view";
 import { useClerk, useUser } from "@clerk/clerk-expo";
 import * as Linking from "expo-linking";
+import React from "react";
 import { useCallback } from "react";
 
 function Page() {

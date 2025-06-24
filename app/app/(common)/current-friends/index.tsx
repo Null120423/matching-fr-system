@@ -33,6 +33,8 @@ import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { showToastInfo } from "@/contexts/ToastEventEmitter";
 import DefaultLayout from "@/layouts/default-layout";
+import useCreateAppointment from "@/services/hooks/appointments/useCreateAppointment";
+import useGetAppointments from "@/services/hooks/appointments/useGetAppointments";
 import useCurrentFriends from "@/services/hooks/matching/useCurrentFriends";
 import React from "react";
 import AppointmentModal from "./appointments/appointment-modal";
@@ -52,66 +54,6 @@ const shadowStyle = Platform.select({
 });
 
 // Mock friends data
-const friendsData = [
-  {
-    activities: ["CF", "Shopping"],
-    avatarUrl:
-      "https://hoseiki.vn/wp-content/uploads/2025/03/gai-xinh-tu-suong-28.jpg",
-    bio: "I love traveling and exploring new cultures.",
-    createdAt: {},
-    dateOfBirth: {},
-    email: "user123@example.com",
-    firstName: "John",
-    gender: "male",
-    id: "4813c767-0af0-4a39-8845-db1181e1fcf6",
-    interests: ["Hiking", "Photography", "Cooking"],
-    isEmailVerified: true,
-    lastName: "Doe",
-    location: "Hanoi, Vietnam",
-    maxAgePreference: 35,
-    minAgePreference: 25,
-    preferredGender: "female",
-    updatedAt: {},
-    username: "user123",
-  },
-  {
-    avatarUrl:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfc3BOBQ_ip3jGGzbVU8Yj_p-KymP7DO86r-ZlTcc9kxGjw4aXWBZP_NNnxPOC5q_Zn1w&usqp=CAU",
-    createdAt: {},
-    email: "user1232@example.com",
-    id: "9a02dc2b-413a-462a-9908-1bc0a27cfa2a",
-    interests: ["Hiking", "Photography", "Cooking"],
-    isEmailVerified: true,
-    maxAgePreference: 100,
-    minAgePreference: 0,
-    resetPasswordCode: "s",
-    updatedAt: {},
-    username: "user1232",
-    firstName: "Sarah",
-    lastName: "Wilson",
-    bio: "Adventure seeker and coffee enthusiast ☕",
-    location: "Ho Chi Minh City, Vietnam",
-    activities: ["Yoga", "Reading"],
-  },
-  {
-    activities: ["sports"],
-    createdAt: {},
-    dateOfBirth: {},
-    email: "khoa123@gmail.com",
-    id: "f939a573-d463-4606-9ccf-84b1eb21511a",
-    interests: ["Football"],
-    isEmailVerified: false,
-    maxAgePreference: 100,
-    minAgePreference: 0,
-    updatedAt: {},
-    username: "khoadt",
-    firstName: "Khoa",
-    lastName: "Dang",
-    bio: "Football lover and fitness enthusiast ⚽",
-    location: "Da Nang, Vietnam",
-    avatarUrl: "/placeholder.svg?height=120&width=120",
-  },
-];
 
 export default function FriendsListScreen() {
   const { theme } = useTheme();
@@ -126,7 +68,11 @@ export default function FriendsListScreen() {
     onRefetch,
     isRefetching,
   } = useCurrentFriends();
-
+  const { onCreate, isLoading: isLoadingCreate } = useCreateAppointment();
+  const { data } = useGetAppointments({
+    type: "all",
+  });
+  console.log("Appointments Data:", data);
   const handleFriendPress = (friendId: string) => {
     router.push({
       pathname: "/(common)/user-profile",
@@ -143,13 +89,17 @@ export default function FriendsListScreen() {
   };
 
   const handleAppointmentCreated = (friendId: string) => {
-    const friend = friendsData.find((f) => f.id === friendId);
+    const friend = friends.find((f) => f.id === friendId);
     if (!friend) {
       showToastInfo("Friend not found");
       return;
     }
     setSelectedFriend(friend);
     setAppointmentModalVisible(true);
+  };
+
+  const handleConfirmCreateAppointment = (data: any) => {
+    onCreate(data);
   };
 
   const renderInterestTag = (interest: string, index: number) => (
@@ -191,12 +141,10 @@ export default function FriendsListScreen() {
   };
 
   return (
-    <DefaultLayout isLoading={isLoading}>
+    <DefaultLayout isLoading={isLoading || isLoadingCreate}>
       <View
         style={[styles.safeArea, { backgroundColor: currentColors.background }]}
       >
-        <Separator height={Platform.OS === "ios" ? scale(55) : scale(10)} />
-
         {/* Header */}
         <View style={styles.header}>
           <View>
@@ -273,7 +221,7 @@ export default function FriendsListScreen() {
                   {
                     backgroundColor: currentColors.backgroundCard,
                     borderColor: currentColors.border,
-                    marginBottom: index === friendsData.length - 1 ? 20 : 16,
+                    marginBottom: index === friends.length - 1 ? 20 : 16,
                   },
                 ]}
                 onPress={() => handleFriendPress(friend.id)}
@@ -474,7 +422,7 @@ export default function FriendsListScreen() {
             setSelectedFriend(null);
           }}
           friend={selectedFriend}
-          onCreateAppointment={() => {}}
+          onCreateAppointment={handleConfirmCreateAppointment}
         />
       )}
     </DefaultLayout>
@@ -492,8 +440,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    padding: 20,
   },
   headerTitle: {
     fontSize: 28,

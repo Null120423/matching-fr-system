@@ -16,6 +16,7 @@ service MatchingService {
   rpc GetFriendRequests(GetFriendRequestsRequest) returns (MyFriendRequestListResponse);
   rpc GetCurrentFriends(GetCurrentFriendRequest) returns (GetCurrentFriendsResponse);
   rpc IsFriend(IsFriendRequest) returns (IsFriendResponse);
+  rpc GetDashboardMetrics(GetDashboardMetricsRequest) returns (GetDashboardMetricsResponse);
 }
 message IsFriendRequest{
   string userId = 1;
@@ -116,4 +117,16 @@ message User {
   google.protobuf.Timestamp createdAt = 18;
   google.protobuf.Timestamp updatedAt = 19;
   string username = 20;
+}
+message GetDashboardMetricsRequest {
+  string requestUserId = 1; 
+}
+
+message GetDashboardMetricsResponse {
+  int32 totalFriends = 1;
+  int32 totalSwipe = 2;
+  int32 totalSwipeToday = 3;
+  int32 totalNewFriendRequestsToday = 4;
+  int32 totalMatchesToday = 5;
+  int32 totalMatches = 6;
 }

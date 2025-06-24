@@ -15,9 +15,22 @@ export declare const MapNumberStatusToNumber: {
 };
 export declare class AppointmentEntity extends BaseEntityCustom {
     activity: string;
-    time: Date;
-    location: string;
+    activityType: string;
+    date: Date;
+    time: string;
+    datetime: Date;
+    duration: number;
     fromUserId: string;
     toUserId: string;
+    friendId: string;
+    notes: string;
     status: AppointmentStatus;
+    location: {
+        address: string;
+        name: string;
+        coordinates: {
+            lat: number;
+            lng: number;
+        };
+    };
 }

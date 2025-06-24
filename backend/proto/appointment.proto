@@ -1,42 +1,82 @@
-// backend/appointment-nestjs-service/src/proto/appointment.proto
 syntax = "proto3";
 
 package appointment;
-
-// Define enum in proto
-enum AppointmentStatus {
-  PENDING = 0;
-  ACCEPTED = 1;
-  DECLINED = 2;
-  CANCELLED = 3;
-  COMPLETED = 4;
-}
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 
 service AppointmentService {
   rpc CreateAppointment (CreateAppointmentRequest) returns (Appointment);
   rpc GetAppointments (GetAppointmentsRequest) returns (GetAppointmentsResponse);
   rpc GetAppointmentById (GetAppointmentByIdRequest) returns (Appointment);
   rpc UpdateAppointmentStatus (UpdateAppointmentStatusRequest) returns (Appointment);
+  rpc GetDashboardMetrics(GetDashboardMetricsRequest) returns (GetDashboardMetricsResponse);
+}
+
+message Coordinates {
+  double lat = 1;
+  double lng = 2;
+}
+
+message Location {
+  string address = 1;
+  string name = 2;
+  Coordinates coordinates = 3;
 }
 
 message Appointment {
   string id = 1;
   string activity = 2;
-  string time = 3; // ISO 8601 string
-  string location = 4;
-  string fromUserId = 5;
-  string toUserId = 6;
-  AppointmentStatus status = 7;
-  string createdAt = 8;
-  string updatedAt = 9;
+  string activityType = 3;
+  string date = 4; // ISO 8601 date
+  string time = 5; // "13:00" or similar
+  int32 duration = 6;
+  Location location = 7;
+  string notes = 8;
+  string fromUserId = 9;
+  string toUserId = 10;
+  string friendId = 11;
+  string status = 12;
+  string createdAt = 13;
+  string updatedAt = 14;
+  User friend = 15;
+  User toUser = 16;
+  User fromUser = 17;
 }
+message User {
+  string id = 1;
+  string email = 2;
+  string emailVerificationCode = 3;
+  bool isEmailVerified = 4;
+  string resetPasswordCode = 5; 
+  string firstName = 6;
+  string lastName = 7;
+  google.protobuf.Timestamp dateOfBirth = 8;
+  string gender = 9;
+  string location = 10;
+  string bio = 11;
+  string avatarUrl = 12;
+  repeated string interests = 13;
+  int32 minAgePreference = 14;
+  int32 maxAgePreference = 15;
+  string preferredGender = 16;
+  repeated string activities = 17;
+  google.protobuf.Timestamp createdAt = 18;
+  google.protobuf.Timestamp updatedAt = 19;
+  string username = 20;
+}
+
 
 message CreateAppointmentRequest {
   string activity = 1;
-  string time = 2;
-  string location = 3;
-  string toUserId = 4;
-  string fromUserId = 5; 
+  string activityType = 2;
+  string date = 3;
+  string time = 4;
+  int32 duration = 5;
+  Location location = 6;
+  string notes = 7;
+  string fromUserId = 8;
+  string toUserId = 9;
+  string friendId = 10;
 }
 
 message GetAppointmentsRequest {
@@ -50,11 +90,20 @@ message GetAppointmentsResponse {
 
 message GetAppointmentByIdRequest {
   string id = 1;
-  string userId = 2; // Người dùng yêu cầu
+  string userId = 2;
 }
 
 message UpdateAppointmentStatusRequest {
   string id = 1;
-  string userId = 2; // Người dùng thực hiện cập nhật
-  AppointmentStatus newStatus = 3;
+  string userId = 2;
+  string newStatus = 3;
+}
+
+message GetDashboardMetricsRequest {
+  string requestUserId = 1; 
+}
+
+message GetDashboardMetricsResponse {
+  int32 totalAppointments = 1;
+  int32 totalAppointmentToday = 2;
 }

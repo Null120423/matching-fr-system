@@ -34,7 +34,7 @@ interface AppointmentModalProps {
 }
 
 export interface AppointmentData {
-  friendId: string;
+  toUserId: string;
   activity: string;
   activityType: string;
   date: Date;
@@ -62,16 +62,16 @@ export default function AppointmentModal({
   const [appointmentData, setAppointmentData] = useState<
     Partial<AppointmentData>
   >({
-    friendId: friend.id,
+    toUserId: friend.id,
     status: "pending",
   });
 
   const steps = [
-    { title: "Chọn hoạt động", icon: Activity },
-    { title: "Chọn thời gian", icon: Clock },
-    { title: "Chọn thời lượng", icon: Calendar },
-    { title: "Chọn địa điểm", icon: MapPin },
-    { title: "Xác nhận", icon: Calendar },
+    { title: "Choose activity", icon: Activity },
+    { title: "Choose time", icon: Clock },
+    { title: "Choose duration", icon: Calendar },
+    { title: "Choose location", icon: MapPin },
+    { title: "Confirm", icon: Calendar },
   ];
 
   const handleNext = () => {
@@ -96,7 +96,7 @@ export default function AppointmentModal({
       onCreateAppointment(appointmentData as AppointmentData);
       onClose();
       setCurrentStep(0);
-      setAppointmentData({ friendId: friend.id, status: "pending" });
+      setAppointmentData({ toUserId: friend.id, status: "pending" });
     }
   };
 
@@ -193,7 +193,7 @@ export default function AppointmentModal({
             <TextDefault
               style={[styles.headerTitle, { color: currentColors.text }]}
             >
-              Tạo cuộc hẹn
+              Create appointment
             </TextDefault>
             <TextDefault
               style={[
@@ -201,7 +201,7 @@ export default function AppointmentModal({
                 { color: currentColors.textSecondary },
               ]}
             >
-              với {friend.firstName} {friend.lastName}
+              with {friend.firstName} {friend.lastName}
             </TextDefault>
           </View>
         </View>

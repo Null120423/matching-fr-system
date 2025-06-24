@@ -22,6 +22,10 @@ import {
   SwipeRepository,
 } from 'src/repositories/index.repository';
 import { FriendRequest } from './dto/create-swipe.dto';
+import {
+  GetDashboardMetricsRequest,
+  GetDashboardMetricsResponse,
+} from './dto/dashboard.dto';
 import { FriendRequestResponseDto } from './dto/fr-request-response.dto';
 import {
   NotificationCreate,
@@ -401,6 +405,57 @@ export class MatchingService {
 
     return {
       isFriend: !!request,
+    };
+  }
+
+  // get dashboard metrics
+  async getDashboardMetrics(
+    payload: GetDashboardMetricsRequest,
+  ): Promise<GetDashboardMetricsResponse> {
+    const { requestUserId } = payload;
+    if (!requestUserId) {
+      throw new BadRequestException('User ID is required.');
+    }
+    const totalFriends = await this.getCurrentFriends({
+      userId: requestUserId,
+    });
+    const totalSwipe = await this.swipeRepository.count({
+      where: { swiperId: requestUserId },
+    });
+    const totalSwipeToday = await this.swipeRepository.count({
+      where: {
+        swiperId: requestUserId,
+        createdAt: new Date(new Date().setHours(0, 0, 0, 0)),
+      },
+    });
+    const totalNewFriendRequestsToday =
+      await this.friendRequestRepository.count({
+        where: {
+          receiverId: requestUserId,
+          status: FriendRequestStatus.PENDING,
+          createdAt: new Date(new Date().setHours(0, 0, 0, 0)),
+        },
+      });
+    const totalMatchesToday = await this.swipeRepository.count({
+      where: {
+        swipedId: requestUserId,
+        action: SwipeAction.LIKE,
+        createdAt: new Date(new Date().setHours(0, 0, 0, 0)),
+      },
+    });
+    const totalMatches = await this.swipeRepository.count({
+      where: {
+        swipedId: requestUserId,
+        action: SwipeAction.LIKE,
+      },
+    });
+    return {
+      totalFriends: totalFriends.total,
+      totalSwipe,
+      totalSwipeToday,
+      totalNewFriendRequestsToday,
+      totalMatchesToday,
+      totalMatches,
     };
   }
 }
